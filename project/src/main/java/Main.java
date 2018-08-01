@@ -2,32 +2,36 @@ import static spark.Spark.get;
 import static spark.Spark.port;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Main {
 
     public static void main(String[] args) {
-	port(4567);
 
-	Properties prop = new Properties();
+	final Logger logger = LoggerFactory.getLogger(Main.class);
 
 	// Load properties
+	Properties prop = new Properties();
 	try (InputStream propFile = new FileInputStream("config.properties")) {
 	    prop.load(propFile);
-	} catch (FileNotFoundException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    logger.info("Config file loaded");
 	} catch (IOException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    // if config can't be found, kill the server and display an error
+	    logger.error("Config file was not loaded, make sure it exists");
+	    System.exit(1);
 	}
 
 	String mapsApiKey = prop.getProperty("mapsApiKey");
+
+	// set port & create routes
+	port(4567);
 
 	get("/", (req, res) -> {
 	    Map<String, Object> model = new HashMap<>();

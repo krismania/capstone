@@ -11,6 +11,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import spark.Spark;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -32,6 +34,9 @@ public class Main {
 
 	// set port & create routes
 	port(4567);
+
+	// use static folder in resources for static content
+	Spark.staticFiles.location("/static");
 
 	get("/", (req, res) -> {
 	    Map<String, Object> model = new HashMap<>();

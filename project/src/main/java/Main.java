@@ -11,6 +11,7 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import controllers.ApiController;
 import spark.Spark;
 
 public class Main {
@@ -33,11 +34,15 @@ public class Main {
 	String mapsApiKey = prop.getProperty("mapsApiKey");
 
 	// set port & create routes
-	port(4567);
+	port(45678);
 
 	// use static folder in resources for static content
 	Spark.staticFiles.location("/static");
 
+	// api controller routes
+	new ApiController();
+
+	// all other routes
 	get("/", (req, res) -> {
 	    Map<String, Object> model = new HashMap<>();
 	    model.put("mapsApiKey", mapsApiKey);

@@ -10,18 +10,7 @@
             <h1>Car Share</h1>
         </header>
         <div id="map"></div>
-        <script>
-        var map;
-        function initMap() {
-            navigator.geolocation.getCurrentPosition(pos => {
-                map = new google.maps.Map(document.getElementById('map'), {
-                    center: {lat: pos.coords.latitude, lng: pos.coords.longitude},
-                    zoom: 12
-                });
-            });
-        }
-        </script>
+        <script src="js/main.js" defer></script>
         <script src="https://maps.googleapis.com/maps/api/js?key={{mapsApiKey}}&callback=initMap" async defer></script>
-        </div>
     </body>
 </html>

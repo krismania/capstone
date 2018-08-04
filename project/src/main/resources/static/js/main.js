@@ -10,15 +10,13 @@ function initMap() {
 		fetch(request)
 		.then(res => res.json())
 		.then(json => {
-			var marker = new google.maps.Marker({
-				position: {
-					lat: json[0].position.lat,
-					lng: json[0].position.lon
-				},
-				map: map,
-				title: json[0].registration
-			});
-			console.log(marker);
+			for (var i = 0; i < json.length; i++) {
+				new google.maps.Marker({
+					position: json[i].position,
+					map: map,
+					title: json[i].registration
+				})
+			}
 		});
 	});
 }

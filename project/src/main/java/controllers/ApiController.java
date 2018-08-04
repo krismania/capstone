@@ -2,13 +2,30 @@ package controllers;
 
 import static spark.Spark.get;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ApiController {
 
     public ApiController() {
 
+	final Logger logger = LoggerFactory.getLogger(ApiController.class);
+
 	get("/api/vehicles", (req, res) -> {
 	    res.type("application/json");
-	    return "[{\"registration\":\"ABC123\",\"make\":\"Toyota\",\"model\":\"Corolla\",\"year\":2014,\"color\":\"Blue\",\"position\":{\"lat\":-37.808401,\"lon\":144.956159},\"available\":true}]";
+	    String data = "";
+	    try {
+		byte[] encoded = Files.readAllBytes(Paths.get("src/main/resources/data/vehicles.json"));
+		data = new String(encoded);
+		logger.debug(data);
+	    } catch (IOException e) {
+		logger.error(e.getMessage());
+	    }
+	    return data;
 	});
 
     }

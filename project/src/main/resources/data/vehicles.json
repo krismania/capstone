@@ -1,0 +1,123 @@
+[ {
+    "registration": "ABC123",
+    "make": "Toyota",
+    "model": "Corolla",
+    "year": 2014,
+    "color": "Blue",
+    "position": {
+        "lat": -37.808401,
+        "lon": 144.956159
+    },
+    "available": True
+  },
+  {
+    "registration": "QRB990",
+    "make": "BMW",
+    "model": "325i",
+    "year": 2003,
+    "color": "Black",
+    "position": {
+        "lat": -37.809741,
+        "lon": 144.970895
+    },
+    "available": True
+  },
+  {
+    "registration": "TAA325",
+    "make": "Peugeot",
+    "model": "307 SW",
+    "year": 2008,
+    "color": "Grey",
+    "position": {
+        "lat": -37.805819,
+        "lon": 144.960025
+    },
+    "available": False
+  },
+  {
+    "registration": "UBR666",
+    "make": "Ford",
+    "model": "Falcon",
+    "year": 2013,
+    "color": "Orange",
+    "position": {
+        "lat": -37.814022,
+        "lon": 144.961954
+    },
+    "available": True
+  },
+  {
+    "registration": "FOK356",
+    "make": "Holden",
+    "model": "Barina",
+    "year": 2017,
+    "color": "White",
+    "position": {
+        "lat": -37.814022,
+        "lon": 144.961954
+    },
+    "available": False
+  },
+  {
+    "registration": "JTD955",
+    "make": "Holden",
+    "model": "Commadore",
+    "year": 2005,
+    "color": "Grey",
+    "position": {
+        "lat": -37.816170,
+        "lon": 144.956179
+    },
+    "available": True
+  },
+  {
+    "registration": "BLA555",
+    "make": "Mazda",
+    "model": "3",
+    "year": 2010,
+    "color": "White",
+    "position": {
+        "lat": -37.818681,
+        "lon": 144.958982
+    },
+    "available": True
+  },
+  {
+    "registration": "QOP299",
+    "make": "Kia",
+    "model": "Rio",
+    "year": 2013,
+    "color": "Pink",
+    "position": {
+        "lat": -37.811510,
+        "lon": 144.965667
+    },
+    "available": False
+  },
+  {
+    "registration": "YODUDE",
+    "make": "Nissan",
+    "model": "Skyline",
+    "year": 2010,
+    "color": "Black",
+    "position": {
+        "lat": -37.810422,
+        "lon": 144.968597
+    },
+    "available": True
+  },
+  {
+    "registration": "MAGPIES",
+    "make": "Mercedes-Benz",
+    "model": "CLC200 Kompressor",
+    "year": 2009,
+    "color": "Black",
+    "position": {
+        "lat": -37.807232,
+        "lon": 144.963620
+    },
+    "available": False
+  },
+
+
+]

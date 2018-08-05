@@ -3,8 +3,16 @@ function initMap() {
 	navigator.geolocation.getCurrentPosition(pos => {
 		map = new google.maps.Map(document.getElementById('map'), {
 			center: {lat: pos.coords.latitude, lng: pos.coords.longitude},
-			zoom: 12
+			zoom: 12,
+			disableDefaultUI: true
 		});
+		
+		map.setOptions({styles: [
+			{
+				featureType: 'poi.business',
+				stylers: [{visibility: 'off'}]
+			}
+		]});
 		
 		var request = new Request('/api/vehicles');
 		fetch(request)

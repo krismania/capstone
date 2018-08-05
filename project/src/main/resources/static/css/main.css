@@ -19,6 +19,47 @@ header h1 {
 	margin-bottom: 0;
 }
 
+#search-box {
+	position: absolute;
+	margin: 16px auto;
+	max-width: 400px;
+	display: flex;
+	left: 0;
+	right: 0;
+}
+
+#search-box > * {
+	height: 36px;
+	display: inline-block;
+	vertical-align: bottom;
+	border: none;
+}
+
+#search-box button {
+	padding: 0 8px;
+}
+
+#search-input {
+	flex: 1;
+	border-radius: 5px 0 0 5px;
+	margin-left: 16px;
+	padding: 0 16px;
+}
+
+#search-button {
+	border-radius: 0 5px 5px 0;
+	background-color: #42A5F4;
+}
+
+#search-button .material-icons {
+	color: white;
+}
+
+#geo-button {
+	margin: 0 16px;
+	border-radius: 5px;
+}
+
 #map-wrapper {
 	position: absolute;
 	top: 0;

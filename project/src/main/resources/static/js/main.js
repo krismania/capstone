@@ -3,11 +3,21 @@ var map;
 var urlAvail = '/img/vehicle-pin-available.png';
 var urlUnavail = '/img/vehicle-pin-unavailable.png';
 
+function initSearch() {
+	document.getElementById("geo-button").addEventListener('click', (e) => {
+		console.log(e)
+		e.preventDefault();
+		navigator.geolocation.getCurrentPosition(pos => {
+			map.panTo(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
+		});
+	});
+}
+
 function initMap() {
 	navigator.geolocation.getCurrentPosition(pos => {
 		map = new google.maps.Map(document.getElementById('map'), {
-			center: {lat: pos.coords.latitude, lng: pos.coords.longitude},
-			zoom: 12,
+			center: new google.maps.LatLng(-37.813985, 144.960235),
+			zoom: 15,
 			disableDefaultUI: true
 		});
 		
@@ -52,3 +62,6 @@ function addMarker(vehicle, map) {
 		
 	marker.addListener('click', () => {info.open(map, marker)});
 }
+
+initSearch();
+

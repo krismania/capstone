@@ -1,15 +1,15 @@
 [ {
-    "registration": "ABC123",
-    "make": "Toyota",
-    "model": "Corolla",
-    "year": 2014,
-    "color": "Blue",
-    "position": {
-        "lat": -37.808401,
-        "lng": 144.956159
-    },
-    "available": true
+  "registration": "ABC123",
+  "make": "Toyota",
+  "model": "Corolla",
+  "year": 2014,
+  "color": "Blue",
+  "position": {
+    "lat": -37.808401,
+    "lng": 144.956159
   },
+  "available": true
+},
   {
     "registration": "QRB990",
     "make": "BMW",
@@ -17,8 +17,8 @@
     "year": 2003,
     "color": "Black",
     "position": {
-        "lat": -37.809741,
-        "lng": 144.970895
+      "lat": -37.809741,
+      "lng": 144.970895
     },
     "available": true
   },
@@ -29,8 +29,8 @@
     "year": 2008,
     "color": "Grey",
     "position": {
-        "lat": -37.805819,
-        "lng": 144.960025
+      "lat": -37.805819,
+      "lng": 144.960025
     },
     "available": true
   },
@@ -41,8 +41,8 @@
     "year": 2013,
     "color": "Orange",
     "position": {
-        "lat": -37.814022,
-        "lng": 144.961954
+      "lat": -37.815603,
+      "lng": 144.969967
     },
     "available": true
   },
@@ -53,8 +53,8 @@
     "year": 2017,
     "color": "White",
     "position": {
-        "lat": -37.814022,
-        "lng": 144.961954
+      "lat": -37.814022,
+      "lng": 144.961954
     },
     "available": false
   },
@@ -65,8 +65,8 @@
     "year": 2005,
     "color": "Grey",
     "position": {
-        "lat": -37.816170,
-        "lng": 144.956179
+      "lat": -37.816170,
+      "lng": 144.956179
     },
     "available": true
   },
@@ -77,8 +77,8 @@
     "year": 2010,
     "color": "White",
     "position": {
-        "lat": -37.818681,
-        "lng": 144.958982
+      "lat": -37.818681,
+      "lng": 144.958982
     },
     "available": true
   },
@@ -89,8 +89,8 @@
     "year": 2013,
     "color": "Pink",
     "position": {
-        "lat": -37.811510,
-        "lng": 144.965667
+      "lat": -37.811510,
+      "lng": 144.965667
     },
     "available": false
   },
@@ -101,8 +101,8 @@
     "year": 2010,
     "color": "Black",
     "position": {
-        "lat": -37.810422,
-        "lng": 144.968597
+      "lat": -37.810422,
+      "lng": 144.968597
     },
     "available": true
   },
@@ -113,8 +113,8 @@
     "year": 2009,
     "color": "Black",
     "position": {
-        "lat": -37.807232,
-        "lng": 144.963620
+      "lat": -37.807232,
+      "lng": 144.963620
     },
     "available": false
   }

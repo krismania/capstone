@@ -1,7 +1,6 @@
 import static spark.Spark.get;
 import static spark.Spark.port;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -13,16 +12,23 @@ import org.slf4j.LoggerFactory;
 
 import controllers.ApiController;
 import spark.Spark;
+import spark.resource.ClassPathResource;
+import spark.resource.Resource;
+import spark.servlet.SparkApplication;
 
-public class Main {
+public class Main implements SparkApplication {
 
-    public static void main(String[] args) {
+    @Override
+    public void init() {
 
 	final Logger logger = LoggerFactory.getLogger(Main.class);
 
 	// Load properties
 	Properties prop = new Properties();
-	try (InputStream propFile = new FileInputStream("config.properties")) {
+
+	Resource config = new ClassPathResource("config/config.properties");
+
+	try (InputStream propFile = config.getInputStream()) {
 	    prop.load(propFile);
 	    logger.info("Config file loaded");
 	} catch (IOException e) {
@@ -37,7 +43,7 @@ public class Main {
 	port(45678);
 
 	// use static folder in resources for static content
-	Spark.staticFiles.location("/static");
+	Spark.staticFiles.location("static");
 
 	// api controller routes
 	new ApiController();

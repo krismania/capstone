@@ -1,5 +1,4 @@
 import static spark.Spark.get;
-import static spark.Spark.port;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +25,7 @@ public class Main implements SparkApplication {
 	// Load properties
 	Properties prop = new Properties();
 
-	Resource config = new ClassPathResource("config/config.properties");
+	Resource config = new ClassPathResource("config.properties");
 
 	try (InputStream propFile = config.getInputStream()) {
 	    prop.load(propFile);
@@ -41,8 +40,7 @@ public class Main implements SparkApplication {
 
 	String mapsApiKey = prop.getProperty("mapsApiKey");
 
-	// set port & create routes
-	port(45678);
+	/* == ROUTES == */
 
 	// use static folder in resources for static content
 	Spark.staticFiles.location("static");

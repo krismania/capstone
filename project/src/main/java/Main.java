@@ -37,6 +37,8 @@ public class Main implements SparkApplication {
 	    System.exit(1);
 	}
 
+	logger.info("Launching Rebu server...");
+
 	String mapsApiKey = prop.getProperty("mapsApiKey");
 
 	// set port & create routes

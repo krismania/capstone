@@ -2,6 +2,7 @@ var map;
 
 var urlAvail = '/img/vehicle-pin-available.png';
 var urlUnavail = '/img/vehicle-pin-unavailable.png';
+var allMarkers = [];
 
 function initSearch() {
 	document.getElementById("geo-button").addEventListener('click', (e) => {
@@ -31,38 +32,59 @@ function addUserMarker(position)
         var userLong = position.coords.longitude;
         var userLocation = {lat: userLat, lng: userLong};
         var marker = new google.maps.Marker({position: userLocation, map: map});
-        findNearestCar(userLocation);
+        findNearestCar(userLat, userLong);
 }
 
-/*function findNearestCar(userLocation)
+//https://www.htmlgoodies.com/beyond/javascript/calculate-the-distance-between-two-points-in-your-web-apps.html
+//this function was taken from the website above.
+function haversineFormula(lat1, lon1, lat2, lon2)
 {
-		var map = new google.maps.Map(document.getElementById('map'));
-        var objects = map.getObjects();
-        var objectAmt = map.getObjects().length;
+	var radlat1 = Math.PI * lat1/180
+    var radlat2 = Math.PI * lat2/180
+    var radlon1 = Math.PI * lon1/180
+    var radlon2 = Math.PI * lon2/180
+    var theta = lon1-lon2
+    var radtheta = Math.PI * theta/180
+    var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+    dist = Math.acos(dist)
+    dist = dist * 180/Math.PI
+    dist = dist * 60 * 1.1515
+    dist = dist * 1.609344
+    return dist
+}
+
+function findNearestCar(userLat, userLong)
+{
         var i;
-        var distance;
         var minDist;
         var nearestCar;
+        var markerLat;
+        var markerLong;
         
-        for (i = 0 ; i < objectAmt ; i += 1)
+        for (i = 0 ; i < allMarkers.length ; i += 1)
         {
-            distance = objects[i].getPosition().distance(userLocation);
+        	markerLat = allMarkers[i].getPosition().lat();
+        	markerLong = allMarkers[i].getPosition().lng();
+            
+        	var d = haversineFormula(userLat, markerLat, userLong, markerLong);
+        	
             if (i == 0)
             {
-                  minDist = distance;
+                  minDist = d;
+                  nearestCar = allMarkers[i].getTitle();
             }
             else
             {
-                  if(minDist > distance)
+                  if(d < minDist)
                   {
-                       minDist = distance;
-                       nearestCar = objects[i].getData();
+                       minDist = d;
+                       nearestCar = allMarkers[i].getTitle();
                   }
             }
         }
         alert('The nearest marker is: ' + nearestCar); 
 }
-*/
+
 function geoErrors(error) {
     switch(error.code) {
         case error.PERMISSION_DENIED:
@@ -128,6 +150,7 @@ function addMarker(vehicle, map) {
 	});
 		
 	marker.addListener('click', () => {info.open(map, marker)});
+	allMarkers.push(marker);
 }
 
 initSearch();

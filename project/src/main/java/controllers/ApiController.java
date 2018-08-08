@@ -3,11 +3,12 @@ package controllers;
 import static spark.Spark.get;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import spark.resource.ClassPathResource;
+import spark.resource.Resource;
 
 public class ApiController {
 
@@ -19,8 +20,10 @@ public class ApiController {
 	    res.type("application/json");
 	    String data = "";
 	    try {
-		byte[] encoded = Files.readAllBytes(Paths.get("src/main/resources/data/vehicles.json"));
-		data = new String(encoded);
+		Resource vehiclesResource = new ClassPathResource("data/vehicles.json");
+		byte[] vehicleResourceBytes = new byte[(int) vehiclesResource.contentLength()];
+		vehiclesResource.getInputStream().read(vehicleResourceBytes);
+		data = new String(vehicleResourceBytes);
 		logger.debug(data);
 	    } catch (IOException e) {
 		logger.error(e.getMessage());

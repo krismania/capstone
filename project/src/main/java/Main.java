@@ -11,6 +11,7 @@ import controllers.ApiController;
 import spark.Spark;
 import spark.servlet.SparkApplication;
 import util.Config;
+import util.Util;
 
 public class Main implements SparkApplication {
 

@@ -3,6 +3,8 @@ var map;
 var urlAvail = '/img/vehicle-pin-available.png';
 var urlUnavail = '/img/vehicle-pin-unavailable.png';
 var allMarkers = [];
+var closestFiveCars = [];
+var distances = [];
 
 function initSearch() {
 	document.getElementById("geo-button").addEventListener('click', (e) => {
@@ -55,7 +57,7 @@ function haversineFormula(lat1, lon1, lat2, lon2)
 
 function findNearestCar(userLat, userLong)
 {
-        var i;
+        var i, j, k;
         var minDist;
         var nearestCar;
         var markerLat;
@@ -67,22 +69,25 @@ function findNearestCar(userLat, userLong)
         	markerLong = allMarkers[i].getPosition().lng();
             
         	var d = haversineFormula(userLat, markerLat, userLong, markerLong);
+        	distances.push(d);
+        	distances.sort(function(a, b){return a-b});
+        }
+        for (j = 0 ; j < allMarkers.length ; j += 1)
+        {
+        	markerLat = allMarkers[j].getPosition().lat();
+        	markerLong = allMarkers[j].getPosition().lng();
+            
+        	var d = haversineFormula(userLat, markerLat, userLong, markerLong);
         	
-            if (i == 0)
+            for(k = 0 ; k < 5 ; k += 1)
             {
-                  minDist = d;
-                  nearestCar = allMarkers[i].getTitle();
-            }
-            else
-            {
-                  if(d < minDist)
-                  {
-                       minDist = d;
-                       nearestCar = allMarkers[i].getTitle();
-                  }
+            	if(d == distances[k])
+            	{
+            		closestFiveCars.push(allMarkers[j].getTitle());
+            		alert(allMarkers[j].getTitle());
+            	}
             }
         }
-        alert('The nearest marker is: ' + nearestCar); 
 }
 
 function geoErrors(error) {

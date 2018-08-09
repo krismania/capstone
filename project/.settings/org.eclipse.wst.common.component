@@ -5,6 +5,6 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
         <property name="java-output-path" value="/car-share/target/classes"/>
-        <property name="context-root" value="car-sharee"/>
+        <property name="context-root" value="car-share"/>
     </wb-module>
 </project-modules>

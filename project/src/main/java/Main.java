@@ -1,19 +1,16 @@
 import static spark.Spark.get;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import controllers.ApiController;
 import spark.Spark;
-import spark.resource.ClassPathResource;
-import spark.resource.Resource;
 import spark.servlet.SparkApplication;
+import util.Config;
 
 public class Main implements SparkApplication {
 
@@ -22,13 +19,9 @@ public class Main implements SparkApplication {
 
 	final Logger logger = LoggerFactory.getLogger(Main.class);
 
-	// Load properties
-	Properties prop = new Properties();
-
-	Resource config = new ClassPathResource("config.properties");
-
-	try (InputStream propFile = config.getInputStream()) {
-	    prop.load(propFile);
+	// Load configuration
+	try {
+	    Config.loadConfig();
 	    logger.info("Config file loaded");
 	} catch (IOException e) {
 	    // if config can't be found, kill the server and display an error
@@ -38,7 +31,7 @@ public class Main implements SparkApplication {
 
 	logger.info("Launching Rebu server...");
 
-	String mapsApiKey = prop.getProperty("mapsApiKey");
+	String mapsApiKey = Config.get("mapsApiKey");
 
 	/* == ROUTES == */
 

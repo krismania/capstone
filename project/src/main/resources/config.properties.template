@@ -1,0 +1,14 @@
+# Google Maps JS API Key
+mapsApiKey = [API KEY HERE]
+
+# Database information for deployed webserver
+# Ignore these if you will only be testing locally
+cloudSqlInstance = [INSTANCE CONNECTION NAME]
+cloudSqlDatabase = [CLOUD SQL DATABASE NAME]
+cloudSqlUsername = [CLOUD SQL USER]
+cloudSqlPassword = [CLOUD SQL PASSWORD]
+
+# Local database information
+localSqlDatabase = [CLOUD SQL DATABASE NAME]
+localSqlUsername = [CLOUD SQL USER]
+localSqlPassword = [CLOUD SQL PASSWORD]

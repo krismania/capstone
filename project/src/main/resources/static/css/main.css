@@ -4,10 +4,30 @@ html, body {
 	padding: 0;
 }
 
+.navbar {
+  overflow: hidden;
+  background-color: #000000;
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  z-index: 2;
+}
+
+.navbar a {
+  float: left;
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 20px 20px;
+  text-decoration: none;
+  font-size: 20px;
+}
+
 header {
 	background-color: #262626;
 	width: 100%;
 	height: 56px;
+    z-index: 2;
 }
 
 header h1 {
@@ -17,6 +37,7 @@ header h1 {
 	color: white;
 	margin-left: 36px;
 	margin-bottom: 0;
+    z-index: 2;
 }
 
 #search-box {
@@ -33,6 +54,7 @@ header h1 {
 	display: inline-block;
 	vertical-align: bottom;
 	border: none;
+    z-index: 2;
 }
 
 #search-box button {
@@ -49,6 +71,7 @@ header h1 {
 #search-button {
 	border-radius: 0 5px 5px 0;
 	background-color: #42A5F4;
+    z-index: 2;
 }
 
 #search-button .material-icons {
@@ -58,6 +81,7 @@ header h1 {
 #geo-button {
 	margin: 0 16px;
 	border-radius: 5px;
+    z-index: 2;
 }
 
 #map-wrapper {
@@ -67,6 +91,7 @@ header h1 {
 	bottom: 0;
 	left: 0;
 	margin-top: 56px;
+    z-index: 1;
 }
 
 #map {

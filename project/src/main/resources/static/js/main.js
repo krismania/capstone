@@ -62,6 +62,7 @@ function findNearestCar(userLat, userLong)
         var nearestCar;
         var markerLat;
         var markerLong;
+        var counter;
         
         for (i = 0 ; i < allMarkers.length ; i += 1)
         {
@@ -84,9 +85,17 @@ function findNearestCar(userLat, userLong)
             	if(d == distances[k])
             	{
             		closestFiveCars.push(allMarkers[j].getTitle());
-            		alert(allMarkers[j].getTitle());
             	}
             }
+        }
+        
+        var no = 0;
+        
+        for(counter = 1 ; counter < 6 ; counter += 1)
+        {
+        	var car = 'car' + counter;
+        	document.getElementById(car).innerHTML = closestFiveCars[no];
+        	no += 1;
         }
 }
 

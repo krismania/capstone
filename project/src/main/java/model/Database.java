@@ -27,9 +27,9 @@ public class Database {
 	    String username = Config.get("cloudSqlUsername");
 	    String password = Config.get("cloudSqlPassword");
 
-	    String url = "jdbc:mysql://google/" + database + "?useSSL=false&amp;" + "cloudSqlInstance=" + instance
-		    + "&amp;" + "socketFactory=com.google.cloud.sql.mysql.SocketFactory&amp;" + "user=" + username
-		    + "&amp;password=" + password;
+	    String url = "jdbc:mysql://google/" + database + "?useSSL=false&cloudSqlInstance=" + instance
+		    + "&socketFactory=com.google.cloud.sql.mysql.SocketFactory" + "&user=" + username + "&password="
+		    + password;
 
 	    logger.info("Connecting to production database");
 	    return DriverManager.getConnection(url);

@@ -37,7 +37,7 @@ public class Database {
 	    String database = Config.get("localSqlDatabase");
 	    String username = Config.get("localSqlUsername");
 	    String password = Config.get("localSqlPassword");
-	    String url = "jdbc:mysql://localhost:3306/" + database;
+	    String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false";
 	    logger.info("Connecting to production database: " + url);
 	    return DriverManager.getConnection(url, username, password);
 	}

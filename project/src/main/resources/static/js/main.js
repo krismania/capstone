@@ -63,5 +63,12 @@ function addMarker(vehicle, map) {
 	marker.addListener('click', () => {info.open(map, marker)});
 }
 
-initSearch();
+function openSidepane() {
+	document.getElementById('sidepane').style.width = null
+}
 
+function closeSidepane() {
+	document.getElementById('sidepane').style.width = '0'
+}
+
+initSearch();

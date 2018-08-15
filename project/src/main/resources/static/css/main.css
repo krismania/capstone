@@ -72,3 +72,16 @@ header h1 {
 #map {
 	height: 100%;
 }
+
+#sidepane, .sidepane-content {
+	width: 360px;
+}
+
+#sidepane {
+    position: fixed;
+    height: 100%;
+    background-color: #fefefe;
+    box-shadow: 0 0 10px -5px black;
+    overflow: hidden;
+    transition: width 0.3s ease-out;
+}

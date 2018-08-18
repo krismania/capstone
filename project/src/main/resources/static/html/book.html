@@ -1,3 +1,30 @@
 <form>
 	<h2>BOOK YOUR CAR</h2>
+	<button class="exit" onclick="closeSidepane(); return false;">X</button>
+	<div class="vehicle-info">
+		<h3>BMW 325i (2003)</h3>
+		<p>Colour: Black</p>
+		<p>Registration: QRB 990</p>
+	</div>
+	
+	<fieldset>
+		<legend>Pick up</legend>
+		<select name="pickup">
+			<option value="now" selected>Now</option>
+			<option value="15">Within 15 minutes</option>
+			<option value="30">Within 30 minutes</option>
+		</select>
+	</fieldset>
+
+	<fieldset>
+		<legend>Drop off</legend>
+		<select name="dropoff">
+			<option value="60" selected>1 Hour</option>
+			<option value="120">2 Hours</option>
+			<option value="180">3 Hours</option>
+		</select>
+		<input name="address" placeholder="Enter an address..." />
+	</fieldset>
+	
+	<button class="confirm" onclick="return false;">CONFIRM BOOKING</button>
 </form>

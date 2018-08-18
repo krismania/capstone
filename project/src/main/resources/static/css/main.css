@@ -73,7 +73,7 @@ header h1 {
 	height: 100%;
 }
 
-#sidepane, .sidepane-content {
+#sidepane, #sidepane-content {
 	width: 360px;
 }
 

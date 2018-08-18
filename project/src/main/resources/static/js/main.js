@@ -71,4 +71,14 @@ function closeSidepane() {
 	document.getElementById('sidepane').style.width = '0'
 }
 
+function bookingForm() {
+	request = new Request('/html/book.html')
+	fetch(request)
+	.then(res => res.text())
+	.then(html => {
+		document.getElementById('sidepane-content').innerHTML = html
+		openSidepane()
+	});
+}
+
 initSearch();

@@ -91,6 +91,9 @@ function getInfoFor(registration, callback) {
 
 function bookingForm(registration) {
 	console.log("Getting booking form for " + registration)
+	// close the current info window
+	currentInfoWindow.close();
+	currentInfoWindow = null;
 	// TODO: see above
 	request = new Request('/html/book.html')
 	fetch(request)

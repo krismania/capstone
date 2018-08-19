@@ -6,7 +6,7 @@ var urlUnavail = '/img/vehicle-pin-unavailable.png';
 // keep track of the currently open info window
 var currentInfoWindow = null;
 
-function initSearch() {
+function initGeolocate() {
 	document.getElementById("geo-button").addEventListener('click', (e) => {
 		console.log(e)
 		e.preventDefault();
@@ -119,4 +119,4 @@ function submitBooking(e) {
 	});
 }
 
-initSearch();
+initGeolocate();

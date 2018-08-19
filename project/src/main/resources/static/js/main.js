@@ -72,11 +72,13 @@ function addMarker(vehicle, map) {
 }
 
 function openSidepane() {
-	document.getElementById('sidepane').style.width = null
+	document.getElementById('sidepane').style.width = null;
+	document.getElementById('map-wrapper').style.left = '360px';
 }
 
 function closeSidepane() {
-	document.getElementById('sidepane').style.width = '0'
+	document.getElementById('sidepane').style.width = '0';
+	document.getElementById('map-wrapper').style.left = null;
 }
 
 function getInfoFor(registration, callback) {

@@ -87,6 +87,7 @@ p {
 	bottom: 0;
 	left: 0;
 	margin-top: 56px;
+	transition: left 0.4s;
 }
 
 #map {
@@ -112,7 +113,7 @@ p {
     background-color: #fefefe;
     box-shadow: 0 0 10px -5px black;
     overflow: hidden;
-    transition: width 0.3s ease-out;
+    transition: width 0.4s;
 }
 
 #sidepane-content {

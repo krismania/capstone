@@ -124,7 +124,7 @@ p {
 	float: right;
 }
 
-#sidepane-content vehicle-info {
+#sidepane-content .vehicle-info {
 	margin-bottom: 24px;
 }
 

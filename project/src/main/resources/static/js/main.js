@@ -104,4 +104,17 @@ function bookingForm(registration) {
 	});
 }
 
+function submitBooking(e) {
+	// prevent the default form action
+	e.preventDefault();
+	console.log("Submitting booking form")
+	// get the confirmation screen
+	request = new Request('/html/confirmed.html')
+	fetch(request)
+	.then(res => res.text())
+	.then(html => {
+		document.getElementById('sidepane-content').innerHTML = html
+	});
+}
+
 initSearch();

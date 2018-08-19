@@ -3,6 +3,9 @@ var map;
 var urlAvail = '/img/vehicle-pin-available.png';
 var urlUnavail = '/img/vehicle-pin-unavailable.png';
 
+// keep track of the currently open info window
+var currentInfoWindow = null;
+
 function initSearch() {
 	document.getElementById("geo-button").addEventListener('click', (e) => {
 		console.log(e)
@@ -32,7 +35,6 @@ function initMap() {
 		fetch(request)
 		.then(res => res.json())
 		.then(json => {
-			
 			for (var i = 0; i < json.length; i++) {
 				addMarker(json[i], map);
 			};
@@ -55,12 +57,18 @@ function addMarker(vehicle, map) {
 		title: vehicle.registration
 	});
 		
-	var info = new google.maps.InfoWindow({
-		content: vehicle.registration + '<br/>' + vehicle.color + ' ' + 
-			vehicle.make + ' ' + vehicle.model + ' (' + vehicle.year + ')'
+	marker.addListener('click', () => {
+		console.log("Clicked on marker for " + vehicle.registration)
+		// close the currently opened window
+		if (currentInfoWindow) currentInfoWindow.close();
+		getInfoFor(vehicle.registration, (html) => {
+			// fetch the vehicle info & display
+			info = new google.maps.InfoWindow({content: html});
+			info.open(map, marker);
+			// update the current window var
+			currentInfoWindow = info;
+		});
 	});
-		
-	marker.addListener('click', () => {info.open(map, marker)});
 }
 
 function openSidepane() {
@@ -71,7 +79,19 @@ function closeSidepane() {
 	document.getElementById('sidepane').style.width = '0'
 }
 
-function bookingForm() {
+function getInfoFor(registration, callback) {
+	console.log("Getting info for " + registration)
+	// TODO: move these static pages into a controller so they can send back
+	// customized views of the requested info
+	request = new Request('/html/vehicle-info.html')
+	fetch(request)
+	.then(res => res.text())
+	.then(html => callback(html))
+}
+
+function bookingForm(registration) {
+	console.log("Getting booking form for " + registration)
+	// TODO: see above
 	request = new Request('/html/book.html')
 	fetch(request)
 	.then(res => res.text())

@@ -11,6 +11,7 @@
         <meta name="msapplication-TileColor" content="#262626">
         <meta name="msapplication-config" content="/img/icons/browserconfig.xml">
         <meta name="theme-color" content="#262626">
+        <meta name="google-signin-client_id" content="643831331228-k1d1m46b3pv5i6mhu5g1u9q619qc59qe.apps.googleusercontent.com"
         {{!-- End Favicons --}}
         <meta name="viewport" content="initial-scale=1.0">
         <meta charset="utf-8">
@@ -21,6 +22,7 @@
         <header>
             <a href="/"><h1>Rebu</h1></a>
         </header>
+        <div id="my-signin2"></div>
         <div id="map-wrapper">
             <div id="map"></div>
             <button id="geo-button"><i class="material-icons md-18">my_location</i> FIND ME</button>
@@ -28,5 +30,6 @@
         {{> 'sidepane.hbs'}}
         <script src="js/main.js" defer></script>
         <script src="https://maps.googleapis.com/maps/api/js?key={{mapsApiKey}}&callback=initMap" async defer></script>
+        <script src="https://apis.google.com/js/platform.js?onload=renderButton" async defer></script>
     </body>
 </html>

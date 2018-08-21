@@ -7,6 +7,8 @@ var urlUnavail = '/img/vehicle-pin-unavailable.png';
 var currentInfoWindow = null;
 // keep track of which button is currently visible
 var nearbyButton = true;
+// the marker which represents the user's location
+var geoMarker = null;
 
 function onSuccess(googleUser) {
     console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
@@ -78,6 +80,9 @@ function initMap() {
 			showGeoButton();
 		});
 		
+		// draw user's location
+		displayLocation(pos);
+		
 		var request = new Request('/api/vehicles');
 		fetch(request)
 		.then(res => res.json())
@@ -87,6 +92,19 @@ function initMap() {
 			};
 		});
 	});
+}
+
+function displayLocation(pos) {
+	p = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+	if (geoMarker) {
+		geoMarker.setPosition(p);
+	} else {
+		geoMarker = new google.maps.Marker({
+			position: p,
+			map: map,
+			icon: "/img/geo-dot.png"
+		});
+	}
 }
 
 function addMarker(vehicle, map) {

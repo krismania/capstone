@@ -72,6 +72,12 @@ header h1 {
 	color: #ffffff;
 }
 
+#geo-button .material-icons {
+	vertical-align: text-bottom;
+	margin-right: 8px;
+	margin-left: -4px;
+}
+
 #map-wrapper {
 	position: absolute;
 	top: 0;

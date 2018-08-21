@@ -12,7 +12,7 @@ function onSuccess(googleUser) {
     var id_token = googleUser.getAuthResponse().id_token;
     console.log("ID Token: " + id_token);
     alert(id_token);
-  }
+}
 
 function signOut() {
 	var auth2 = gapi.auth2.getAuthInstance();
@@ -21,14 +21,29 @@ function signOut() {
 	});
 }
 
-function initGeolocate() {
-	document.getElementById("geo-button").addEventListener('click', (e) => {
-		console.log(e)
-		e.preventDefault();
-		navigator.geolocation.getCurrentPosition(pos => {
-			map.panTo(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
-		});
+function showNearbyButton() {
+	var button = document.getElementById("geo-button");
+	button.innerHTML = 'NEARBY CARS';
+	button.removeEventListener('click', geolocateHandler)
+	button.addEventListener('click', nearbyHandler)
+}
+
+function showGeoButton() {
+	var button = document.getElementById("geo-button");
+	button.innerHTML = '<i class="material-icons md-18">my_location</i>FIND ME';
+	button.removeEventListener('click', nearbyHandler)
+	button.addEventListener('click', geolocateHandler)
+}
+
+function geolocateHandler(e) {
+	e.preventDefault();
+	navigator.geolocation.getCurrentPosition(pos => {
+		map.panTo(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
 	});
+}
+
+function nearbyHandler(e) {
+	console.log("Nearby Cars");
 }
 
 function initMap() {
@@ -134,4 +149,5 @@ function submitBooking(e) {
 	});
 }
 
-initGeolocate();
+// Display the geolocate button initially
+showGeoButton();

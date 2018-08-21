@@ -5,6 +5,8 @@ var urlUnavail = '/img/vehicle-pin-unavailable.png';
 
 // keep track of the currently open info window
 var currentInfoWindow = null;
+// keep track of which button is currently visible
+var nearbyButton = true;
 
 function onSuccess(googleUser) {
     console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
@@ -22,23 +24,31 @@ function signOut() {
 }
 
 function showNearbyButton() {
-	var button = document.getElementById("geo-button");
-	button.innerHTML = 'NEARBY CARS';
-	button.removeEventListener('click', geolocateHandler)
-	button.addEventListener('click', nearbyHandler)
+	if (!nearbyButton) {
+		var button = document.getElementById("geo-button");
+		button.innerHTML = 'NEARBY CARS';
+		button.removeEventListener('click', geolocateHandler)
+		button.addEventListener('click', nearbyHandler)
+		nearbyButton = true;
+	}
 }
 
 function showGeoButton() {
-	var button = document.getElementById("geo-button");
-	button.innerHTML = '<i class="material-icons md-18">my_location</i>FIND ME';
-	button.removeEventListener('click', nearbyHandler)
-	button.addEventListener('click', geolocateHandler)
+	if (nearbyButton) {
+		var button = document.getElementById("geo-button");
+		button.innerHTML = '<i class="material-icons md-18">my_location</i>FIND ME';
+		button.removeEventListener('click', nearbyHandler)
+		button.addEventListener('click', geolocateHandler)
+		nearbyButton = false;
+	}
 }
 
 function geolocateHandler(e) {
 	e.preventDefault();
 	navigator.geolocation.getCurrentPosition(pos => {
 		map.panTo(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
+		// display the 'nearby cars' button
+		showNearbyButton();
 	});
 }
 
@@ -60,6 +70,11 @@ function initMap() {
 				stylers: [{visibility: 'off'}]
 			}
 		]});
+		
+		// listener which resets the 'geolocate' button on pan
+		map.addListener('center_changed', () => {
+			showGeoButton();
+		});
 		
 		var request = new Request('/api/vehicles');
 		fetch(request)

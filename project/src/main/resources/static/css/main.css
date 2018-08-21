@@ -123,8 +123,36 @@ header h1 {
 	float: right;
 }
 
-#sidepane-content .vehicle-info {
+#sidepane-content > .vehicle-info {
 	margin-bottom: 24px;
+}
+
+#sidepane-content .nearby-info {
+	padding-bottom: 24px;
+	margin-top: 24px;
+	border-bottom: 1px solid #00000033;
+}
+
+#sidepane-content .nearby-info:last-child {
+	border-bottom: none;
+}
+
+.nearby-info {
+	display: flex;
+	justify-content: space-between;
+}
+
+.nearby-info .book-container {
+	text-align: center;
+}
+
+.nearby-info .book-container p {
+	margin-bottom: 8px;
+}
+
+.nearby-info .book-container button {
+	background-color: #42a5f4;
+	color: #ffffff;
 }
 
 form legend {

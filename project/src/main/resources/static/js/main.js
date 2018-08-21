@@ -61,49 +61,66 @@ function nearbyHandler(e) {
 }
 
 function initMap() {
-	navigator.geolocation.getCurrentPosition(pos => {
-		map = new google.maps.Map(document.getElementById('map'), {
-			center: new google.maps.LatLng(-37.813985, 144.960235),
-			zoom: 15,
-			disableDefaultUI: true
-		});
-		
-		map.setOptions({styles: [
-			{
-				featureType: 'poi.business',
-				stylers: [{visibility: 'off'}]
-			}
-		]});
-		
-		// listener which resets the 'geolocate' button on pan
-		map.addListener('center_changed', () => {
-			showGeoButton();
-		});
-		
-		// draw user's location
+	map = new google.maps.Map(document.getElementById('map'), {
+		center: new google.maps.LatLng(-37.813985, 144.960235),
+		zoom: 15,
+		disableDefaultUI: true
+	});
+	
+	map.setOptions({styles: [
+		{
+			featureType: 'poi.business',
+			stylers: [{visibility: 'off'}]
+		}
+	]});
+	
+	// listener which resets the 'geolocate' button on pan
+	map.addListener('center_changed', () => {
+		showGeoButton();
+	});
+	
+	// draw user's location
+	navigator.geolocation.watchPosition(pos => {
 		displayLocation(pos);
-		
-		var request = new Request('/api/vehicles');
-		fetch(request)
-		.then(res => res.json())
-		.then(json => {
-			for (var i = 0; i < json.length; i++) {
-				addMarker(json[i], map);
-			};
-		});
+	}, console.error, {enableHighAccuracy: true});
+	
+	var request = new Request('/api/vehicles');
+	fetch(request)
+	.then(res => res.json())
+	.then(json => {
+		for (var i = 0; i < json.length; i++) {
+			addMarker(json[i], map);
+		};
 	});
 }
 
 function displayLocation(pos) {
 	p = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+	acc = pos.coords.accuracy
 	if (geoMarker) {
-		geoMarker.setPosition(p);
+		geoMarker.marker.setPosition(p);
+		geoMarker.circle.setCenter(p);
+		geoMarker.circle.setRadius(acc);
 	} else {
-		geoMarker = new google.maps.Marker({
-			position: p,
-			map: map,
-			icon: "/img/geo-dot.png"
-		});
+		geoMarker = {
+			marker: new google.maps.Marker({
+				position: p,
+				map: map,
+				icon: {
+					url: "/img/geo-dot.png",
+					size: new google.maps.Size(14, 14),
+					anchor: new google.maps.Point(7, 7)
+				}
+			}),
+			circle: new google.maps.Circle({
+				fillColor: "#687BF1",
+				fillOpacity: 0.2,
+				strokeWeight: 0,
+				map: map,
+				center: p,
+				radius: acc
+			})
+		};
 	}
 }
 

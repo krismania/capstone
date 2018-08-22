@@ -147,7 +147,7 @@ function addMarker(vehicle, map) {
 		// create info window & open it
 		var content = view.infoWindow(vehicle, function(e) {
 			e.preventDefault();
-			bookingForm(vehicle.registration);
+			bookingForm(vehicle);
 		});
 		var info = new google.maps.InfoWindow({content: content});
 		info.open(map, marker);
@@ -157,18 +157,20 @@ function addMarker(vehicle, map) {
 	});
 }
 
-function bookingForm(registration) {
-	console.log("Getting booking form for " + registration)
+function bookingForm(vehicle) {
+	console.log("Getting booking form for", vehicle)
 	// close the current info window
 	if (currentInfoWindow) {
 		currentInfoWindow.close();
 		currentInfoWindow = null;
 	}
-	// get the vehicle info & create the form
-	var vehicle = {registration: "QRB990", description: "BMW 325i (2003)", colour: "Black"};
+	// create the form
 	var vehicleInfo = view.vehicleInfo(vehicle);
 	var bookingForm = view.bookingForm(vehicle);
-	bookingForm.addEventListener("submit", submitBooking);
+	bookingForm.addEventListener("submit", function(e) {
+		e.preventDefault();
+		submitBooking(vehicle);
+	});
 	
 	sidepane.clear();
 	sidepane.appendHeader("BOOK YOUR CAR");
@@ -177,12 +179,7 @@ function bookingForm(registration) {
 	sidepane.open();
 }
 
-function submitBooking(e) {
-	// prevent the default form action
-	e.preventDefault();
-	
-	// dummy vehicle info
-	var vehicle = {registration: "QRB990", description: "BMW 325i (2003)", colour: "Black"};
+function submitBooking(vehicle) {
 	var vehicleInfo = view.vehicleInfo(vehicle);
 	
 	console.log("Submitting booking form")
@@ -208,7 +205,13 @@ function nearbyCars(lat, lng) {
 	sidepane.clear();
 	sidepane.appendHeader("NEARBY CARS");
 	for (var i = 0; i < nearby.length; i++) {
-		sidepane.append(view.nearbyVehicle(nearby[i]));
+		let vehicle = nearby[i];
+		console.log(vehicle);
+		var nearbyVehicle = view.nearbyVehicle(vehicle, function(e) {
+			e.preventDefault();
+			bookingForm(vehicle);
+		});
+		sidepane.append(nearbyVehicle);
 	}
 	sidepane.open();
 }

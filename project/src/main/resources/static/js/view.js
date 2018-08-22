@@ -21,7 +21,7 @@ var view = (function() {
 			return container;
 		},
 		
-		nearbyVehicle: function(vehicle) {
+		nearbyVehicle: function(vehicle, callback) {
 			var container = document.createElement("div");
 			
 			// create vehicle info
@@ -41,9 +41,7 @@ var view = (function() {
 			bookButtonContainer.appendChild(bookButton);
 			
 			// create listener for book button
-			bookButton.addEventListener('click', () => {
-				bookingForm(vehicle.registration);
-			});
+			bookButton.addEventListener('click', callback);
 			
 			// append to the container & return
 			container.appendChild(vehicleInfo);

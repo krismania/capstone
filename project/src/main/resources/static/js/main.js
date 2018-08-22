@@ -47,11 +47,8 @@ function showGeoButton() {
 
 function geolocateHandler(e) {
 	e.preventDefault();
-	navigator.geolocation.getCurrentPosition(pos => {
-		map.panTo(new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude));
-		// display the 'nearby cars' button
-		showNearbyButton();
-	});
+	map.panTo(geoMarker.marker.getPosition());
+	showNearbyButton();
 }
 
 function nearbyHandler(e) {

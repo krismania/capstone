@@ -52,7 +52,7 @@ function geolocateHandler(e) {
 }
 
 function nearbyHandler(e) {
-	pos = geoMarker.marker.getPosition()
+	var pos = geoMarker.marker.getPosition()
 	nearbyCars(pos.lat, pos.lng);
 }
 
@@ -145,11 +145,11 @@ function addMarker(vehicle, map) {
 		vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
 		
 		// create info window & open it
-		content = view.infoWindow(vehicle, function(e) {
+		var content = view.infoWindow(vehicle, function(e) {
 			e.preventDefault();
 			bookingForm(vehicle.registration);
 		});
-		info = new google.maps.InfoWindow({content: content});
+		var info = new google.maps.InfoWindow({content: content});
 		info.open(map, marker);
 		
 		// update the current window var
@@ -165,9 +165,9 @@ function bookingForm(registration) {
 		currentInfoWindow = null;
 	}
 	// get the vehicle info & create the form
-	vehicle = {registration: "QRB990", description: "BMW 325i (2003)", colour: "Black"};
-	vehicleInfo = view.vehicleInfo(vehicle);
-	bookingForm = view.bookingForm(vehicle);
+	var vehicle = {registration: "QRB990", description: "BMW 325i (2003)", colour: "Black"};
+	var vehicleInfo = view.vehicleInfo(vehicle);
+	var bookingForm = view.bookingForm(vehicle);
 	bookingForm.addEventListener("submit", submitBooking);
 	
 	sidepane.clear();
@@ -182,8 +182,8 @@ function submitBooking(e) {
 	e.preventDefault();
 	
 	// dummy vehicle info
-	vehicle = {registration: "QRB990", description: "BMW 325i (2003)", colour: "Black"};
-	vehicleInfo = view.vehicleInfo(vehicle);
+	var vehicle = {registration: "QRB990", description: "BMW 325i (2003)", colour: "Black"};
+	var vehicleInfo = view.vehicleInfo(vehicle);
 	
 	console.log("Submitting booking form")
 	
@@ -197,7 +197,7 @@ function submitBooking(e) {
 function nearbyCars(lat, lng) {
 	// fetch nearby cars json
 	// this is a simulated response
-	nearby = [
+	var nearby = [
 		{registration: "QRB990", description: "BMW 325i (2003)", colour: "Black", distance: "500 m"},
 		{registration: "JTD955", description: "Holden Commodore (2005)", colour: "Grey", distance: "800 m"},
 		{registration: "FOK356", description: "Holden Barina (2017)", colour: "White", distance: "1.2 km"},
@@ -225,3 +225,4 @@ sidepane.setCloseCallback(function() {
 
 // Display the geolocate button initially
 showGeoButton();
+

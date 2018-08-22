@@ -47,8 +47,8 @@ sidepane = (function() {
 		
 		// create a header with a close button
 		appendHeader: function(headerText) {
-			header = document.createElement("h2");
-			close = document.createElement("button");
+			var header = document.createElement("h2");
+			var close = document.createElement("button");
 			
 			header.innerText = headerText;
 			close.className = "exit";

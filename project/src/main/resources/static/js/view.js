@@ -4,10 +4,10 @@ var view = (function() {
 	return {
 		
 		vehicleInfo: function(vehicle) {
-			container = document.createElement("div");
-			desc = document.createElement("h3");
-			colour = document.createElement("p");
-			rego = document.createElement("p");
+			var container = document.createElement("div");
+			var desc = document.createElement("h3");
+			var colour = document.createElement("p");
+			var rego = document.createElement("p");
 			
 			container.className = "vehicle-info";
 			desc.innerText = vehicle.description;
@@ -100,9 +100,9 @@ var view = (function() {
 		},
 		
 		bookingConfirmed: function() {
-			container = document.createElement("div");
-			header = document.createElement("h3");
-			message = document.createElement("p");
+			var container = document.createElement("div");
+			var header = document.createElement("h3");
+			var message = document.createElement("p");
 			
 			header.innerText = "Booking Confirmed!";
 			message.innerText = "Make sure that you leave your car at the drop-off spot before the end of your rental.";
@@ -114,14 +114,13 @@ var view = (function() {
 		},
 		
 		infoWindow: function(vehicle, callback) {
-			// create elements for the bubble
-			vehicleInfo = this.vehicleInfo(vehicle);
-			bookBtn = document.createElement("button");
+			var infoContents = document.createElement("div");
+			var bookBtn = document.createElement("button");
+			var vehicleInfo = this.vehicleInfo(vehicle);
+			
 			bookBtn.className = "confirm";
 			bookBtn.innerText = "BOOK NOW";
 			bookBtn.addEventListener("click", callback);
-			// bubble container
-			infoContents = document.createElement("div");
 			infoContents.className = "map-info";
 			infoContents.appendChild(vehicleInfo);
 			infoContents.appendChild(bookBtn);

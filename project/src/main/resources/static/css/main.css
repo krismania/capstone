@@ -208,3 +208,8 @@ button.confirm {
 	color: #ffffff;
 	margin-top: 10px;
 }
+
+button.confirm:disabled {
+	background-color: #ababab;
+}
+

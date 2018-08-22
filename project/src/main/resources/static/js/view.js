@@ -117,8 +117,14 @@ var view = (function() {
 			var vehicleInfo = this.vehicleInfo(vehicle);
 			
 			bookBtn.className = "confirm";
-			bookBtn.innerText = "BOOK NOW";
-			bookBtn.addEventListener("click", callback);
+			// disable button if car unavailable
+			if (vehicle.available) {
+				bookBtn.innerText = "BOOK NOW";
+				bookBtn.addEventListener("click", callback);
+			} else {
+				bookBtn.innerText = "NOT AVAILABLE";
+				bookBtn.disabled = true;
+			}
 			infoContents.className = "map-info";
 			infoContents.appendChild(vehicleInfo);
 			infoContents.appendChild(bookBtn);

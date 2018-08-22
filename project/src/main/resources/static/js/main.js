@@ -52,9 +52,8 @@ function geolocateHandler(e) {
 }
 
 function nearbyHandler(e) {
-	navigator.geolocation.getCurrentPosition(pos => {
-		nearbyCars(pos.coords.latitude, pos.coords.longitude);
-	});
+	pos = geoMarker.marker.getPosition()
+	nearbyCars(pos.lat, pos.lng);
 }
 
 function initMap() {

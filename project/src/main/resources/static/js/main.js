@@ -149,16 +149,6 @@ function addMarker(vehicle, map) {
 	});
 }
 
-function openSidepane() {
-	document.getElementById('sidepane').style.width = null;
-	document.getElementById('map-wrapper').style.left = '360px';
-}
-
-function closeSidepane() {
-	document.getElementById('sidepane').style.width = '0';
-	document.getElementById('map-wrapper').style.left = null;
-}
-
 function getInfoFor(registration, callback) {
 	console.log("Getting info for " + registration)
 	// TODO: move these static pages into a controller so they can send back
@@ -182,7 +172,7 @@ function bookingForm(registration) {
 	.then(res => res.text())
 	.then(html => {
 		document.getElementById('sidepane-content').innerHTML = html
-		openSidepane()
+		sidepane.open();
 	});
 }
 
@@ -199,72 +189,34 @@ function submitBooking(e) {
 	});
 }
 
-function createNearbyVehicleElement(vehicle) {
-	var container = document.createElement("div");
-	
-	// create vehicle info
-	var vehicleInfo = document.createElement("div");
-	var desc = document.createElement("h3");
-	var colour = document.createElement("p");
-	var rego = rego = document.createElement("p");
-	
-	container.className = "nearby-info";
-	vehicleInfo.className = "vehicle-info";
-	
-	desc.innerText = vehicle.description;
-	colour.innerText = "Colour: " + vehicle.colour;
-	rego.innerText = "Registration: " + vehicle.registration;
-	
-	vehicleInfo.appendChild(desc);
-	vehicleInfo.appendChild(colour);
-	vehicleInfo.appendChild(rego);
-	
-	// create book button
-	var bookButtonContainer = document.createElement("div");
-	var bookButton = document.createElement("button");
-	var distance = document.createElement("p");
-	
-	bookButtonContainer.className = "book-container";
-	bookButton.innerText = "BOOK";
-	distance.innerText = vehicle.distance;
-	
-	bookButtonContainer.appendChild(distance);
-	bookButtonContainer.appendChild(bookButton);
-	
-	// create listener for book button
-	bookButton.addEventListener('click', () => {
-		bookingForm(vehicle.registration);
-	});
-	
-	// append to the container & return
-	container.appendChild(vehicleInfo);
-	container.appendChild(bookButtonContainer)
-	return container;
+function nearbyCars(lat, lng) {
+	// fetch nearby cars json
+	// this is a simulated response
+	nearby = [
+		{registration: "QRB990", description: "BMW 325i (2003)", colour: "Black", distance: "500 m"},
+		{registration: "JTD955", description: "Holden Commodore (2005)", colour: "Grey", distance: "800 m"},
+		{registration: "FOK356", description: "Holden Barina (2017)", colour: "White", distance: "1.2 km"},
+		{registration: "QOP299", description: "Kia Rio (2013)", colour: "Pink", distance: "1.8 km"},
+		{registration: "YODUDE", description: "Nissan Skyline (2010)", colour: "Black", distance: "2.1 km"},
+	];
+	// show the response
+	sidepane.clear();
+	sidepane.appendHeader("NEARBY CARS");
+	for (var i = 0; i < nearby.length; i++) {
+		sidepane.append(view.createNearbyVehicleElement(nearby[i]));
+	}
+	sidepane.open();
 }
 
-function nearbyCars(lat, lng) {
-	console.log("Getting nearby cars: ", lat, lng);
-	// get nearby cars screen
-	request = new Request('/html/nearby.html')
-	fetch(request)
-	.then(res => res.text())
-	.then(html => {
-		sidepane = document.getElementById('sidepane-content');
-		sidepane.innerHTML = html;
-		// fetch nearby cars json
-		nearby = [
-			{registration: "QRB990", description: "BMW 325i (2003)", colour: "Black", distance: "500 m"},
-			{registration: "JTD955", description: "Holden Commodore (2005)", colour: "Grey", distance: "800 m"},
-			{registration: "FOK356", description: "Holden Barina (2017)", colour: "White", distance: "1.2 km"},
-			{registration: "QOP299", description: "Kia Rio (2013)", colour: "Pink", distance: "1.8 km"},
-			{registration: "YODUDE", description: "Nissan Skyline (2010)", colour: "Black", distance: "2.1 km"},
-		];
-		for (var i = 0; i < nearby.length; i++) {
-			sidepane.appendChild(createNearbyVehicleElement(nearby[i]));
-		}
-		openSidepane();
-	});
-}
+// initialize sidepane
+sidepane.setOpenCallback(function() {
+	document.getElementById('sidepane').style.width = null;
+	document.getElementById('map-wrapper').style.left = '360px';
+});
+sidepane.setCloseCallback(function() {
+	document.getElementById('sidepane').style.width = '0';
+	document.getElementById('map-wrapper').style.left = null;
+});
 
 // Display the geolocate button initially
 showGeoButton();

@@ -166,27 +166,34 @@ function bookingForm(registration) {
 		currentInfoWindow.close();
 		currentInfoWindow = null;
 	}
-	// TODO: see above
-	request = new Request('/html/book.html')
-	fetch(request)
-	.then(res => res.text())
-	.then(html => {
-		document.getElementById('sidepane-content').innerHTML = html
-		sidepane.open();
-	});
+	// get the vehicle info & create the form
+	vehicle = {registration: "QRB990", description: "BMW 325i (2003)", colour: "Black"};
+	vehicleInfo = view.vehicleInfo(vehicle);
+	bookingForm = view.bookingForm(vehicle);
+	bookingForm.addEventListener("submit", submitBooking);
+	
+	sidepane.clear();
+	sidepane.appendHeader("BOOK YOUR CAR");
+	sidepane.append(vehicleInfo);
+	sidepane.append(bookingForm);
+	sidepane.open();
 }
 
 function submitBooking(e) {
 	// prevent the default form action
 	e.preventDefault();
+	
+	// dummy vehicle info
+	vehicle = {registration: "QRB990", description: "BMW 325i (2003)", colour: "Black"};
+	vehicleInfo = view.vehicleInfo(vehicle);
+	
 	console.log("Submitting booking form")
-	// get the confirmation screen
-	request = new Request('/html/confirmed.html')
-	fetch(request)
-	.then(res => res.text())
-	.then(html => {
-		document.getElementById('sidepane-content').innerHTML = html
-	});
+	
+	// show the confirmation screen
+	sidepane.clear();
+	sidepane.appendHeader("BOOK YOUR CAR");
+	sidepane.append(vehicleInfo);
+	sidepane.append(view.bookingConfirmed());
 }
 
 function nearbyCars(lat, lng) {
@@ -203,7 +210,7 @@ function nearbyCars(lat, lng) {
 	sidepane.clear();
 	sidepane.appendHeader("NEARBY CARS");
 	for (var i = 0; i < nearby.length; i++) {
-		sidepane.append(view.createNearbyVehicleElement(nearby[i]));
+		sidepane.append(view.nearbyVehicle(nearby[i]));
 	}
 	sidepane.open();
 }

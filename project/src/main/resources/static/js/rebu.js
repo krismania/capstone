@@ -35,6 +35,13 @@ rebu = (function() {
 				{registration: "YODUDE", description: "Nissan Skyline (2010)", colour: "Black", distance: "2.1 km"},
 			];
 			callback(vehicles);
+		},
+		
+		requestBooking: function(bookingRequest, callback) {
+			console.log("[api] requesting booking", bookingRequest);
+			// TODO: link this route
+			succeeded = false;
+			callback(succeeded);
 		}
 	
 	}

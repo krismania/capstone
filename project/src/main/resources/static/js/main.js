@@ -170,16 +170,30 @@ function bookingForm(vehicle) {
 	sidepane.open();
 }
 
-function submitBooking(vehicle) {
-	var vehicleInfo = view.vehicleInfo(vehicle);
+function submitBooking(vehicle) {	
+	// collect booking details
+	var form = document.getElementById("booking-form");
+	var timeSelect = document.getElementById("dropoff-time");
+	var time = timeSelect.options[timeSelect.selectedIndex].value;
+	var location = document.getElementById("dropoff-location").value;
 	
-	console.log("Submitting booking form")
+	var bookingRequest = {
+		duration: time,
+		dropoff: location
+	};
 	
-	// show the confirmation screen
-	sidepane.clear();
-	sidepane.appendHeader("BOOK YOUR CAR");
-	sidepane.append(vehicleInfo);
-	sidepane.append(view.bookingConfirmed());
+	rebu.requestBooking(bookingRequest, function(succeeded) {
+		if (succeeded) {
+			// show the confirmation screen
+			var vehicleInfo = view.vehicleInfo(vehicle);
+			sidepane.clear();
+			sidepane.appendHeader("BOOK YOUR CAR");
+			sidepane.append(vehicleInfo);
+			sidepane.append(view.bookingConfirmed());
+		} else {
+			alert("Booking failed");
+		}
+	});
 }
 
 function nearbyCars(pos) {

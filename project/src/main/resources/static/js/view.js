@@ -60,7 +60,9 @@ var view = (function() {
 			var dropoffLocation = document.createElement("input");
 			
 			dropoffLegend.innerText = "Drop off";
+			dropoffTime.id = "dropoff-time";
 			dropoffTime.name = "dropoff-time";
+			dropoffLocation.id = "dropoff-location";
 			dropoffLocation.name = "dropoff-location";
 			dropoffLocation.placeholder = "Enter an address...";
 			

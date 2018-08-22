@@ -135,28 +135,26 @@ function addMarker(vehicle, map) {
 		title: vehicle.registration
 	});
 		
-	marker.addListener('click', () => {
-		console.log("Clicked on marker for " + vehicle.registration)
+	marker.addListener('click', function() {
+		console.log("Clicked on marker for", vehicle)
 		// close the currently opened window
 		if (currentInfoWindow) currentInfoWindow.close();
-		getInfoFor(vehicle.registration, (html) => {
-			// fetch the vehicle info & display
-			info = new google.maps.InfoWindow({content: html});
-			info.open(map, marker);
-			// update the current window var
-			currentInfoWindow = info;
+		
+		// add the required fields to vehicle
+		vehicle.colour = vehicle.color;
+		vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
+		
+		// create info window & open it
+		content = view.infoWindow(vehicle, function(e) {
+			e.preventDefault();
+			bookingForm(vehicle.registration);
 		});
+		info = new google.maps.InfoWindow({content: content});
+		info.open(map, marker);
+		
+		// update the current window var
+		currentInfoWindow = info;
 	});
-}
-
-function getInfoFor(registration, callback) {
-	console.log("Getting info for " + registration)
-	// TODO: move these static pages into a controller so they can send back
-	// customized views of the requested info
-	request = new Request('/html/vehicle-info.html')
-	fetch(request)
-	.then(res => res.text())
-	.then(html => callback(html))
 }
 
 function bookingForm(registration) {

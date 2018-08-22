@@ -111,6 +111,22 @@ var view = (function() {
 			container.appendChild(message);
 			
 			return container;
+		},
+		
+		infoWindow: function(vehicle, callback) {
+			// create elements for the bubble
+			vehicleInfo = this.vehicleInfo(vehicle);
+			bookBtn = document.createElement("button");
+			bookBtn.className = "confirm";
+			bookBtn.innerText = "BOOK NOW";
+			bookBtn.addEventListener("click", callback);
+			// bubble container
+			infoContents = document.createElement("div");
+			infoContents.className = "map-info";
+			infoContents.appendChild(vehicleInfo);
+			infoContents.appendChild(bookBtn);
+			
+			return infoContents;
 		}
 		
 	}

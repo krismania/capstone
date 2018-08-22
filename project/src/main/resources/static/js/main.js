@@ -80,14 +80,11 @@ function initMap() {
 		displayLocation(pos);
 	}, console.error, {enableHighAccuracy: true});
 	
-	var request = new Request('/api/vehicles');
-	fetch(request)
-	.then(res => res.json())
-	.then(json => {
-		for (var i = 0; i < json.length; i++) {
-			addMarker(json[i], map);
+	rebu.getVehicles(function(vehicles) {
+		for (var i = 0; i < vehicles.length; i++) {
+			addMarker(vehicles[i], map);
 		};
-	});
+	})
 }
 
 function displayLocation(pos) {
@@ -120,9 +117,7 @@ function displayLocation(pos) {
 	}
 }
 
-function addMarker(vehicle, map) {
-	console.log("Adding marker for " + vehicle.registration);
-	
+function addMarker(vehicle, map) {	
 	var marker = new google.maps.Marker({
 		position: vehicle.position,
 		map: map,
@@ -139,10 +134,6 @@ function addMarker(vehicle, map) {
 		console.log("Clicked on marker for", vehicle)
 		// close the currently opened window
 		if (currentInfoWindow) currentInfoWindow.close();
-		
-		// add the required fields to vehicle
-		vehicle.colour = vehicle.color;
-		vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
 		
 		// create info window & open it
 		var content = view.infoWindow(vehicle, function(e) {

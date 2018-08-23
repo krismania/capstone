@@ -1,5 +1,6 @@
 package model;
 
+import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -16,7 +17,7 @@ import com.google.appengine.api.utils.SystemProperty;
 import controllers.ApiController;
 import util.Config;
 
-public class Database {
+public class Database implements Closeable {
 
     final static Logger logger = LoggerFactory.getLogger(ApiController.class);
 
@@ -91,6 +92,7 @@ public class Database {
      *
      * @throws SQLException
      */
+    @Override
     public void close() {
 	try {
 	    logger.info("Closing the database");

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -75,8 +76,8 @@ public class Database {
 
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
-		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`start_location` POINT NOT NULL, "
-		+ "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
+		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
+		+ "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
 	Statement stmt = this.conn.createStatement();
@@ -118,6 +119,19 @@ public class Database {
 	vehicles.add(new Vehicle("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black",
 		new Position(-37.807232, 144.963620)));
 	return vehicles;
+    }
+
+    /**
+     * Returns a list of bookings
+     */
+    public List<Booking> getBookings() {
+	List<Vehicle> vehicles = getVehicles();
+	List<Booking> bookings = new ArrayList<Booking>();
+	bookings.add(new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicles.get(0), "asdasd6516", 180,
+		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
+	bookings.add(new Booking(2, LocalDateTime.of(2018, 8, 22, 11, 15), vehicles.get(1), "asdasd6516", 360,
+		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
+	return bookings;
     }
 
 }

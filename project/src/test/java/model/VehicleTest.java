@@ -11,7 +11,7 @@ class VehicleTest {
 
     @BeforeEach
     void setUp() throws Exception {
-	this.vehicle = new Vehicle("ABC123", "SomeMake", "Some Model", 2010, "Yellow");
+	this.vehicle = new Vehicle("ABC123", "SomeMake", "Some Model", 2010, "Yellow", new Position(1, 1));
     }
 
     @Test

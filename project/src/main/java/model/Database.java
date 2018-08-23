@@ -15,12 +15,24 @@ import util.Config;
 public class Database {
 
     final static Logger logger = LoggerFactory.getLogger(ApiController.class);
+    private static Database instance;
 
-    private Database() {
-	// database class has no constructor
+    private Connection conn;
+
+    public static Database getInstance() {
+	if (instance == null) {
+	    try {
+		instance = new Database();
+	    } catch (SQLException e) {
+		// if the connection fails, kill the server
+		logger.error(e.getMessage());
+		System.exit(1);
+	    }
+	}
+	return instance;
     }
 
-    public static Connection getConnection() throws SQLException {
+    private Database() throws SQLException {
 	if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Production) {
 	    String instance = Config.get("cloudSqlInstance");
 	    String database = Config.get("cloudSqlDatabase");
@@ -32,14 +44,15 @@ public class Database {
 		    + password;
 
 	    logger.info("Connecting to production database");
-	    return DriverManager.getConnection(url);
+	    this.conn = DriverManager.getConnection(url);
 	} else {
 	    String database = Config.get("localSqlDatabase");
 	    String username = Config.get("localSqlUsername");
 	    String password = Config.get("localSqlPassword");
 	    String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false";
 	    logger.info("Connecting to production database: " + url);
-	    return DriverManager.getConnection(url, username, password);
+	    this.conn = DriverManager.getConnection(url, username, password);
 	}
     }
+
 }

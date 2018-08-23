@@ -155,4 +155,16 @@ public class Database implements Closeable {
 	return bookings;
     }
 
+    /**
+     * Creates a booking, writes it to the database & returns the booking object
+     */
+    public Booking createBooking(LocalDateTime timestamp, String registration, String customerId, int duration,
+	    Position endLocation) {
+	// TODO: write to the DB
+	Vehicle vehicle = new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue",
+		new Position(-37.808401, 144.956159));
+	return new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicle, "asdasd6516", 180, vehicle.getPosition(),
+		new Position(-37.811510, 144.965667));
+    }
+
 }

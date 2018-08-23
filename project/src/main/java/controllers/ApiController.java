@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
+import model.Booking;
 import model.Database;
 import model.Vehicle;
 
@@ -27,6 +28,17 @@ public class ApiController {
 
 	    logger.info("Found " + vehicles.size() + " vehicles");
 	    return new Gson().toJson(vehicles);
+	});
+
+	get("/api/bookings", (req, res) -> {
+	    res.type("application/json");
+
+	    Database db = new Database();
+	    List<Booking> bookings = db.getBookings();
+	    db.close();
+
+	    logger.info("Found " + bookings.size() + " bookings");
+	    return new Gson().toJson(bookings);
 	});
 
     }

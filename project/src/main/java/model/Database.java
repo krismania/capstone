@@ -124,9 +124,28 @@ public class Database implements Closeable {
     }
 
     /**
+     * Returns a list of nearby vehicles to the given position
+     */
+    public List<NearbyVehicle> getNearbyVehicles(Position position) {
+	List<NearbyVehicle> vehicles = new ArrayList<NearbyVehicle>();
+	vehicles.add(new NearbyVehicle("UBR666", "Ford", "Falcon", 2013, "Orange", new Position(-37.815603, 144.969967),
+		500));
+	vehicles.add(new NearbyVehicle("FOK356", "Holden", "Barina", 2017, "White",
+		new Position(-37.814022, 144.961954), 800));
+	vehicles.add(new NearbyVehicle("JTD955", "Holden", "Commadore", 2005, "Grey",
+		new Position(-37.816170, 144.956179), 1200));
+	vehicles.add(
+		new NearbyVehicle("BLA555", "Mazda", "3", 2010, "White", new Position(-37.818681, 144.958982), 1650));
+	vehicles.add(
+		new NearbyVehicle("QOP299", "Kia", "Rio", 2013, "Pink", new Position(-37.811510, 144.965667), 2210));
+	return vehicles;
+    }
+
+    /**
      * Returns a list of bookings
      */
     public List<Booking> getBookings() {
+	// TODO: Get bookings from database
 	List<Vehicle> vehicles = getVehicles();
 	List<Booking> bookings = new ArrayList<Booking>();
 	bookings.add(new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicles.get(0), "asdasd6516", 180,

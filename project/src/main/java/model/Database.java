@@ -24,38 +24,44 @@ public class Database {
      * object. This constructor will return a connection to the local development
      * database when run locally, or a connection to the Cloud SQL database when
      * deployed.
-     * 
+     *
      * @throws SQLException
      */
-    public Database() throws SQLException {
-	if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Production) {
-	    String instance = Config.get("cloudSqlInstance");
-	    String database = Config.get("cloudSqlDatabase");
-	    String username = Config.get("cloudSqlUsername");
-	    String password = Config.get("cloudSqlPassword");
+    public Database() {
+	try {
+	    if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Production) {
+		String instance = Config.get("cloudSqlInstance");
+		String database = Config.get("cloudSqlDatabase");
+		String username = Config.get("cloudSqlUsername");
+		String password = Config.get("cloudSqlPassword");
 
-	    String url = "jdbc:mysql://google/" + database + "?useSSL=false&cloudSqlInstance=" + instance
-		    + "&socketFactory=com.google.cloud.sql.mysql.SocketFactory" + "&user=" + username + "&password="
-		    + password;
+		String url = "jdbc:mysql://google/" + database + "?useSSL=false&cloudSqlInstance=" + instance
+			+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory" + "&user=" + username + "&password="
+			+ password;
 
-	    logger.info("Connecting to production database");
-	    this.conn = DriverManager.getConnection(url);
-	} else {
-	    String database = Config.get("localSqlDatabase");
-	    String username = Config.get("localSqlUsername");
-	    String password = Config.get("localSqlPassword");
-	    String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false";
-	    logger.info("Connecting to development database: " + url);
-	    this.conn = DriverManager.getConnection(url, username, password);
+		logger.info("Connecting to production database");
+		this.conn = DriverManager.getConnection(url);
+	    } else {
+		String database = Config.get("localSqlDatabase");
+		String username = Config.get("localSqlUsername");
+		String password = Config.get("localSqlPassword");
+		String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false";
+		logger.info("Connecting to development database: " + url);
+		this.conn = DriverManager.getConnection(url, username, password);
+	    }
+
+	    // initialize database
+	    initDatabase();
+	} catch (Exception e) {
+	    // shutdown immediately in the case of an SQL error
+	    logger.error(e.getMessage());
+	    System.exit(1);
 	}
-
-	// initialize database
-	initDatabase();
     }
 
     /**
      * Initialize the database with the required tables
-     * 
+     *
      * @throws SQLException
      */
     private void initDatabase() throws SQLException {
@@ -78,12 +84,17 @@ public class Database {
 
     /**
      * Close the underlying database connection
-     * 
+     *
      * @throws SQLException
      */
-    public void close() throws SQLException {
-	logger.info("Closing the database");
-	this.conn.close();
+    public void close() {
+	try {
+	    logger.info("Closing the database");
+	    this.conn.close();
+	} catch (SQLException e) {
+	    logger.error("Failed to close DB");
+	    logger.error(e.getMessage());
+	}
     }
 
 }

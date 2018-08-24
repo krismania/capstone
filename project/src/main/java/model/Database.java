@@ -14,12 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.appengine.api.utils.SystemProperty;
 
-import controllers.ApiController;
 import util.Config;
 
 public class Database implements Closeable {
 
-    final static Logger logger = LoggerFactory.getLogger(ApiController.class);
+    final static Logger logger = LoggerFactory.getLogger(Database.class);
 
     private Connection conn;
 

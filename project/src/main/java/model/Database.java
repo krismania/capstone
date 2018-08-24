@@ -14,12 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.appengine.api.utils.SystemProperty;
 
-import controllers.ApiController;
 import util.Config;
 
 public class Database implements Closeable {
 
-    final static Logger logger = LoggerFactory.getLogger(ApiController.class);
+    final static Logger logger = LoggerFactory.getLogger(Database.class);
 
     private Connection conn;
 
@@ -73,7 +72,7 @@ public class Database implements Closeable {
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (" + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, "
 		+ "`year` SMALLINT UNSIGNED NOT NULL, " + "`colour` VARCHAR(50) NOT NULL, "
-		+ "PRIMARY KEY (`registration`));";
+		+ "location POINT NOT NULL, " + "PRIMARY KEY (`registration`));";
 
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "

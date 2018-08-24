@@ -20,7 +20,7 @@ public class Position {
 
     @Override
     public String toString() {
-	return String.format("(%d, %d)", this.lat, this.lng);
+	return String.format("(%f, %f)", this.lat, this.lng);
     }
 
 }

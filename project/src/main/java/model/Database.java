@@ -240,7 +240,7 @@ public class Database implements Closeable {
 		    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
 		    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
 
-	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
 	    pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
 	    pStmnt.setString(2, registration);
@@ -255,17 +255,26 @@ public class Database implements Closeable {
 
 	    pStmnt.executeUpdate();
 
-	    pStmnt.close();
+	    // get the inserted booking's ID
+	    ResultSet rs = pStmnt.getGeneratedKeys();
+	    if (rs.next()) {
+		int id = rs.getInt(1);
+		pStmnt.close();
+
+		// TODO: dummy vehicle object, replace with getVehicle(String registration) once
+		// implemented
+		Vehicle vehicle = new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue",
+			new Position(-37.808401, 144.956159));
+		return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+	    }
 
 	} catch (SQLException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
 
-	Vehicle vehicle = new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue",
-		new Position(-37.808401, 144.956159));
-	return new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicle, "asdasd6516", 180, vehicle.getPosition(),
-		new Position(-37.811510, 144.965667));
+	// TODO: throw a custom exception on failure?
+	return null;
     }
 
 }

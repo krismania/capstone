@@ -158,11 +158,38 @@ public class Database implements Closeable {
 	// TODO: Get bookings from database
 	List<Vehicle> vehicles = getVehicles();
 	List<Booking> bookings = new ArrayList<Booking>();
-	bookings.add(new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicles.get(0), "asdasd6516", 180,
-		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
-	bookings.add(new Booking(2, LocalDateTime.of(2018, 8, 22, 11, 15), vehicles.get(1), "asdasd6516", 360,
-		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
-	return bookings;
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
+		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y"
+		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
+	    while (rs.next()) {
+		int id = rs.getInt("id");
+		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+		String customer_id = rs.getString("customer_id");
+		int duration = rs.getInt("duration");
+		double lat_start = rs.getDouble("x_start");
+		double lng_start = rs.getDouble("y_start");
+		double lat_end = rs.getDouble("x_end");
+		double lng_end = rs.getDouble("y_end");
+		Position start = new Position(lat_start, lng_start);
+		Position end = new Position(lat_end, lng_end);
+
+		String registration = rs.getString("registration");
+
+		Vehicle vehicle = vehicles.get(0);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+		bookings.add(booking);
+	    }
+	    return bookings;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return an empty list in case of an error
+	    return new ArrayList<Booking>();
+	}
     }
 
     /**

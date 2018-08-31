@@ -107,26 +107,32 @@ public class Database implements Closeable {
 	}
     }
 
-    public void insertVehicle() {
+    public Vehicle insertVehicle(String registration, String make, String model, int year, String colour,
+	    Position position) {
 
 	logger.info("Insert Vehicles");
+	Vehicle v = null;
 	try {
-	    String query = "INSERT INTO vehicles (registration, make, model,year,colour) VALUES (?,?,?,?,?)";
+	    String query = "INSERT INTO vehicles (registration, make, model,year,colour,location) VALUES (?,?,?,?,?, POINT(?,?));";
 	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
 
-	    pStmnt.setString(1, "HEH123");
-	    pStmnt.setString(2, "TOYOTO");
-	    pStmnt.setString(3, "TESTOTO");
-	    pStmnt.setInt(4, 2111);
-	    pStmnt.setString(5, "BLUE");
-	    pStmnt.executeUpdate();
+	    pStmnt.setString(1, registration);
+	    pStmnt.setString(2, make);
+	    pStmnt.setString(3, model);
+	    pStmnt.setInt(4, year);
+	    pStmnt.setString(5, colour);
+	    pStmnt.setDouble(6, position.getLat());
+	    pStmnt.setDouble(7, position.getLng());
 
+	    pStmnt.executeUpdate();
 	    pStmnt.close();
 
+	    v = new Vehicle(registration, make, model, year, colour, position);
 	} catch (SQLException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
+	return v;
     }
 
     /**
@@ -221,9 +227,7 @@ public class Database implements Closeable {
      * @throws SQLException
      */
     public List<Booking> getBookings() {
-	// TODO: Get bookings from database
 	logger.info("Get Booking");
-	List<Vehicle> vehicles = getVehicles();
 	List<Booking> bookings = new ArrayList<Booking>();
 
 	try {
@@ -256,6 +260,7 @@ public class Database implements Closeable {
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos);
 		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+
 		bookings.add(booking);
 	    }
 	    return bookings;

@@ -27,6 +27,15 @@ public class ApiController {
 	double lng;
     }
 
+    static class VehicleRequest {
+	String registration;
+	String make;
+	String model;
+	int year;
+	String colour;
+	PositionRequest position;
+    }
+
     public ApiController() {
 
 	final Logger logger = LoggerFactory.getLogger(ApiController.class);
@@ -72,6 +81,27 @@ public class ApiController {
 
 	    logger.info("Found " + bookings.size() + " bookings");
 	    return new Gson().toJson(bookings);
+	});
+
+	post("/api/vehicles", (req, res) -> {
+	    res.type("application/json");
+	    Position pos;
+	    VehicleRequest vr;
+	    try {
+		vr = new Gson().fromJson(req.body(), VehicleRequest.class);
+		pos = new Position(vr.position.lat, vr.position.lng);
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+	    logger.info("Inserting a car with rego: " + vr.registration);
+
+	    Database db = new Database();
+	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos);
+	    db.close();
+
+	    logger.info("Inserted successfully!");
+	    return new Gson().toJson(inserted_vehicle);
 	});
 
     }

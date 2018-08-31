@@ -151,8 +151,7 @@ public class Database implements Closeable {
 	    String colour = vehicles.get(i).getColour();
 	    Position positionC = vehicles.get(i).getPosition();
 
-	    Util util = new Util();
-	    double distance = util.distance(position.getLat(), position.getLng(), positionC.getLat(),
+	    double distance = Util.distance(position.getLat(), position.getLng(), positionC.getLat(),
 		    positionC.getLng());
 
 	    NearbyVehicle nV = new NearbyVehicle(registration, make, model, year, colour, positionC, distance);

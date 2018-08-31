@@ -6,7 +6,7 @@ import spark.ModelAndView;
 import spark.template.handlebars.HandlebarsTemplateEngine;
 
 public class Util {
-    public Util() {
+    private Util() {
 	// utility class has no constructor
     }
 

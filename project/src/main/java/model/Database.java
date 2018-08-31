@@ -3,6 +3,7 @@ package model;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.google.appengine.api.utils.SystemProperty;
 
 import util.Config;
+import util.Util;
 
 public class Database implements Closeable {
 
@@ -126,18 +128,56 @@ public class Database implements Closeable {
      * Returns a list of nearby vehicles to the given position
      */
     public List<NearbyVehicle> getNearbyVehicles(Position position) {
-	List<NearbyVehicle> vehicles = new ArrayList<NearbyVehicle>();
-	vehicles.add(new NearbyVehicle("UBR666", "Ford", "Falcon", 2013, "Orange", new Position(-37.815603, 144.969967),
-		500));
-	vehicles.add(new NearbyVehicle("FOK356", "Holden", "Barina", 2017, "White",
-		new Position(-37.814022, 144.961954), 800));
-	vehicles.add(new NearbyVehicle("JTD955", "Holden", "Commadore", 2005, "Grey",
-		new Position(-37.816170, 144.956179), 1200));
-	vehicles.add(
-		new NearbyVehicle("BLA555", "Mazda", "3", 2010, "White", new Position(-37.818681, 144.958982), 1650));
-	vehicles.add(
-		new NearbyVehicle("QOP299", "Kia", "Rio", 2013, "Pink", new Position(-37.811510, 144.965667), 2210));
-	return vehicles;
+	List<NearbyVehicle> nearVehicles = new ArrayList<NearbyVehicle>();
+	List<NearbyVehicle> sortedNearestVehicles = new ArrayList<NearbyVehicle>();
+	List<Vehicle> vehicles = new ArrayList<Vehicle>();
+	vehicles = getVehicles();
+
+	for (int i = 0; i < vehicles.size(); i++) {
+	    String registration = vehicles.get(i).getRegistration();
+	    String make = vehicles.get(i).getMake();
+	    String model = vehicles.get(i).getModel();
+	    int year = vehicles.get(i).getYear();
+	    String colour = vehicles.get(i).getColour();
+	    Position positionC = vehicles.get(i).getPosition();
+
+	    double distance = Util.distance(position.getLat(), position.getLng(), positionC.getLat(),
+		    positionC.getLng());
+
+	    NearbyVehicle nV = new NearbyVehicle(registration, make, model, year, colour, positionC, distance);
+	    nearVehicles.add(nV);
+	}
+
+	boolean done = true;
+	while (done == true) {
+	    NearbyVehicle closestCar = null;
+	    double closestDist = 0;
+
+	    if (nearVehicles.size() == 0) {
+		done = false;
+	    } else {
+		for (int i = 0; i < nearVehicles.size(); i++) {
+
+		    if (i == 0) {
+			closestDist = nearVehicles.get(i).getDistance();
+			closestCar = nearVehicles.get(i);
+
+		    } else {
+
+			if (nearVehicles.get(i).getDistance() < closestDist) {
+
+			    closestDist = nearVehicles.get(i).getDistance();
+			    closestCar = nearVehicles.get(i);
+			}
+		    }
+		}
+
+		sortedNearestVehicles.add(closestCar);
+		nearVehicles.remove(closestCar);
+	    }
+
+	}
+	return sortedNearestVehicles;
     }
 
     /**

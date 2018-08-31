@@ -305,10 +305,7 @@ public class Database implements Closeable {
 		int id = rs.getInt(1);
 		pStmnt.close();
 
-		// TODO: dummy vehicle object, replace with getVehicle(String registration) once
-		// implemented
-		Vehicle vehicle = new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue",
-			new Position(-37.808401, 144.956159));
+		Vehicle vehicle = getVehicleByReg(registration);
 		return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
 	    }
 
@@ -319,6 +316,35 @@ public class Database implements Closeable {
 
 	// TODO: throw a custom exception on failure?
 	return null;
+    }
+
+    public Vehicle getVehicleByReg(String registration) {
+	logger.info("Getting vehicle with rego: " + registration);
+	Vehicle v = null;
+	Position position;
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, ST_X(location) as lat, "
+		    + "ST_Y(location) as lng FROM vehicles WHERE registration LIKE '" + registration + "';");
+
+	    if (rs.next()) {
+		String rego = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double lat = rs.getDouble("lat");
+		double lng = rs.getDouble("lng");
+
+		position = new Position(lat, lng);
+		v = new Vehicle(rego, make, model, year, colour, position);
+	    }
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return v;
     }
 
 }

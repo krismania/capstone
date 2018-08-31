@@ -7,9 +7,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -278,44 +278,47 @@ public class Database implements Closeable {
      */
     public Booking createBooking(LocalDateTime timestamp, String registration, String customerId, int duration,
 	    Position startLocation, Position endLocation) {
-	// TODO: write to the DB
-
-	Calendar calendar = Calendar.getInstance();
-	java.sql.Timestamp currtime = new java.sql.Timestamp(calendar.getTime().getTime());
-
-	logger.info("Create Booking");
-
-	// VALUES (?,?,?,?,?)";
-
+	logger.info("Create Booking for " + customerId);
 	try {
-	    String query = "INSERT INTO bookings (id,timestamp, registration,customer_id,duration,start_location,end_location) VALUES (id,?,?,?,?,Point(?,?),Point(?,?))";
+	    String query = "INSERT INTO bookings "
+		    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
+		    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
 
-	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
-	    pStmnt.setTimestamp(1, currtime);
-	    pStmnt.setString(2, "HEH123");
-	    pStmnt.setString(3, "ABC");
-	    pStmnt.setInt(4, 2111);
+	    pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
+	    pStmnt.setString(2, registration);
+	    pStmnt.setString(3, customerId);
+	    pStmnt.setInt(4, duration);
 
-	    pStmnt.setString(5, "20"); // start lon //stores as BLOB
-	    pStmnt.setString(6, "50"); // start lat
+	    pStmnt.setDouble(5, startLocation.getLat());
+	    pStmnt.setDouble(6, startLocation.getLng());
 
-	    pStmnt.setString(7, "-123"); // end lon
-	    pStmnt.setString(8, "124"); // end lat
+	    pStmnt.setDouble(7, endLocation.getLat());
+	    pStmnt.setDouble(8, endLocation.getLng());
 
 	    pStmnt.executeUpdate();
 
-	    pStmnt.close();
+	    // get the inserted booking's ID
+	    ResultSet rs = pStmnt.getGeneratedKeys();
+	    if (rs.next()) {
+		int id = rs.getInt(1);
+		pStmnt.close();
+
+		// TODO: dummy vehicle object, replace with getVehicle(String registration) once
+		// implemented
+		Vehicle vehicle = new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue",
+			new Position(-37.808401, 144.956159));
+		return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+	    }
 
 	} catch (SQLException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
 
-	Vehicle vehicle = new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue",
-		new Position(-37.808401, 144.956159));
-	return new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicle, "asdasd6516", 180, vehicle.getPosition(),
-		new Position(-37.811510, 144.965667));
+	// TODO: throw a custom exception on failure?
+	return null;
     }
 
 }

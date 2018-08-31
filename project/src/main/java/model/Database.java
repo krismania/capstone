@@ -75,7 +75,7 @@ public class Database implements Closeable {
     private void initDatabase() throws SQLException {
 	logger.info("Initializing the database");
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (" + "`registration` VARCHAR(10) NOT NULL, "
-		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, " + "`year` INT NOT NULL, "
+		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, " + "`year` INT NOT NULL, " + "location POINT NOT NULL, "
 		+ "`colour` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`registration`));";
 
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` ("

@@ -15,7 +15,6 @@ function onSuccess(googleUser) {
     
     var id_token = googleUser.getAuthResponse().id_token;
     console.log("ID Token: " + id_token);
-    alert(id_token);
 }
 
 function signOut() {

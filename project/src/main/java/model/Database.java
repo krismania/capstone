@@ -1,7 +1,6 @@
 package model;
 
 import java.io.Closeable;
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -18,12 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import com.google.appengine.api.utils.SystemProperty;
 
-import controllers.ApiController;
 import util.Config;
 
 public class Database implements Closeable {
 
-    final static Logger logger = LoggerFactory.getLogger(ApiController.class);
+    final static Logger logger = LoggerFactory.getLogger(Database.class);
 
     private Connection conn;
 
@@ -75,13 +73,14 @@ public class Database implements Closeable {
     private void initDatabase() throws SQLException {
 	logger.info("Initializing the database");
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (" + "`registration` VARCHAR(10) NOT NULL, "
-		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, " + "`year` INT NOT NULL, " + "location POINT NOT NULL, "
-		+ "`colour` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`registration`));";
+		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, "
+		+ "`year` SMALLINT UNSIGNED NOT NULL, " + "`colour` VARCHAR(50) NOT NULL, "
+		+ "location POINT NOT NULL, " + "PRIMARY KEY (`registration`));";
 
-	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` ("
-		+ "`id` INT  NOT NULL PRIMARY KEY AUTO_INCREMENT, " + "`timestamp` DATETIME NOT NULL, "
-		+ "`registration` VARCHAR(10) NOT NULL, " + "`customer_id` VARCHAR(50) NOT NULL, "
-		+ "`duration` INT NOT NULL, " + "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, "
+	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
+		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
+		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
+		+ "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
 	Statement stmt = this.conn.createStatement();
@@ -133,20 +132,30 @@ public class Database implements Closeable {
      * Returns a list of vehicle objects
      */
     public List<Vehicle> getVehicles() {
-	// TODO: Get vehicles from database
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
-	vehicles.add(new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue", new Position(-37.808401, 144.956159)));
-	vehicles.add(new Vehicle("QRB990", "BMW", "325i", 2003, "Black", new Position(-37.809741, 144.970895)));
-	vehicles.add(new Vehicle("TAA325", "Peugeot", "307 SW", 2008, "Grey", new Position(-37.805819, 144.960025)));
-	vehicles.add(new Vehicle("UBR666", "Ford", "Falcon", 2013, "Orange", new Position(-37.815603, 144.969967)));
-	vehicles.add(new Vehicle("FOK356", "Holden", "Barina", 2017, "White", new Position(-37.814022, 144.961954)));
-	vehicles.add(new Vehicle("JTD955", "Holden", "Commadore", 2005, "Grey", new Position(-37.816170, 144.956179)));
-	vehicles.add(new Vehicle("BLA555", "Mazda", "3", 2010, "White", new Position(-37.818681, 144.958982)));
-	vehicles.add(new Vehicle("QOP299", "Kia", "Rio", 2013, "Pink", new Position(-37.811510, 144.965667)));
-	vehicles.add(new Vehicle("YODUDE", "Nissan", "Skyline", 2010, "Black", new Position(-37.810422, 144.968597)));
-	vehicles.add(new Vehicle("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black",
-		new Position(-37.807232, 144.963620)));
-	return vehicles;
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(
+		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, ST_Y(`location`) as `loc_y` FROM `vehicles`");
+	    while (rs.next()) {
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double loc_x = rs.getDouble("loc_x");
+		double loc_y = rs.getDouble("loc_y");
+		// construct the object
+		Position location = new Position(loc_x, loc_y);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location);
+		vehicles.add(vehicle);
+	    }
+	    return vehicles;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return an empty list in case of an error
+	    return new ArrayList<Vehicle>();
+	}
     }
 
     /**
@@ -179,34 +188,43 @@ public class Database implements Closeable {
 	List<Booking> bookings = new ArrayList<Booking>();
 
 	try {
-	    String getBookingsSQL = "SELECT * FROM bookings ORDER BY id DESC"; // Highest ID at the top.
-
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(getBookingsSQL);
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
+		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y"
+		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
+	    while (rs.next()) {
+		int id = rs.getInt("id");
+		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+		String customer_id = rs.getString("customer_id");
+		int duration = rs.getInt("duration");
+		double lat_start = rs.getDouble("x_start");
+		double lng_start = rs.getDouble("y_start");
+		double lat_end = rs.getDouble("x_end");
+		double lng_end = rs.getDouble("y_end");
+		Position start = new Position(lat_start, lng_start);
+		Position end = new Position(lat_end, lng_end);
 
-	    while (rs.next()) { // Get row
-		int id = rs.getInt(1); // Get the first column
-		// timestamp tba
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double lat_curr = rs.getDouble("current_x");
+		double lng_curr = rs.getDouble("current_y");
+		Position car_curr_pos = new Position(lat_curr, lng_curr);
 
-		String reg = rs.getString(3);
-		Blob startLoc = rs.getBlob(6);
-
-		// System.out.println(rs.getTimestamp(2).toLocalDateTime());
-		System.out.println(rs.getTimestamp(2));
-		System.out.println(reg);
-		System.out.println(startLoc);
-
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+		bookings.add(booking);
 	    }
-	    stmt.close();
+	    return bookings;
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    logger.error(e.getMessage());
+	    // return an empty list in case of an error
+	    return new ArrayList<Booking>();
 	}
-
-	bookings.add(new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicles.get(0), "asdasd6516", 180,
-		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
-
-	return bookings;
     }
 
     /**
@@ -254,7 +272,6 @@ public class Database implements Closeable {
 		new Position(-37.808401, 144.956159));
 	return new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicle, "asdasd6516", 180, vehicle.getPosition(),
 		new Position(-37.811510, 144.965667));
-
     }
 
 }

@@ -3,6 +3,7 @@ package model;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.google.appengine.api.utils.SystemProperty;
 
 import util.Config;
+import util.Util;
 
 public class Database implements Closeable {
 
@@ -24,9 +26,9 @@ public class Database implements Closeable {
 
     /**
      * Create a database object with an underlying {@link java.sql.Connection}
-     * object. This constructor will return a connection to the local development
-     * database when run locally, or a connection to the Cloud SQL database when
-     * deployed.
+     * object. This constructor will return a connection to the local
+     * development database when run locally, or a connection to the Cloud SQL
+     * database when deployed.
      *
      * @throws SQLException
      */
@@ -106,38 +108,87 @@ public class Database implements Closeable {
      * Returns a list of vehicle objects
      */
     public List<Vehicle> getVehicles() {
-	// TODO: Get vehicles from database
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
-	vehicles.add(new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue", new Position(-37.808401, 144.956159)));
-	vehicles.add(new Vehicle("QRB990", "BMW", "325i", 2003, "Black", new Position(-37.809741, 144.970895)));
-	vehicles.add(new Vehicle("TAA325", "Peugeot", "307 SW", 2008, "Grey", new Position(-37.805819, 144.960025)));
-	vehicles.add(new Vehicle("UBR666", "Ford", "Falcon", 2013, "Orange", new Position(-37.815603, 144.969967)));
-	vehicles.add(new Vehicle("FOK356", "Holden", "Barina", 2017, "White", new Position(-37.814022, 144.961954)));
-	vehicles.add(new Vehicle("JTD955", "Holden", "Commadore", 2005, "Grey", new Position(-37.816170, 144.956179)));
-	vehicles.add(new Vehicle("BLA555", "Mazda", "3", 2010, "White", new Position(-37.818681, 144.958982)));
-	vehicles.add(new Vehicle("QOP299", "Kia", "Rio", 2013, "Pink", new Position(-37.811510, 144.965667)));
-	vehicles.add(new Vehicle("YODUDE", "Nissan", "Skyline", 2010, "Black", new Position(-37.810422, 144.968597)));
-	vehicles.add(new Vehicle("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black",
-		new Position(-37.807232, 144.963620)));
-	return vehicles;
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(
+		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, ST_Y(`location`) as `loc_y` FROM `vehicles`");
+	    while (rs.next()) {
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double loc_x = rs.getDouble("loc_x");
+		double loc_y = rs.getDouble("loc_y");
+		// construct the object
+		Position location = new Position(loc_x, loc_y);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location);
+		vehicles.add(vehicle);
+	    }
+	    return vehicles;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return an empty list in case of an error
+	    return new ArrayList<Vehicle>();
+	}
     }
 
     /**
      * Returns a list of nearby vehicles to the given position
      */
     public List<NearbyVehicle> getNearbyVehicles(Position position) {
-	List<NearbyVehicle> vehicles = new ArrayList<NearbyVehicle>();
-	vehicles.add(new NearbyVehicle("UBR666", "Ford", "Falcon", 2013, "Orange", new Position(-37.815603, 144.969967),
-		500));
-	vehicles.add(new NearbyVehicle("FOK356", "Holden", "Barina", 2017, "White",
-		new Position(-37.814022, 144.961954), 800));
-	vehicles.add(new NearbyVehicle("JTD955", "Holden", "Commadore", 2005, "Grey",
-		new Position(-37.816170, 144.956179), 1200));
-	vehicles.add(
-		new NearbyVehicle("BLA555", "Mazda", "3", 2010, "White", new Position(-37.818681, 144.958982), 1650));
-	vehicles.add(
-		new NearbyVehicle("QOP299", "Kia", "Rio", 2013, "Pink", new Position(-37.811510, 144.965667), 2210));
-	return vehicles;
+	List<NearbyVehicle> nearVehicles = new ArrayList<NearbyVehicle>();
+	List<NearbyVehicle> sortedNearestVehicles = new ArrayList<NearbyVehicle>();
+	List<Vehicle> vehicles = new ArrayList<Vehicle>();
+	vehicles = getVehicles();
+
+	for (int i = 0; i < vehicles.size(); i++) {
+	    String registration = vehicles.get(i).getRegistration();
+	    String make = vehicles.get(i).getMake();
+	    String model = vehicles.get(i).getModel();
+	    int year = vehicles.get(i).getYear();
+	    String colour = vehicles.get(i).getColour();
+	    Position positionC = vehicles.get(i).getPosition();
+
+	    Util util = new Util();
+	    double distance = util.distance(position.getLat(), position.getLng(), positionC.getLat(),
+		    positionC.getLng());
+
+	    NearbyVehicle nV = new NearbyVehicle(registration, make, model, year, colour, positionC, distance);
+	    nearVehicles.add(nV);
+	}
+
+	boolean done = true;
+	while (done == true) {
+	    NearbyVehicle closestCar = null;
+	    double closestDist = 0;
+
+	    if (nearVehicles.size() == 0) {
+		done = false;
+	    } else {
+		for (int i = 0; i < nearVehicles.size(); i++) {
+
+		    if (i == 0) {
+			closestDist = nearVehicles.get(i).getDistance();
+			closestCar = nearVehicles.get(i);
+
+		    } else {
+
+			if (nearVehicles.get(i).getDistance() < closestDist) {
+
+			    closestDist = nearVehicles.get(i).getDistance();
+			    closestCar = nearVehicles.get(i);
+			}
+		    }
+		}
+
+		sortedNearestVehicles.add(closestCar);
+		nearVehicles.remove(closestCar);
+	    }
+
+	}
+	return sortedNearestVehicles;
     }
 
     /**

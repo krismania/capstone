@@ -3,6 +3,8 @@ package controllers;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -34,6 +36,15 @@ public class ApiController {
 	int year;
 	String colour;
 	PositionRequest position;
+    }
+
+    static class BookingRequest {
+	String timestamp;
+	String registration;
+	String customerId;
+	int duration;
+	PositionRequest startLocation;
+	PositionRequest endLocation;
     }
 
     public ApiController() {
@@ -102,6 +113,37 @@ public class ApiController {
 
 	    logger.info("Inserted successfully!");
 	    return new Gson().toJson(inserted_vehicle);
+	});
+
+	post("/api/bookings", (req, res) -> {
+	    res.type("application/json");
+	    Position location_start, location_end;
+	    BookingRequest br;
+	    LocalDateTime dateTime;
+
+	    try {
+		br = new Gson().fromJson(req.body(), BookingRequest.class);
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		dateTime = LocalDateTime.parse(br.timestamp, formatter);
+
+		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
+		location_end = new Position(br.endLocation.lat, br.endLocation.lng);
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+
+	    logger.info("Inserting a booking!");
+	    Database db = new Database();
+
+	    Booking booking = db.createBooking(dateTime, br.registration, br.customerId, br.duration, location_start,
+		    location_end);
+
+	    db.close();
+
+	    logger.info("Inserted successfully!");
+	    return new Gson().toJson(booking);
 	});
 
     }

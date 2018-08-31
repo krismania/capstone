@@ -244,7 +244,8 @@ public class Database implements Closeable {
 	// VALUES (?,?,?,?,?)";
 
 	try {
-	    String query = "INSERT INTO bookings (id,timestamp, registration,customer_id,duration,start_location,end_location) VALUES (id,?,?,?,?,Point(?,?),Point(?,?))";
+	    String query = "INSERT INTO bookings (id,timestamp, registration,customer_id,duration,start_location,end_location) "
+		    + "VALUES (id,?,?,?,?,Point(?,?),Point(?,?))";
 
 	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
 

@@ -207,8 +207,15 @@ public class Database implements Closeable {
 		Position end = new Position(lat_end, lng_end);
 
 		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double lat_curr = rs.getDouble("current_x");
+		double lng_curr = rs.getDouble("current_y");
+		Position car_curr_pos = new Position(lat_curr, lng_curr);
 
-		Vehicle vehicle = vehicles.get(0);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos);
 		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
 		bookings.add(booking);
 	    }

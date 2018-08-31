@@ -14,8 +14,8 @@ rebu = (function() {
 					var vehicle = json[i];
 					
 					// TODO: temporary fix for model mismatch
-					vehicle.colour = vehicle.color;
 					vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
+					vehicle.available = true;
 					
 					vehicles.push(vehicle);
 				};

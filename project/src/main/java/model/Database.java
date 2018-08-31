@@ -1,12 +1,16 @@
 package model;
 
 import java.io.Closeable;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -14,11 +18,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.appengine.api.utils.SystemProperty;
 
+import controllers.ApiController;
 import util.Config;
 
 public class Database implements Closeable {
 
-    final static Logger logger = LoggerFactory.getLogger(Database.class);
+    final static Logger logger = LoggerFactory.getLogger(ApiController.class);
 
     private Connection conn;
 
@@ -70,19 +75,19 @@ public class Database implements Closeable {
     private void initDatabase() throws SQLException {
 	logger.info("Initializing the database");
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (" + "`registration` VARCHAR(10) NOT NULL, "
-		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, "
-		+ "`year` SMALLINT UNSIGNED NOT NULL, " + "`colour` VARCHAR(50) NOT NULL, "
-		+ "location POINT NOT NULL, " + "PRIMARY KEY (`registration`));";
+		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, " + "`year` INT NOT NULL, "
+		+ "`colour` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`registration`));";
 
-	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
-		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
-		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
+	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` ("
+		+ "`id` INT  NOT NULL PRIMARY KEY AUTO_INCREMENT, " + "`timestamp` DATETIME NOT NULL, "
+		+ "`registration` VARCHAR(10) NOT NULL, " + "`customer_id` VARCHAR(50) NOT NULL, "
+		+ "`duration` INT NOT NULL, " + "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
 	stmt.execute(bookingsSql);
+
 	stmt.close();
     }
 
@@ -99,6 +104,28 @@ public class Database implements Closeable {
 	} catch (SQLException e) {
 	    logger.error("Failed to close DB");
 	    logger.error(e.getMessage());
+	}
+    }
+
+    public void insertVehicle() {
+
+	logger.info("Insert Vehicles");
+	try {
+	    String query = "INSERT INTO vehicles (registration, make, model,year,colour) VALUES (?,?,?,?,?)";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+
+	    pStmnt.setString(1, "HEH123");
+	    pStmnt.setString(2, "TOYOTO");
+	    pStmnt.setString(3, "TESTOTO");
+	    pStmnt.setInt(4, 2111);
+	    pStmnt.setString(5, "BLUE");
+	    pStmnt.executeUpdate();
+
+	    pStmnt.close();
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
 	}
     }
 
@@ -142,28 +169,92 @@ public class Database implements Closeable {
 
     /**
      * Returns a list of bookings
+     *
+     * @throws SQLException
      */
     public List<Booking> getBookings() {
 	// TODO: Get bookings from database
+	logger.info("Get Booking");
 	List<Vehicle> vehicles = getVehicles();
 	List<Booking> bookings = new ArrayList<Booking>();
+
+	try {
+	    String getBookingsSQL = "SELECT * FROM bookings ORDER BY id DESC"; // Highest ID at the top.
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(getBookingsSQL);
+
+	    while (rs.next()) { // Get row
+		int id = rs.getInt(1); // Get the first column
+		// timestamp tba
+
+		String reg = rs.getString(3);
+		Blob startLoc = rs.getBlob(6);
+
+		// System.out.println(rs.getTimestamp(2).toLocalDateTime());
+		System.out.println(rs.getTimestamp(2));
+		System.out.println(reg);
+		System.out.println(startLoc);
+
+	    }
+	    stmt.close();
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+
 	bookings.add(new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicles.get(0), "asdasd6516", 180,
 		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
-	bookings.add(new Booking(2, LocalDateTime.of(2018, 8, 22, 11, 15), vehicles.get(1), "asdasd6516", 360,
-		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
+
 	return bookings;
     }
 
     /**
      * Creates a booking, writes it to the database & returns the booking object
+     *
+     * @throws SQLException
      */
     public Booking createBooking(LocalDateTime timestamp, String registration, String customerId, int duration,
-	    Position endLocation) {
+	    Position startLocation, Position endLocation) {
 	// TODO: write to the DB
+
+	Calendar calendar = Calendar.getInstance();
+	java.sql.Timestamp currtime = new java.sql.Timestamp(calendar.getTime().getTime());
+
+	logger.info("Create Booking");
+
+	// VALUES (?,?,?,?,?)";
+
+	try {
+	    String query = "INSERT INTO bookings (id,timestamp, registration,customer_id,duration,start_location,end_location) VALUES (id,?,?,?,?,Point(?,?),Point(?,?))";
+
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+
+	    pStmnt.setTimestamp(1, currtime);
+	    pStmnt.setString(2, "HEH123");
+	    pStmnt.setString(3, "ABC");
+	    pStmnt.setInt(4, 2111);
+
+	    pStmnt.setString(5, "20"); // start lon //stores as BLOB
+	    pStmnt.setString(6, "50"); // start lat
+
+	    pStmnt.setString(7, "-123"); // end lon
+	    pStmnt.setString(8, "124"); // end lat
+
+	    pStmnt.executeUpdate();
+
+	    pStmnt.close();
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+
 	Vehicle vehicle = new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue",
 		new Position(-37.808401, 144.956159));
 	return new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicle, "asdasd6516", 180, vehicle.getPosition(),
 		new Position(-37.811510, 144.965667));
+
     }
 
 }

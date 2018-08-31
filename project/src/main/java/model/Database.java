@@ -108,30 +108,20 @@ public class Database implements Closeable {
      * Returns a list of vehicle objects
      */
     public List<Vehicle> getVehicles() {
+	// TODO: Get vehicles from database
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
-	try {
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(
-		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, ST_Y(`location`) as `loc_y` FROM `vehicles`");
-	    while (rs.next()) {
-		String registration = rs.getString("registration");
-		String make = rs.getString("make");
-		String model = rs.getString("model");
-		int year = rs.getInt("year");
-		String colour = rs.getString("colour");
-		double loc_x = rs.getDouble("loc_x");
-		double loc_y = rs.getDouble("loc_y");
-		// construct the object
-		Position location = new Position(loc_x, loc_y);
-		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location);
-		vehicles.add(vehicle);
-	    }
-	    return vehicles;
-	} catch (SQLException e) {
-	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Vehicle>();
-	}
+	vehicles.add(new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue", new Position(-37.808401, 144.956159)));
+	vehicles.add(new Vehicle("QRB990", "BMW", "325i", 2003, "Black", new Position(-37.809741, 144.970895)));
+	vehicles.add(new Vehicle("TAA325", "Peugeot", "307 SW", 2008, "Grey", new Position(-37.805819, 144.960025)));
+	vehicles.add(new Vehicle("UBR666", "Ford", "Falcon", 2013, "Orange", new Position(-37.815603, 144.969967)));
+	vehicles.add(new Vehicle("FOK356", "Holden", "Barina", 2017, "White", new Position(-37.814022, 144.961954)));
+	vehicles.add(new Vehicle("JTD955", "Holden", "Commadore", 2005, "Grey", new Position(-37.816170, 144.956179)));
+	vehicles.add(new Vehicle("BLA555", "Mazda", "3", 2010, "White", new Position(-37.818681, 144.958982)));
+	vehicles.add(new Vehicle("QOP299", "Kia", "Rio", 2013, "Pink", new Position(-37.811510, 144.965667)));
+	vehicles.add(new Vehicle("YODUDE", "Nissan", "Skyline", 2010, "Black", new Position(-37.810422, 144.968597)));
+	vehicles.add(new Vehicle("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black",
+		new Position(-37.807232, 144.963620)));
+	return vehicles;
     }
 
     /**

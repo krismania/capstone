@@ -280,39 +280,44 @@ public class Database implements Closeable {
 	    Position startLocation, Position endLocation) {
 	logger.info("Create Booking for " + customerId);
 	try {
-	    logger.info("Checking for Double Booking for: " + registration);
+
 	    // CHECK
 	    // Checks this timestamp to see if its booked already for the same car.
 	    if (!isCarDoubleBooked(timestamp, registration)) {
-		// INSERT
-		String query = "INSERT INTO bookings "
-			+ "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
-			+ "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
+		if (!isUserDoubleBooked(timestamp, customerId)) {
+		    // INSERT
 
-		PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+		    String query = "INSERT INTO bookings "
+			    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
+			    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
 
-		pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
-		pStmnt.setString(2, registration);
-		pStmnt.setString(3, customerId);
-		pStmnt.setInt(4, duration);
+		    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
-		pStmnt.setDouble(5, startLocation.getLat());
-		pStmnt.setDouble(6, startLocation.getLng());
+		    pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
+		    pStmnt.setString(2, registration);
+		    pStmnt.setString(3, customerId);
+		    pStmnt.setInt(4, duration);
 
-		pStmnt.setDouble(7, endLocation.getLat());
-		pStmnt.setDouble(8, endLocation.getLng());
+		    pStmnt.setDouble(5, startLocation.getLat());
+		    pStmnt.setDouble(6, startLocation.getLng());
 
-		pStmnt.executeUpdate();
+		    pStmnt.setDouble(7, endLocation.getLat());
+		    pStmnt.setDouble(8, endLocation.getLng());
 
-		// get the inserted booking's ID
-		ResultSet rs = pStmnt.getGeneratedKeys();
-		if (rs.next()) {
-		    int id = rs.getInt(1);
-		    pStmnt.close();
+		    pStmnt.executeUpdate();
 
-		    Vehicle vehicle = getVehicleByReg(registration);
-		    return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+		    // get the inserted booking's ID
+		    ResultSet rs = pStmnt.getGeneratedKeys();
+		    if (rs.next()) {
+			int id = rs.getInt(1);
+			pStmnt.close();
+
+			Vehicle vehicle = getVehicleByReg(registration);
+			logger.info("Successfully inserted booking");
+			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+		    }
 		}
+
 	    }
 
 	} catch (SQLException e) {
@@ -355,7 +360,7 @@ public class Database implements Closeable {
     }
 
     public boolean isCarDoubleBooked(LocalDateTime currtime, String registration) {
-
+	logger.info("Checking if vehicle:" + registration + " is double booked.");
 	try {
 	    // Gets the latest timestamp of a car booking.
 	    String query = "SELECT timestamp,duration FROM bookings " + "WHERE registration = '" + registration + "' "
@@ -370,7 +375,9 @@ public class Database implements Closeable {
 		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
 
 		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
-		    logger.info("Error Double Booked for " + registration);
+		    logger.info("Error vehicle:" + registration + " is Already Booked");
+		    rs.close();
+		    stmt.close();
 		    return true; // It is double booked.
 		}
 
@@ -379,7 +386,6 @@ public class Database implements Closeable {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
-	logger.info("Not Double booked for " + registration);
 
 	return false; // Not double Booked.
     }
@@ -387,7 +393,7 @@ public class Database implements Closeable {
     // Work in progress, will probably merge it together with CarDoubleBooked after
     // more testing..
     public boolean isUserDoubleBooked(LocalDateTime currtime, String customerId) {
-
+	logger.info("Checking if user:" + customerId + "double booked.");
 	try {
 	    // Gets the latest timestamp of a car booking.
 	    String query = "SELECT timestamp,duration FROM bookings " + "WHERE customer_id = '" + customerId + "' "
@@ -402,7 +408,9 @@ public class Database implements Closeable {
 		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
 
 		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
-		    logger.info("Error Double Booked for " + customerId);
+		    logger.info("Error " + customerId + " Double Booked.");
+		    rs.close();
+		    stmt.close();
 		    return true; // It is double booked.
 		}
 
@@ -411,7 +419,6 @@ public class Database implements Closeable {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	}
-	logger.info("Not Double booked for " + customerId);
 
 	return false; // Not double Booked.
     }

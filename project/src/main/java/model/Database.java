@@ -280,33 +280,39 @@ public class Database implements Closeable {
 	    Position startLocation, Position endLocation) {
 	logger.info("Create Booking for " + customerId);
 	try {
-	    String query = "INSERT INTO bookings "
-		    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
-		    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
+	    logger.info("Checking for Double Booking for: " + registration);
+	    // CHECK
+	    // Checks this timestamp to see if its booked already for the same car.
+	    if (!isCarDoubleBooked(timestamp, registration)) {
+		// INSERT
+		String query = "INSERT INTO bookings "
+			+ "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
+			+ "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
 
-	    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+		PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
-	    pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
-	    pStmnt.setString(2, registration);
-	    pStmnt.setString(3, customerId);
-	    pStmnt.setInt(4, duration);
+		pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
+		pStmnt.setString(2, registration);
+		pStmnt.setString(3, customerId);
+		pStmnt.setInt(4, duration);
 
-	    pStmnt.setDouble(5, startLocation.getLat());
-	    pStmnt.setDouble(6, startLocation.getLng());
+		pStmnt.setDouble(5, startLocation.getLat());
+		pStmnt.setDouble(6, startLocation.getLng());
 
-	    pStmnt.setDouble(7, endLocation.getLat());
-	    pStmnt.setDouble(8, endLocation.getLng());
+		pStmnt.setDouble(7, endLocation.getLat());
+		pStmnt.setDouble(8, endLocation.getLng());
 
-	    pStmnt.executeUpdate();
+		pStmnt.executeUpdate();
 
-	    // get the inserted booking's ID
-	    ResultSet rs = pStmnt.getGeneratedKeys();
-	    if (rs.next()) {
-		int id = rs.getInt(1);
-		pStmnt.close();
+		// get the inserted booking's ID
+		ResultSet rs = pStmnt.getGeneratedKeys();
+		if (rs.next()) {
+		    int id = rs.getInt(1);
+		    pStmnt.close();
 
-		Vehicle vehicle = getVehicleByReg(registration);
-		return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+		    Vehicle vehicle = getVehicleByReg(registration);
+		    return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+		}
 	    }
 
 	} catch (SQLException e) {
@@ -338,6 +344,7 @@ public class Database implements Closeable {
 
 		position = new Position(lat, lng);
 		v = new Vehicle(rego, make, model, year, colour, position);
+
 	    }
 
 	} catch (SQLException e) {
@@ -345,6 +352,68 @@ public class Database implements Closeable {
 	    e.printStackTrace();
 	}
 	return v;
+    }
+
+    public boolean isCarDoubleBooked(LocalDateTime currtime, String registration) {
+
+	try {
+	    // Gets the latest timestamp of a car booking.
+	    String query = "SELECT timestamp,duration FROM bookings " + "WHERE registration = '" + registration + "' "
+		    + "ORDER BY id DESC LIMIT 1;";
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query);
+
+	    if (rs.next()) {
+		// Gets when the car is going to end.
+		LocalDateTime bookingTime = rs.getTimestamp("timestamp").toLocalDateTime();
+		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
+
+		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
+		    logger.info("Error Double Booked for " + registration);
+		    return true; // It is double booked.
+		}
+
+	    }
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	logger.info("Not Double booked for " + registration);
+
+	return false; // Not double Booked.
+    }
+
+    // Work in progress, will probably merge it together with CarDoubleBooked after
+    // more testing..
+    public boolean isUserDoubleBooked(LocalDateTime currtime, String customerId) {
+
+	try {
+	    // Gets the latest timestamp of a car booking.
+	    String query = "SELECT timestamp,duration FROM bookings " + "WHERE customer_id = '" + customerId + "' "
+		    + "ORDER BY id DESC LIMIT 1;";
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query);
+
+	    if (rs.next()) {
+		// Gets when the car is going to end.
+		LocalDateTime bookingTime = rs.getTimestamp("timestamp").toLocalDateTime();
+		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
+
+		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
+		    logger.info("Error Double Booked for " + customerId);
+		    return true; // It is double booked.
+		}
+
+	    }
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	logger.info("Not Double booked for " + customerId);
+
+	return false; // Not double Booked.
     }
 
 }

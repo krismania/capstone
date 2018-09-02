@@ -96,6 +96,7 @@ public class ApiController {
 
 	post("/api/vehicles", (req, res) -> {
 	    res.type("application/json");
+
 	    Position pos;
 	    VehicleRequest vr;
 	    try {
@@ -142,7 +143,7 @@ public class ApiController {
 
 	    db.close();
 
-	    logger.info("Inserted successfully!");
+	    // logger.info("Inserted successfully!");
 	    return new Gson().toJson(booking);
 	});
 

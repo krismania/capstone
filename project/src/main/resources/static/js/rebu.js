@@ -1,6 +1,25 @@
 // contains all API requests
 rebu = (function() {
 	
+	function zeroPad(number) {
+		if (number < 10) {
+			return "0" + number;
+		} else {
+			return "" + number;
+		}
+	}
+	
+	function dateToString(d) {
+		var year = d.getFullYear();
+		var month = zeroPad(d.getMonth() + 1);
+		var day = zeroPad(d.getDate());
+		var hours = zeroPad(d.getHours());
+		var minutes = zeroPad(d.getMinutes());
+		var seconds = zeroPad(d.getSeconds());
+		return year + "-" + month + "-" + day + " "
+			+ hours + ":" + minutes + ":" + seconds;
+	}
+	
 	return {
 		
 		getVehicles: function(callback) {
@@ -57,7 +76,18 @@ rebu = (function() {
 		
 		requestBooking: function(bookingRequest, callback) {
 			console.log("[api] requesting booking", bookingRequest);
-			// TODO: link this route
+			// create timestamp
+			var booking = {
+			    timestamp: dateToString(new Date()),
+			    registration: bookingRequest.registration,
+			    customerId: bookingRequest.client,
+			    duration: bookingRequest.duration,
+			    startLocation: bookingRequest.pickup,
+			    endLocation: bookingRequest.dropoff
+			}
+			
+			console.log("Booking:", booking);
+
 			succeeded = false;
 			callback(succeeded);
 		}

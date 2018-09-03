@@ -160,7 +160,6 @@ function bookingForm(vehicle) {
 	var vehicleInfo = view.vehicleInfo(vehicle);
 	var bookingForm = view.bookingForm(vehicle);
 	bookingForm.addEventListener("submit", function(e) {
-		console.log("Hello there");
 		e.preventDefault();
 		submitBooking(vehicle);
 	});
@@ -176,12 +175,22 @@ function submitBooking(vehicle) {
 	// collect booking details
 	var form = document.getElementById("booking-form");
 	var timeSelect = document.getElementById("dropoff-time");
-	var time = timeSelect.options[timeSelect.selectedIndex].value;
+	var duration = timeSelect.options[timeSelect.selectedIndex].value;
 	var location = document.getElementById("dropoff-location").value;
+	var registration = document.getElementById("registration").value;
+	
+	// TODO: turn location into coordinates
+	location = {
+		lat: 123,
+		lng: -123
+	};
 	
 	var bookingRequest = {
-		duration: time,
-		dropoff: location
+		registration: registration,
+		duration: duration,
+		pickup: geoMarker.marker.getPosition().toJSON(),
+		dropoff: location,
+		client: googleUser.getBasicProfile().getEmail()
 	};
 	
 	rebu.requestBooking(bookingRequest, function(succeeded) {

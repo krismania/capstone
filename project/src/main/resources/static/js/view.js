@@ -54,10 +54,15 @@ var view = (function() {
 			var submit = document.createElement("button");
 			
 			// create dropoff fieldset
+			var registration = document.createElement("input");
 			var dropoff = document.createElement("fieldset");
 			var dropoffLegend = document.createElement("legend");
 			var dropoffTime = document.createElement("select");
 			var dropoffLocation = document.createElement("input");
+			
+			registration.id = "registration";
+			registration.type = "hidden";
+			registration.value = vehicle.registration;
 			
 			dropoffLegend.innerText = "Drop off";
 			dropoffTime.id = "dropoff-time";
@@ -93,6 +98,7 @@ var view = (function() {
 			submit.innerText = "CONFIRM BOOKING";
 			
 			// mix it all up
+			form.appendChild(registration);
 			form.appendChild(dropoff);
 			form.appendChild(submit);
 			

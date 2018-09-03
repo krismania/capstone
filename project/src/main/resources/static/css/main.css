@@ -110,7 +110,7 @@ header h1 {
     height: 100%;
     background-color: #fefefe;
     box-shadow: 0 0 10px -5px black;
-    overflow: hidden overlay;
+    overflow: hidden;
     transition: width 0.4s;
 }
 

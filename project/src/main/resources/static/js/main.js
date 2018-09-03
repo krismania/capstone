@@ -9,17 +9,19 @@ var currentInfoWindow = null;
 var nearbyButton = true;
 // the marker which represents the user's location
 var geoMarker = null;
+// signed in user
+var googleUser = null;
 
-function onSuccess(googleUser) {
+function onLogin(user) {
+    googleUser = user;
     console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
-    
     var id_token = googleUser.getAuthResponse().id_token;
-    console.log("ID Token: " + id_token);
 }
 
 function signOut() {
 	var auth2 = gapi.auth2.getAuthInstance();
 	auth2.signOut().then(function () {
+		googleUser = null;
 		console.log('User signed out.');
 	});
 }
@@ -158,6 +160,7 @@ function bookingForm(vehicle) {
 	var vehicleInfo = view.vehicleInfo(vehicle);
 	var bookingForm = view.bookingForm(vehicle);
 	bookingForm.addEventListener("submit", function(e) {
+		console.log("Hello there");
 		e.preventDefault();
 		submitBooking(vehicle);
 	});

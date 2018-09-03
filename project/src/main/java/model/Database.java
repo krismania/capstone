@@ -50,7 +50,8 @@ public class Database implements Closeable {
 		String database = Config.get("localSqlDatabase");
 		String username = Config.get("localSqlUsername");
 		String password = Config.get("localSqlPassword");
-		String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false";
+		String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false"
+			+ "&serverTimezone=Australia/Melbourne";
 		logger.info("Connecting to development database: " + url);
 		this.conn = DriverManager.getConnection(url, username, password);
 	    }

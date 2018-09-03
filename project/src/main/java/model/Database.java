@@ -3,9 +3,11 @@ package model;
 import java.io.Closeable;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +52,8 @@ public class Database implements Closeable {
 		String database = Config.get("localSqlDatabase");
 		String username = Config.get("localSqlUsername");
 		String password = Config.get("localSqlPassword");
-		String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false";
+		String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false"
+			+ "&serverTimezone=Australia/Melbourne";
 		logger.info("Connecting to development database: " + url);
 		this.conn = DriverManager.getConnection(url, username, password);
 	    }
@@ -85,6 +88,7 @@ public class Database implements Closeable {
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
 	stmt.execute(bookingsSql);
+
 	stmt.close();
     }
 
@@ -104,24 +108,62 @@ public class Database implements Closeable {
 	}
     }
 
+    public Vehicle insertVehicle(String registration, String make, String model, int year, String colour,
+	    Position position) {
+
+	logger.info("Insert Vehicles");
+	Vehicle v = null;
+	try {
+	    String query = "INSERT INTO vehicles (registration, make, model,year,colour,location) VALUES (?,?,?,?,?, POINT(?,?));";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+
+	    pStmnt.setString(1, registration);
+	    pStmnt.setString(2, make);
+	    pStmnt.setString(3, model);
+	    pStmnt.setInt(4, year);
+	    pStmnt.setString(5, colour);
+	    pStmnt.setDouble(6, position.getLat());
+	    pStmnt.setDouble(7, position.getLng());
+
+	    pStmnt.executeUpdate();
+	    pStmnt.close();
+
+	    v = new Vehicle(registration, make, model, year, colour, position);
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return v;
+    }
+
     /**
      * Returns a list of vehicle objects
      */
     public List<Vehicle> getVehicles() {
-	// TODO: Get vehicles from database
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
-	vehicles.add(new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue", new Position(-37.808401, 144.956159)));
-	vehicles.add(new Vehicle("QRB990", "BMW", "325i", 2003, "Black", new Position(-37.809741, 144.970895)));
-	vehicles.add(new Vehicle("TAA325", "Peugeot", "307 SW", 2008, "Grey", new Position(-37.805819, 144.960025)));
-	vehicles.add(new Vehicle("UBR666", "Ford", "Falcon", 2013, "Orange", new Position(-37.815603, 144.969967)));
-	vehicles.add(new Vehicle("FOK356", "Holden", "Barina", 2017, "White", new Position(-37.814022, 144.961954)));
-	vehicles.add(new Vehicle("JTD955", "Holden", "Commadore", 2005, "Grey", new Position(-37.816170, 144.956179)));
-	vehicles.add(new Vehicle("BLA555", "Mazda", "3", 2010, "White", new Position(-37.818681, 144.958982)));
-	vehicles.add(new Vehicle("QOP299", "Kia", "Rio", 2013, "Pink", new Position(-37.811510, 144.965667)));
-	vehicles.add(new Vehicle("YODUDE", "Nissan", "Skyline", 2010, "Black", new Position(-37.810422, 144.968597)));
-	vehicles.add(new Vehicle("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black",
-		new Position(-37.807232, 144.963620)));
-	return vehicles;
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(
+		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, ST_Y(`location`) as `loc_y` FROM `vehicles`");
+	    while (rs.next()) {
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double loc_x = rs.getDouble("loc_x");
+		double loc_y = rs.getDouble("loc_y");
+		// construct the object
+		Position location = new Position(loc_x, loc_y);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location);
+		vehicles.add(vehicle);
+	    }
+	    return vehicles;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return an empty list in case of an error
+	    return new ArrayList<Vehicle>();
+	}
     }
 
     /**
@@ -182,28 +224,204 @@ public class Database implements Closeable {
 
     /**
      * Returns a list of bookings
+     *
+     * @throws SQLException
      */
     public List<Booking> getBookings() {
-	// TODO: Get bookings from database
-	List<Vehicle> vehicles = getVehicles();
+	logger.info("Get Booking");
 	List<Booking> bookings = new ArrayList<Booking>();
-	bookings.add(new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicles.get(0), "asdasd6516", 180,
-		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
-	bookings.add(new Booking(2, LocalDateTime.of(2018, 8, 22, 11, 15), vehicles.get(1), "asdasd6516", 360,
-		new Position(-37.816170, 144.956179), new Position(-37.811510, 144.965667)));
-	return bookings;
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
+		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y"
+		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
+	    while (rs.next()) {
+		int id = rs.getInt("id");
+		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+		String customer_id = rs.getString("customer_id");
+		int duration = rs.getInt("duration");
+		double lat_start = rs.getDouble("x_start");
+		double lng_start = rs.getDouble("y_start");
+		double lat_end = rs.getDouble("x_end");
+		double lng_end = rs.getDouble("y_end");
+		Position start = new Position(lat_start, lng_start);
+		Position end = new Position(lat_end, lng_end);
+
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double lat_curr = rs.getDouble("current_x");
+		double lng_curr = rs.getDouble("current_y");
+		Position car_curr_pos = new Position(lat_curr, lng_curr);
+
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+
+		bookings.add(booking);
+	    }
+	    return bookings;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return an empty list in case of an error
+	    return new ArrayList<Booking>();
+	}
     }
 
     /**
      * Creates a booking, writes it to the database & returns the booking object
+     *
+     * @throws SQLException
      */
     public Booking createBooking(LocalDateTime timestamp, String registration, String customerId, int duration,
-	    Position endLocation) {
-	// TODO: write to the DB
-	Vehicle vehicle = new Vehicle("ABC123", "Toyota", "Corolla", 2014, "Blue",
-		new Position(-37.808401, 144.956159));
-	return new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), vehicle, "asdasd6516", 180, vehicle.getPosition(),
-		new Position(-37.811510, 144.965667));
+	    Position startLocation, Position endLocation) {
+	logger.info("Create Booking for " + customerId);
+	try {
+
+	    // CHECK
+	    // Checks this timestamp to see if its booked already for the same car.
+	    if (!isCarDoubleBooked(timestamp, registration)) {
+		if (!isUserDoubleBooked(timestamp, customerId)) {
+		    // INSERT
+
+		    String query = "INSERT INTO bookings "
+			    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
+			    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
+
+		    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+
+		    pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
+		    pStmnt.setString(2, registration);
+		    pStmnt.setString(3, customerId);
+		    pStmnt.setInt(4, duration);
+
+		    pStmnt.setDouble(5, startLocation.getLat());
+		    pStmnt.setDouble(6, startLocation.getLng());
+
+		    pStmnt.setDouble(7, endLocation.getLat());
+		    pStmnt.setDouble(8, endLocation.getLng());
+
+		    pStmnt.executeUpdate();
+
+		    // get the inserted booking's ID
+		    ResultSet rs = pStmnt.getGeneratedKeys();
+		    if (rs.next()) {
+			int id = rs.getInt(1);
+			pStmnt.close();
+
+			Vehicle vehicle = getVehicleByReg(registration);
+			logger.info("Successfully inserted booking");
+			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+		    }
+		}
+
+	    }
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+
+	// TODO: throw a custom exception on failure?
+	return null;
+    }
+
+    public Vehicle getVehicleByReg(String registration) {
+	logger.info("Getting vehicle with rego: " + registration);
+	Vehicle v = null;
+	Position position;
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, ST_X(location) as lat, "
+		    + "ST_Y(location) as lng FROM vehicles WHERE registration LIKE '" + registration + "';");
+
+	    if (rs.next()) {
+		String rego = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double lat = rs.getDouble("lat");
+		double lng = rs.getDouble("lng");
+
+		position = new Position(lat, lng);
+		v = new Vehicle(rego, make, model, year, colour, position);
+
+	    }
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return v;
+    }
+
+    public boolean isCarDoubleBooked(LocalDateTime currtime, String registration) {
+	logger.info("Checking if vehicle:" + registration + " is double booked.");
+	try {
+	    // Gets the latest timestamp of a car booking.
+	    String query = "SELECT timestamp,duration FROM bookings " + "WHERE registration = '" + registration + "' "
+		    + "ORDER BY id DESC LIMIT 1;";
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query);
+
+	    if (rs.next()) {
+		// Gets when the car is going to end.
+		LocalDateTime bookingTime = rs.getTimestamp("timestamp").toLocalDateTime();
+		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
+
+		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
+		    logger.info("Error vehicle:" + registration + " is Already Booked");
+		    rs.close();
+		    stmt.close();
+		    return true; // It is double booked.
+		}
+
+	    }
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+
+	return false; // Not double Booked.
+    }
+
+    // Work in progress, will probably merge it together with CarDoubleBooked after
+    // more testing..
+    public boolean isUserDoubleBooked(LocalDateTime currtime, String customerId) {
+	logger.info("Checking if user:" + customerId + "double booked.");
+	try {
+	    // Gets the latest timestamp of a car booking.
+	    String query = "SELECT timestamp,duration FROM bookings " + "WHERE customer_id = '" + customerId + "' "
+		    + "ORDER BY id DESC LIMIT 1;";
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query);
+
+	    if (rs.next()) {
+		// Gets when the car is going to end.
+		LocalDateTime bookingTime = rs.getTimestamp("timestamp").toLocalDateTime();
+		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
+
+		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
+		    logger.info("Error " + customerId + " Double Booked.");
+		    rs.close();
+		    stmt.close();
+		    return true; // It is double booked.
+		}
+
+	    }
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+
+	return false; // Not double Booked.
     }
 
 }

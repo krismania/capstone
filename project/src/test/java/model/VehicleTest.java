@@ -14,10 +14,31 @@ class VehicleTest {
 	this.vehicle = new Vehicle("ABC123", "SomeMake", "Some Model", 2010, "Yellow", new Position(1, 1));
     }
 
+    // test to make sure vehicle is added properly
     @Test
     void testGetDescription() {
 	String expected = "SomeMake Some Model (2010)";
 	assertEquals(expected, this.vehicle.getDescription());
+    }
+
+    @Test
+    void testColour() {
+	String expected = "Yellow";
+	assertEquals(expected, this.vehicle.getColour());
+    }
+
+    @Test
+    void testPositionLat() {
+	Position pos = new Position(1, 1);
+	double lat = pos.getLat();
+	assertEquals(lat, this.vehicle.getPosition().getLat());
+    }
+
+    @Test
+    void testPositionLng() {
+	Position pos = new Position(1, 1);
+	double lng = pos.getLng();
+	assertEquals(lng, this.vehicle.getPosition().getLng());
     }
 
 }

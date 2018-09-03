@@ -3,6 +3,8 @@ package controllers;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -25,6 +27,24 @@ public class ApiController {
     static class PositionRequest {
 	double lat;
 	double lng;
+    }
+
+    static class VehicleRequest {
+	String registration;
+	String make;
+	String model;
+	int year;
+	String colour;
+	PositionRequest position;
+    }
+
+    static class BookingRequest {
+	String timestamp;
+	String registration;
+	String customerId;
+	int duration;
+	PositionRequest startLocation;
+	PositionRequest endLocation;
     }
 
     public ApiController() {
@@ -72,6 +92,59 @@ public class ApiController {
 
 	    logger.info("Found " + bookings.size() + " bookings");
 	    return new Gson().toJson(bookings);
+	});
+
+	post("/api/vehicles", (req, res) -> {
+	    res.type("application/json");
+
+	    Position pos;
+	    VehicleRequest vr;
+	    try {
+		vr = new Gson().fromJson(req.body(), VehicleRequest.class);
+		pos = new Position(vr.position.lat, vr.position.lng);
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+	    logger.info("Inserting a car with rego: " + vr.registration);
+
+	    Database db = new Database();
+	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos);
+	    db.close();
+
+	    logger.info("Inserted successfully!");
+	    return new Gson().toJson(inserted_vehicle);
+	});
+
+	post("/api/bookings", (req, res) -> {
+	    res.type("application/json");
+	    Position location_start, location_end;
+	    BookingRequest br;
+	    LocalDateTime dateTime;
+
+	    try {
+		br = new Gson().fromJson(req.body(), BookingRequest.class);
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		dateTime = LocalDateTime.parse(br.timestamp, formatter);
+
+		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
+		location_end = new Position(br.endLocation.lat, br.endLocation.lng);
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+
+	    logger.info("Inserting a booking!");
+	    Database db = new Database();
+
+	    Booking booking = db.createBooking(dateTime, br.registration, br.customerId, br.duration, location_start,
+		    location_end);
+
+	    db.close();
+
+	    // logger.info("Inserted successfully!");
+	    return new Gson().toJson(booking);
 	});
 
     }

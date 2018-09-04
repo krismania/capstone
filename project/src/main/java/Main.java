@@ -33,6 +33,7 @@ public class Main implements SparkApplication {
 	logger.info("Launching Rebu server...");
 
 	String mapsApiKey = Config.get("mapsApiKey");
+	String googleClientId = Config.get("googleClientId");
 
 	/* == ROUTES == */
 
@@ -46,6 +47,7 @@ public class Main implements SparkApplication {
 	get("/", (req, res) -> {
 	    Map<String, Object> model = new HashMap<>();
 	    model.put("mapsApiKey", mapsApiKey);
+	    model.put("googleClientId", googleClientId);
 	    return Util.render(model, "index");
 	});
     }

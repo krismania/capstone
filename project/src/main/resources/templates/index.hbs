@@ -16,20 +16,20 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="css/main.css">
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+        <meta name="google-signin-client_id" content="{{googleClientId}}">
     </head>
     <body>
-        <header>
-            <h1>Rebu</h1>
-        </header>
+    	{{> 'header.hbs'}}
         <div id="map-wrapper">
             <div id="map"></div>
+            <button id="geo-button"><i class="material-icons md-18">my_location</i>FIND ME</button>
         </div>
-        {{!-- <form id="search-box">
-            <input id="search-input" type="text" placeholder="Find a car near...">
-            <button id="search-button"><i class="material-icons">search</i></button>
-            <button id="geo-button"><i class="material-icons">my_location</i></button>
-        </form> --}}
+        {{> 'sidepane.hbs'}}
+        <script src="js/rebu.js" defer></script>
+        <script src="js/sidepane.js" defer></script>
+        <script src="js/view.js" defer></script>
         <script src="js/main.js" defer></script>
         <script src="https://maps.googleapis.com/maps/api/js?key={{mapsApiKey}}&callback=initMap" async defer></script>
+        <script src="https://apis.google.com/js/platform.js" async defer></script>
     </body>
 </html>

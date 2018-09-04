@@ -76,7 +76,6 @@ rebu = (function() {
 		
 		requestBooking: function(bookingRequest, callback) {
 			console.log("[api] requesting booking", bookingRequest);
-			// create timestamp
 			var booking = {
 			    timestamp: dateToString(new Date()),
 			    registration: bookingRequest.registration,
@@ -86,10 +85,28 @@ rebu = (function() {
 			    endLocation: bookingRequest.dropoff
 			}
 			
+			booking = JSON.stringify(booking);
 			console.log("Booking:", booking);
-
-			succeeded = false;
-			callback(succeeded);
+						
+			var headers = new Headers();
+			headers.append("Content-Type", "application/json");
+			var request = new Request('http://localhost:8080/api/bookings', {
+				method: 'post',
+				headers: headers,
+				body: booking
+			});
+			
+			fetch(request)
+			.then(res => res.json())
+			.then(json => {
+				console.log(json);
+				// if response was null, booking failed
+				if (json == null) {
+					callback(false);
+				} else {
+					callback(true);
+				}
+			});
 		}
 	
 	}

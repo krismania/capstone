@@ -42,6 +42,18 @@ p {
 	margin: 10px 16px;
 }
 
+#logout {
+	float: right;
+	background: none;
+	color: #ffffff;
+	margin: 10px 0;
+	font-weight: normal;
+}
+
+#logout:hover, #logout:focus {
+	background: #ffffff11;
+}
+
 header {
 	background-color: #262626;
 	width: 100%;

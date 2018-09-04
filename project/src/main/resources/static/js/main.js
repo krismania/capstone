@@ -16,6 +16,8 @@ function onLogin(user) {
     googleUser = user;
     console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
     var id_token = googleUser.getAuthResponse().id_token;
+    // show logout button
+    document.getElementById("logout").style.visibility = 'visible';
 }
 
 function signOut() {
@@ -23,6 +25,8 @@ function signOut() {
 	auth2.signOut().then(function () {
 		googleUser = null;
 		console.log('User signed out.');
+		// hide logout button
+	    document.getElementById("logout").style.visibility = 'hidden';
 	});
 }
 

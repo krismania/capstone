@@ -475,9 +475,12 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    stmt.executeUpdate("DELETE FROM bookings WHERE id = " + id + ";");
+	    int result = stmt.executeUpdate("DELETE FROM bookings WHERE id = " + id + ";");
 
-	    return true;
+	    if (result != 0)
+		return true;
+	    else
+		return false;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
 	    return false;

@@ -424,4 +424,67 @@ public class Database implements Closeable {
 	return false; // Not double Booked.
     }
 
+    public List<Booking> getBookingsOfUser(String email) {
+	logger.info("Get Booking of " + email);
+	List<Booking> bookings = new ArrayList<Booking>();
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
+		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y"
+		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration"
+		    + " WHERE bk.customer_id = '" + email + "';");
+	    while (rs.next()) {
+		int id = rs.getInt("id");
+		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+		String customer_id = rs.getString("customer_id");
+		int duration = rs.getInt("duration");
+		double lat_start = rs.getDouble("x_start");
+		double lng_start = rs.getDouble("y_start");
+		double lat_end = rs.getDouble("x_end");
+		double lng_end = rs.getDouble("y_end");
+		Position start = new Position(lat_start, lng_start);
+		Position end = new Position(lat_end, lng_end);
+
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double lat_curr = rs.getDouble("current_x");
+		double lng_curr = rs.getDouble("current_y");
+		Position car_curr_pos = new Position(lat_curr, lng_curr);
+
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+
+		bookings.add(booking);
+	    }
+	    return bookings;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return an empty list in case of an error
+	    return new ArrayList<Booking>();
+	}
+    }
+
+    public Boolean deleteBooking(int id) {
+	logger.info("Deleting Booking with id: " + id);
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    int result = stmt.executeUpdate("DELETE FROM bookings WHERE id = " + id + ";");
+
+	    if (result != 0)
+		return true;
+	    else
+		return false;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
+    }
+
 }

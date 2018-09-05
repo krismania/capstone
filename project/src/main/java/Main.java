@@ -44,6 +44,15 @@ public class Main implements SparkApplication {
 	    mapsApiKey = Config.get("localMapsApiKey");
 	    googleClientId = Config.get("localGoogleClientId");
 	}
+	// check that keys are loaded
+	if (mapsApiKey == null || mapsApiKey.equals("")) {
+	    logger.error("No Maps API key. Check your config.");
+	    System.exit(1);
+	}
+	if (googleClientId == null || googleClientId.equals("")) {
+	    logger.error("No Google Client ID. Check your config.");
+	    System.exit(1);
+	}
 
 	/* == ROUTES == */
 

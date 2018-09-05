@@ -40,17 +40,18 @@ public class Main implements SparkApplication {
 	if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Production) {
 	    mapsApiKey = Config.get("remoteMapsApiKey");
 	    googleClientId = Config.get("remoteGoogleClientId");
-	    if (mapsApiKey == null || googleClientId == null) {
-		logger.error("Maps API or ClientID is null");
-		System.exit(1);
-	    }
 	} else {
 	    mapsApiKey = Config.get("localMapsApiKey");
 	    googleClientId = Config.get("localGoogleClientId");
-	    if (mapsApiKey == null || googleClientId == null) {
-		logger.error("Maps API or ClientID is null");
-		System.exit(1);
-	    }
+	}
+	// check that keys are loaded
+	if (mapsApiKey == null || mapsApiKey.equals("")) {
+	    logger.error("No Maps API key. Check your config.");
+	    System.exit(1);
+	}
+	if (googleClientId == null || googleClientId.equals("")) {
+	    logger.error("No Google Client ID. Check your config.");
+	    System.exit(1);
 	}
 
 	/* == ROUTES == */

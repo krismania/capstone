@@ -257,6 +257,3 @@ sidepane.setCloseCallback(function() {
 	document.getElementById('map-wrapper').style.left = null;
 });
 
-// Display the geolocate button initially
-showGeoButton();
-

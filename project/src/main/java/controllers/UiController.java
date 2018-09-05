@@ -1,12 +1,15 @@
 package controllers;
 
 import static spark.Spark.get;
+import static spark.Spark.post;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
 
 import util.Util;
 
@@ -19,8 +22,29 @@ public class UiController {
 	model.put("mapsApiKey", mapsApiKey);
 	model.put("googleClientId", googleClientId);
 
-	@SuppressWarnings("unused")
 	final Logger logger = LoggerFactory.getLogger(UiController.class);
+
+	post("/login", (req, res) -> {
+	    LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
+	    // set up session
+	    req.session(true);
+	    req.session().attribute("clientId", loginRequest.id);
+	    logger.info("Client logged in: " + loginRequest.id);
+	    res.status(200);
+	    return "";
+	});
+
+	get("/logout", (req, res) -> {
+	    if (req.session(false) != null) {
+		String id = req.session().attribute("clientId");
+		req.session().removeAttribute("clientId");
+		logger.info("Client logged out: " + id);
+		res.status(200);
+	    } else {
+		res.status(400);
+	    }
+	    return "";
+	});
 
 	get("/", (req, res) -> {
 	    return Util.render(model, "index");
@@ -30,6 +54,13 @@ public class UiController {
 	    return Util.render(model, "account");
 	});
 
+    }
+
+    /**
+     * Sent by the client when they log in via Google
+     */
+    static class LoginRequest {
+	String id;
     }
 
 }

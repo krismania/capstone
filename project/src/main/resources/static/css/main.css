@@ -5,6 +5,10 @@ html, body {
 	font-family: sans-serif;
 }
 
+body {
+	background-color: e4e4e4;
+}
+
 h1, h2, h3, h4, h5, h6, p {
 	margin: 0;
 }
@@ -74,6 +78,15 @@ header h1 {
 	line-height: 32px;
 	color: white;
 	padding-left: 56px;
+}
+
+#content-wrapper {
+	max-width: 800px;
+	margin: 16px auto;
+	padding: 16px;
+	background-color: #ffffff;
+	box-shadow: 0 0 10px -5px black;
+	border-radius: 4px;
 }
 
 #geo-button {

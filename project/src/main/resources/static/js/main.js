@@ -13,20 +13,37 @@ var geoMarker = null;
 var googleUser = null;
 
 function onLogin(user) {
-    googleUser = user;
-    console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
-    var id_token = googleUser.getAuthResponse().id_token;
-    // show logout button
-    document.getElementById("logout").style.visibility = 'visible';
+	// post the client ID to the server
+	var headers = new Headers();
+	headers.append("Content-Type", "application/json");
+	var request = new Request("/login", {
+		method: 'post',
+		headers: headers,
+		body: JSON.stringify({
+			id: user.getBasicProfile().getEmail()
+		})
+	});
+	fetch(request)
+	.then(res => {
+		googleUser = user;
+	    console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
+	    var id_token = googleUser.getAuthResponse().id_token;
+	    // show logout button
+	    document.getElementById("logout").style.visibility = 'visible';
+	});
 }
 
 function signOut() {
-	var auth2 = gapi.auth2.getAuthInstance();
-	auth2.signOut().then(function () {
-		googleUser = null;
-		console.log('User signed out.');
-		// hide logout button
-	    document.getElementById("logout").style.visibility = 'hidden';
+	// kill the session
+	fetch(new Request("/logout"))
+	.then(res => {
+		// sign out on client side
+		gapi.auth2.getAuthInstance().signOut().then(function () {
+			googleUser = null;
+			console.log('User signed out.');
+			// hide logout button
+		    document.getElementById("logout").style.visibility = 'hidden';
+		});
 	});
 }
 

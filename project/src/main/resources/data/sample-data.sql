@@ -1,16 +1,16 @@
 insert ignore into `vehicles`
-	(`registration`, `make`, `model`, `year`, `colour`, `location`)
+	(`registration`, `make`, `model`, `year`, `colour`, `location`, `available`)
 values
-    ("ABC123","Toyota", "Corolla", 2014, "Blue", POINT(-37.808401, 144.956159)),
-    ("QRB990","BMW", "325i", 2003, "Black", POINT(-37.809741, 144.970895)),
-    ("TAA325","Peugeot", "307 SW", 2008, "Grey", POINT(-37.805819, 144.960025)),
-    ("UBR666","Ford", "Falcon", 2013, "Orange", POINT(-37.815603, 144.969967)),
-    ("FOK356","Holden", "Barina", 2017, "White", POINT(-37.814022, 144.961954)),
-    ("JTD955","Holden", "Commadore", 2005, "Grey", POINT(-37.816170, 144.956179)),
-    ("BLA555","Mazda", "3", 2010, "White", POINT(-37.818681, 144.958982)),
-    ("QOP299","Kia", "Rio", 2013, "Pink", POINT(-37.811510, 144.965667)),
-    ("YODUDE","Nissan", "Skyline", 2010, "Black", POINT(-37.810422, 144.968597)),
-    ("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black", POINT(-37.807232, 144.963620));
+    ("ABC123","Toyota", "Corolla", 2014, "Blue", POINT(-37.808401, 144.956159), 0),
+    ("QRB990","BMW", "325i", 2003, "Black", POINT(-37.809741, 144.970895), 0),
+    ("TAA325","Peugeot", "307 SW", 2008, "Grey", POINT(-37.805819, 144.960025), 0),
+    ("UBR666","Ford", "Falcon", 2013, "Orange", POINT(-37.815603, 144.969967), 0),
+    ("FOK356","Holden", "Barina", 2017, "White", POINT(-37.814022, 144.961954), 1),
+    ("JTD955","Holden", "Commadore", 2005, "Grey", POINT(-37.816170, 144.956179), 1),
+    ("BLA555","Mazda", "3", 2010, "White", POINT(-37.818681, 144.958982), 1),
+    ("QOP299","Kia", "Rio", 2013, "Pink", POINT(-37.811510, 144.965667), 1),
+    ("YODUDE","Nissan", "Skyline", 2010, "Black", POINT(-37.810422, 144.968597), 1),
+    ("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black", POINT(-37.807232, 144.963620), 1);
 
 insert ignore into `bookings`
 	(`timestamp`, `registration`, `customer_id`, `duration`, `start_location`, `end_location`)

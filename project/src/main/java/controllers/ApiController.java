@@ -83,7 +83,7 @@ public class ApiController {
 	    return new Gson().toJson(nearby);
 	});
 
-	get("/api/bookings", (req, res) -> {
+	get("/api/bookings/all", (req, res) -> {
 	    res.type("application/json");
 
 	    Database db = new Database();
@@ -145,6 +145,19 @@ public class ApiController {
 
 	    // logger.info("Inserted successfully!");
 	    return new Gson().toJson(booking);
+	});
+
+	get("/api/bookings", (req, res) -> {
+	    res.type("application/json");
+	    String email = req.queryParams("id");
+
+	    Database db = new Database();
+	    List<Booking> bookings = db.getBookingsOfUser(email);
+
+	    logger.info("Found " + bookings.size() + " bookings of user " + email);
+
+	    db.close();
+	    return new Gson().toJson(bookings);
 	});
 
     }

@@ -90,7 +90,7 @@ rebu = (function() {
 						
 			var headers = new Headers();
 			headers.append("Content-Type", "application/json");
-			var request = new Request('http://localhost:8080/api/bookings', {
+			var request = new Request('/api/bookings', {
 				method: 'post',
 				headers: headers,
 				body: booking

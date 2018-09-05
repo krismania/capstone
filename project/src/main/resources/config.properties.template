@@ -1,6 +1,10 @@
-# Google API keys
-mapsApiKey = [API KEY HERE]
-googleClientId = [CLIENT ID HERE]
+# Google API keys (development)
+localGoogleClientId = [DEVELOPMENT OAUTH KEY]
+localMapsApiKey = [DEVELOPMENT MAPS API KEY]
+
+# Google API keys (deployment)
+remoteGoogleClientId = [DEPLOYMENT OAUTH KEY]
+remoteMapsApiKey = [DEPLOYMENT MAPS API KEY]
 
 # Database information for deployed webserver
 # Ignore these if you will only be testing locally

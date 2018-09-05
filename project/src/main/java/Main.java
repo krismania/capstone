@@ -7,6 +7,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.appengine.api.utils.SystemProperty;
+
 import controllers.ApiController;
 import spark.Spark;
 import spark.servlet.SparkApplication;
@@ -32,8 +34,16 @@ public class Main implements SparkApplication {
 
 	logger.info("Launching Rebu server...");
 
-	String mapsApiKey = Config.get("mapsApiKey");
-	String googleClientId = Config.get("googleClientId");
+	// get keys from config depending on environment
+	String mapsApiKey;
+	String googleClientId;
+	if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Production) {
+	    mapsApiKey = Config.get("remoteMapsApiKey");
+	    googleClientId = Config.get("remoteGoogleClientId");
+	} else {
+	    mapsApiKey = Config.get("localMapsApiKey");
+	    googleClientId = Config.get("localGoogleClientId");
+	}
 
 	/* == ROUTES == */
 

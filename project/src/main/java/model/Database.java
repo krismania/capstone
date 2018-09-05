@@ -77,7 +77,7 @@ public class Database implements Closeable {
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (" + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, "
 		+ "`year` SMALLINT UNSIGNED NOT NULL, " + "`colour` VARCHAR(50) NOT NULL, "
-		+ "location POINT NOT NULL, " + "PRIMARY KEY (`registration`));";
+		+ "location POINT NOT NULL, available TINYINT UNSIGNED NOT NULL, " + "PRIMARY KEY (`registration`));";
 
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
@@ -109,12 +109,12 @@ public class Database implements Closeable {
     }
 
     public Vehicle insertVehicle(String registration, String make, String model, int year, String colour,
-	    Position position) {
+	    Position position, int available) {
 
 	logger.info("Insert Vehicles");
 	Vehicle v = null;
 	try {
-	    String query = "INSERT INTO vehicles (registration, make, model,year,colour,location) VALUES (?,?,?,?,?, POINT(?,?));";
+	    String query = "INSERT INTO vehicles (registration, make, model,year,colour,location,available) VALUES (?,?,?,?,?, POINT(?,?),?);";
 	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
 
 	    pStmnt.setString(1, registration);
@@ -124,11 +124,12 @@ public class Database implements Closeable {
 	    pStmnt.setString(5, colour);
 	    pStmnt.setDouble(6, position.getLat());
 	    pStmnt.setDouble(7, position.getLng());
+	    pStmnt.setInt(8, available);
 
 	    pStmnt.executeUpdate();
 	    pStmnt.close();
 
-	    v = new Vehicle(registration, make, model, year, colour, position);
+	    v = new Vehicle(registration, make, model, year, colour, position, available);
 	} catch (SQLException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -144,7 +145,7 @@ public class Database implements Closeable {
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery(
-		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, ST_Y(`location`) as `loc_y` FROM `vehicles`");
+		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, ST_Y(`location`) as `loc_y`, available FROM `vehicles`");
 	    while (rs.next()) {
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
@@ -155,7 +156,36 @@ public class Database implements Closeable {
 		double loc_y = rs.getDouble("loc_y");
 		// construct the object
 		Position location = new Position(loc_x, loc_y);
-		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location);
+		int avaliable = rs.getInt("available");
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, avaliable);
+		vehicles.add(vehicle);
+	    }
+	    return vehicles;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return an empty list in case of an error
+	    return new ArrayList<Vehicle>();
+	}
+    }
+
+    public List<Vehicle> getAvailableVehicles() {
+	List<Vehicle> vehicles = new ArrayList<Vehicle>();
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(
+		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, "
+			    + "ST_Y(`location`) as `loc_y` FROM `vehicles` " + "WHERE available = 1");
+	    while (rs.next()) {
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		double loc_x = rs.getDouble("loc_x");
+		double loc_y = rs.getDouble("loc_y");
+		// construct the object
+		Position location = new Position(loc_x, loc_y);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, 1);
 		vehicles.add(vehicle);
 	    }
 	    return vehicles;
@@ -236,7 +266,7 @@ public class Database implements Closeable {
 	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
 		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
 		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
-		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y"
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y, vh.available"
 		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
 	    while (rs.next()) {
 		int id = rs.getInt("id");
@@ -258,8 +288,9 @@ public class Database implements Closeable {
 		double lat_curr = rs.getDouble("current_x");
 		double lng_curr = rs.getDouble("current_y");
 		Position car_curr_pos = new Position(lat_curr, lng_curr);
+		int available = rs.getInt("available");
 
-		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, available);
 		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
 
 		bookings.add(booking);
@@ -337,7 +368,7 @@ public class Database implements Closeable {
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, ST_X(location) as lat, "
-		    + "ST_Y(location) as lng FROM vehicles WHERE registration LIKE '" + registration + "';");
+		    + "ST_Y(location) as lng, available FROM vehicles WHERE registration LIKE '" + registration + "';");
 
 	    if (rs.next()) {
 		String rego = rs.getString("registration");
@@ -347,9 +378,10 @@ public class Database implements Closeable {
 		String colour = rs.getString("colour");
 		double lat = rs.getDouble("lat");
 		double lng = rs.getDouble("lng");
+		int available = rs.getInt("available");
 
 		position = new Position(lat, lng);
-		v = new Vehicle(rego, make, model, year, colour, position);
+		v = new Vehicle(rego, make, model, year, colour, position, available);
 
 	    }
 

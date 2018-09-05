@@ -160,6 +160,21 @@ public class ApiController {
 	    return new Gson().toJson(bookings);
 	});
 
+	get("/api/bookings/delete", (req, res) -> {
+	    int id = Integer.parseInt(req.queryParams("id"));
+
+	    Database db = new Database();
+	    Boolean dbResponse = db.deleteBooking(id);
+	    db.close();
+	    if (dbResponse) {
+		res.status(200);
+	    } else {
+		res.status(400);
+	    }
+
+	    return "";
+	});
+
     }
 
 }

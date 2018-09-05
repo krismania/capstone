@@ -470,4 +470,18 @@ public class Database implements Closeable {
 	}
     }
 
+    public Boolean deleteBooking(int id) {
+	logger.info("Deleting Booking with id: " + id);
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    stmt.executeUpdate("DELETE FROM bookings WHERE id = " + id + ";");
+
+	    return true;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
+    }
+
 }

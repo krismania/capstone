@@ -1,8 +1,4 @@
-import static spark.Spark.get;
-
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,10 +6,10 @@ import org.slf4j.LoggerFactory;
 import com.google.appengine.api.utils.SystemProperty;
 
 import controllers.ApiController;
+import controllers.UiController;
 import spark.Spark;
 import spark.servlet.SparkApplication;
 import util.Config;
-import util.Util;
 
 public class Main implements SparkApplication {
 
@@ -59,16 +55,9 @@ public class Main implements SparkApplication {
 	// use static folder in resources for static content
 	Spark.staticFiles.location("static");
 
-	// api controller routes
+	// create routes
 	new ApiController();
-
-	// all other routes
-	get("/", (req, res) -> {
-	    Map<String, Object> model = new HashMap<>();
-	    model.put("mapsApiKey", mapsApiKey);
-	    model.put("googleClientId", googleClientId);
-	    return Util.render(model, "index");
-	});
+	new UiController(mapsApiKey, googleClientId);
     }
 
 }

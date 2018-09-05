@@ -27,9 +27,11 @@ public class UiController {
 	post("/login", (req, res) -> {
 	    LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
 	    // set up session
-	    req.session(true);
-	    req.session().attribute("clientId", loginRequest.id);
-	    logger.info("Client logged in: " + loginRequest.id);
+	    if (req.session(false) == null || req.session().attribute("clientId") == null) {
+		req.session(true);
+		req.session().attribute("clientId", loginRequest.id);
+		logger.info("Client logged in: " + loginRequest.id);
+	    }
 	    res.status(200);
 	    return "";
 	});
@@ -51,7 +53,9 @@ public class UiController {
 	});
 
 	get("/account", (req, res) -> {
-	    return Util.render(model, "account");
+	    Map<String, Object> m = new HashMap<>(model);
+	    m.put("clientId", req.session().attribute("clientId"));
+	    return Util.render(m, "account");
 	});
 
     }

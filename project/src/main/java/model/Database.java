@@ -28,9 +28,9 @@ public class Database implements Closeable {
 
     /**
      * Create a database object with an underlying {@link java.sql.Connection}
-     * object. This constructor will return a connection to the local development
-     * database when run locally, or a connection to the Cloud SQL database when
-     * deployed.
+     * object. This constructor will return a connection to the local
+     * development database when run locally, or a connection to the Cloud SQL
+     * database when deployed.
      *
      * @throws SQLException
      */
@@ -85,10 +85,13 @@ public class Database implements Closeable {
 		+ "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
+	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
+		+ "PRIMARY KEY (`admin_id`));";
+
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
 	stmt.execute(bookingsSql);
-
+	stmt.execute(admin);
 	stmt.close();
     }
 
@@ -283,7 +286,8 @@ public class Database implements Closeable {
 	try {
 
 	    // CHECK
-	    // Checks this timestamp to see if its booked already for the same car.
+	    // Checks this timestamp to see if its booked already for the same
+	    // car.
 	    if (!isCarDoubleBooked(timestamp, registration)) {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
@@ -391,7 +395,8 @@ public class Database implements Closeable {
 	return false; // Not double Booked.
     }
 
-    // Work in progress, will probably merge it together with CarDoubleBooked after
+    // Work in progress, will probably merge it together with CarDoubleBooked
+    // after
     // more testing..
     public boolean isUserDoubleBooked(LocalDateTime currtime, String customerId) {
 	logger.info("Checking if user:" + customerId + "double booked.");

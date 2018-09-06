@@ -30,6 +30,8 @@ function onLogin(user) {
 	    var id_token = googleUser.getAuthResponse().id_token;
 	    // show logout button
 	    document.getElementById("logout").style.visibility = 'visible';
+	    // fire event
+	    document.dispatchEvent(new Event("login"));
 	});
 }
 
@@ -43,6 +45,8 @@ function signOut() {
 			console.log('User signed out.');
 			// hide logout button
 		    document.getElementById("logout").style.visibility = 'hidden';
+		    // fire event
+		    document.dispatchEvent(new Event("logout"));
 		});
 	});
 }

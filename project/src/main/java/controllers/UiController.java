@@ -53,7 +53,7 @@ public class UiController {
 			// Print user identifier
 			String userId = payload.getSubject();
 			logger.info("USER ID: " + userId);
-
+			// what we are saving
 			sub = payload.getSubject();
 
 		    } else {

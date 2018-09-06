@@ -13,7 +13,7 @@ var geoMarker = null;
 var googleUser = null;
 
 function onLogin(user) {
-	// post the client ID to the server
+	// post the client ID to the servera
 	var headers = new Headers();
 	headers.append("Content-Type", "application/json");
 	var request = new Request("/login", {

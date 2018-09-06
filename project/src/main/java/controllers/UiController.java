@@ -3,12 +3,19 @@ package controllers;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.gson.Gson;
 
 import util.Util;
@@ -28,9 +35,34 @@ public class UiController {
 	    LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
 	    // set up session
 	    if (req.session(false) == null || req.session().attribute("clientId") == null) {
+		String sub = null;
+
+		NetHttpTransport transport = new NetHttpTransport();
+		JsonFactory jsonFactory = new JacksonFactory();
+
+		if (loginRequest.id != null) {
+
+		    GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
+			    .setAudience(Collections.singletonList(googleClientId)).build();
+
+		    GoogleIdToken idToken = verifier.verify(loginRequest.id);
+
+		    if (idToken != null) {
+			Payload payload = idToken.getPayload();
+
+			// Print user identifier
+			String userId = payload.getSubject();
+			logger.info("USER ID: " + userId);
+
+			sub = payload.getSubject();
+
+		    } else {
+			logger.info("Invalid ID token.");
+		    }
+		}
 		req.session(true);
-		req.session().attribute("clientId", loginRequest.id);
-		logger.info("Client logged in: " + loginRequest.id);
+		req.session().attribute("clientId", sub);
+		logger.info("Client logged in: " + sub);
 	    }
 	    res.status(200);
 	    return "";

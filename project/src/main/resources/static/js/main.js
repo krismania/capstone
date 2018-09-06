@@ -20,7 +20,7 @@ function onLogin(user) {
 		method: 'post',
 		headers: headers,
 		body: JSON.stringify({
-			id: user.getBasicProfile().getEmail()
+			id: user.getAuthResponse().id_token
 		})
 	});
 	fetch(request)

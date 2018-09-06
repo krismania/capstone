@@ -25,7 +25,8 @@ values
     ("2018-04-05 15:45:00", "FOK356", "s3607187@student.rmit.edu.au", 180, POINT(-37.807232, 144.963620), POINT(-37.810422, 144.968597));
 
 insert ignore into `admins`
-	(`admin_id`)    
+	(`admin_id`)
+values   
     ("102908696637872505288"),
     ("MARTIN"),
     ("KYR"),

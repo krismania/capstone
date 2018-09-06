@@ -487,4 +487,74 @@ public class Database implements Closeable {
 	}
     }
 
+    // Uses the ID of the booking to edit the booking.
+    public Boolean editBooking(int id, LocalDateTime timestamp, String registration, String customerId, int duration,
+	    Position startLocation, Position endLocation) {
+
+	logger.info("Editing  Booking id:" + id);
+	try {
+	    if (checkId(id)) {
+		// Gets the latest timestamp of a car booking.
+		String query = "UPDATE bookings set registration = ?, set customer_id = ?, set duration = ?, set start_location = Point(?,?), set end_location = Point(?,?)  where id = "
+			+ id + ";";
+
+		PreparedStatement ps = this.conn.prepareStatement(query);
+
+		ps.setString(1, registration);
+		ps.setString(2, customerId);
+		ps.setInt(3, duration);
+
+		ps.setDouble(4, startLocation.getLat());
+		ps.setDouble(5, startLocation.getLng());
+
+		ps.setDouble(6, endLocation.getLat());
+		ps.setDouble(7, endLocation.getLng());
+
+		ps.executeUpdate();
+
+		ps.close();
+
+		return true;
+	    }
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return false;
+	}
+
+	return false;
+    }
+
+    public Boolean checkId(int id) {
+
+	logger.info("Checking if ID exists");
+	try {
+	    // Gets the latest timestamp of a car booking.
+	    String query = "SELECT * FROM bookings where id=?;";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
+
+	    ps.setInt(1, id);
+
+	    ResultSet rs = ps.executeQuery();
+
+	    if (rs.next()) {
+		rs.close();
+		ps.close();
+		logger.info("Booking ID exists");
+		return true; // This ID exists
+	    }
+	    rs.close();
+	    ps.close();
+	    logger.info("Booking ID does not exists");
+
+	    return false; // Does not exist.
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return false;
+	}
+
+    }
+
 }

@@ -47,6 +47,16 @@ public class ApiController {
 	PositionRequest endLocation;
     }
 
+    static class UpdateBookingRequest {
+	int id;
+	String timestamp;
+	String registration;
+	String customerId;
+	int duration;
+	PositionRequest startLocation;
+	PositionRequest endLocation;
+    }
+
     public ApiController() {
 
 	final Logger logger = LoggerFactory.getLogger(ApiController.class);
@@ -166,6 +176,40 @@ public class ApiController {
 	    Database db = new Database();
 	    Boolean dbResponse = db.deleteBooking(id);
 	    db.close();
+	    if (dbResponse) {
+		res.status(200);
+	    } else {
+		res.status(400);
+	    }
+
+	    return "";
+	});
+
+	post("/api/bookings/update", (req, res) -> {
+	    Position location_start, location_end;
+	    UpdateBookingRequest ubr;
+	    LocalDateTime dateTime;
+
+	    try {
+		ubr = new Gson().fromJson(req.body(), UpdateBookingRequest.class);
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		dateTime = LocalDateTime.parse(ubr.timestamp, formatter);
+
+		location_start = new Position(ubr.startLocation.lat, ubr.startLocation.lng);
+		location_end = new Position(ubr.endLocation.lat, ubr.endLocation.lng);
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+
+	    Database db = new Database();
+
+	    Boolean dbResponse = db.editBooking(ubr.id, dateTime, ubr.registration, ubr.customerId, ubr.duration,
+		    location_start, location_end);
+
+	    db.close();
+
 	    if (dbResponse) {
 		res.status(200);
 	    } else {

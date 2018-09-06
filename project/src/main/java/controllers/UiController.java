@@ -52,12 +52,6 @@ public class UiController {
 	    return Util.render(model, "index");
 	});
 
-	get("/account", (req, res) -> {
-	    Map<String, Object> m = new HashMap<>(model);
-	    m.put("clientId", req.session().attribute("clientId"));
-	    return Util.render(m, "account");
-	});
-
     }
 
     /**

@@ -238,3 +238,9 @@ button.confirm:disabled {
 	background-color: #ababab;
 }
 
+#prev-bookings > div {
+	display: flex;
+	justify-content: space-between;
+	margin: 16px 0;
+}
+

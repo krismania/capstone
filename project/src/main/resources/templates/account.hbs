@@ -6,9 +6,12 @@
     <body>
     	{{> 'header.hbs'}}
         <div id="content-wrapper">
-            hello there, {{clientId}}.
+            <p>Logged in as {{clientId}}.</p>
+            <h2>PREVIOUS BOOKINGS</h2>
+            <div id="prev-bookings"></div>
         </div>
         {{> 'sidepane.hbs'}}
         {{> 'scripts.hbs'}}
+        <script src="/js/account.js"></script>
     </body>
 </html>

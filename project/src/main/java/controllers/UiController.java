@@ -18,6 +18,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.gson.Gson;
 
+import controllers.Request.LoginRequest;
 import spark.Session;
 import util.Util;
 
@@ -92,13 +93,6 @@ public class UiController {
 	    return Util.render(m, "account");
 	});
 
-    }
-
-    /**
-     * Sent by the client when they log in via Google
-     */
-    static class LoginRequest {
-	String id;
     }
 
 }

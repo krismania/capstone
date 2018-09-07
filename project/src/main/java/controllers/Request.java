@@ -6,6 +6,13 @@ class Request {
     }
 
     /**
+     * Sent by the client when they log in via Google
+     */
+    static class LoginRequest {
+	String id;
+    }
+
+    /**
      * Parses user-posted coordinates
      */
     static class PositionRequest {

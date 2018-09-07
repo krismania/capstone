@@ -166,7 +166,7 @@ public class ApiController {
 	    res.type("application/json");
 
 	    Database db = new Database();
-	    List<Vehicle> vehicles = db.getActiveVehicles();
+	    List<Vehicle> vehicles = db.getAvailableVehicles();
 	    db.close();
 
 	    logger.info("Found " + vehicles.size() + " vehicles");

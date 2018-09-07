@@ -171,13 +171,15 @@ public class Database implements Closeable {
 	}
     }
 
-    public List<Vehicle> getActiveVehicles() {
+    public List<Vehicle> getAvailableVehicles() {
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery(
 		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, "
-			    + "ST_Y(`location`) as `loc_y` FROM `vehicles` " + "WHERE active = 1");
+			    + "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration NOT IN"
+			    + "(SELECT registration from bookings"
+			    + " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() ) AND active = 1;");
 	    while (rs.next()) {
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");

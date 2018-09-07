@@ -493,23 +493,24 @@ public class Database implements Closeable {
 
 	logger.info("Editing  Booking id:" + id);
 	try {
-	    if (checkId(id)) {
+	    if (bookingExists(id)) {
 		if (checkReg(registration)) {
 		    // Gets the latest timestamp of a car booking.
-		    String query = "UPDATE bookings set registration = ?, customer_id = ?, duration = ?, start_location = Point(?,?), end_location = Point(?,?) WHERE id = "
+		    String query = "UPDATE bookings set timestamp = ?, registration = ?, customer_id = ?, duration = ?, start_location = Point(?,?), end_location = Point(?,?) WHERE id = "
 			    + id + ";";
 
 		    PreparedStatement ps = this.conn.prepareStatement(query);
 
-		    ps.setString(1, registration);
-		    ps.setString(2, customerId);
-		    ps.setInt(3, duration);
+		    ps.setTimestamp(1, Timestamp.valueOf(timestamp));
+		    ps.setString(2, registration);
+		    ps.setString(3, customerId);
+		    ps.setInt(4, duration);
 
-		    ps.setDouble(4, startLocation.getLat());
-		    ps.setDouble(5, startLocation.getLng());
+		    ps.setDouble(5, startLocation.getLat());
+		    ps.setDouble(6, startLocation.getLng());
 
-		    ps.setDouble(6, endLocation.getLat());
-		    ps.setDouble(7, endLocation.getLng());
+		    ps.setDouble(7, endLocation.getLat());
+		    ps.setDouble(8, endLocation.getLng());
 
 		    ps.executeUpdate();
 
@@ -529,8 +530,8 @@ public class Database implements Closeable {
 	return false;
     }
 
-    // Checks if ID exists.
-    public Boolean checkId(int id) {
+    // Checks if booking exists.
+    public Boolean bookingExists(int id) {
 
 	logger.info("Checking if ID exists");
 	try {

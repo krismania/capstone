@@ -203,8 +203,10 @@ public class ApiController {
 
 	    Database db = new Database();
 
-	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration,
-		    location_start, location_end);
+	    String clientId = req.session().attribute("clientId");
+
+	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, clientId, br.duration, location_start,
+		    location_end);
 
 	    db.close();
 

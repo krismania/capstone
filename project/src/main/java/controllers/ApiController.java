@@ -42,7 +42,6 @@ public class ApiController {
     static class BookingRequest {
 	String timestamp;
 	String registration;
-	String customerId;
 	int duration;
 	PositionRequest startLocation;
 	PositionRequest endLocation;
@@ -139,7 +138,9 @@ public class ApiController {
 	    logger.info("Inserting a booking!");
 	    Database db = new Database();
 
-	    Booking booking = db.createBooking(dateTime, br.registration, br.customerId, br.duration, location_start,
+	    String clientId = req.session().attribute("clientId");
+
+	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration, location_start,
 		    location_end);
 
 	    db.close();
@@ -150,12 +151,12 @@ public class ApiController {
 
 	get("/api/bookings", (req, res) -> {
 	    res.type("application/json");
-	    String email = req.queryParams("id");
+	    String clientId = req.session().attribute("clientId");
 
 	    Database db = new Database();
-	    List<Booking> bookings = db.getBookingsOfUser(email);
+	    List<Booking> bookings = db.getBookingsOfUser(clientId);
 
-	    logger.info("Found " + bookings.size() + " bookings of user " + email);
+	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
 
 	    db.close();
 	    return new Gson().toJson(bookings);

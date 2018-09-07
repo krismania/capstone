@@ -2,6 +2,7 @@ package controllers;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
+import static spark.Spark.put;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -166,6 +167,46 @@ public class ApiController {
 	    Database db = new Database();
 	    Boolean dbResponse = db.deleteBooking(id);
 	    db.close();
+	    if (dbResponse) {
+		res.status(200);
+	    } else {
+		res.status(400);
+	    }
+
+	    return "";
+	});
+
+	put("/api/bookings/:id", (req, res) -> {
+	    res.type("application/json");
+
+	    Position location_start, location_end;
+	    LocalDateTime dateTime;
+	    BookingRequest br;
+
+	    int id = Integer.parseInt(req.params(":id"));
+
+	    try {
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+		br = new Gson().fromJson(req.body(), BookingRequest.class);
+
+		dateTime = LocalDateTime.parse(br.timestamp, formatter);
+		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
+		location_end = new Position(br.endLocation.lat, br.endLocation.lng);
+
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+
+	    Database db = new Database();
+
+	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration,
+		    location_start, location_end);
+
+	    db.close();
+
 	    if (dbResponse) {
 		res.status(200);
 	    } else {

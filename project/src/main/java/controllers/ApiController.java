@@ -183,6 +183,7 @@ public class ApiController {
 	    Position location_start, location_end;
 	    LocalDateTime dateTime;
 	    BookingRequest br;
+	    String clientId = req.session().attribute("clientId");
 
 	    int id = Integer.parseInt(req.params(":id"));
 
@@ -203,8 +204,8 @@ public class ApiController {
 
 	    Database db = new Database();
 
-	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration,
-		    location_start, location_end);
+	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, clientId, br.duration, location_start,
+		    location_end);
 
 	    db.close();
 

@@ -5,10 +5,6 @@ html, body {
 	font-family: sans-serif;
 }
 
-body {
-	background-color: e4e4e4;
-}
-
 h1, h2, h3, h4, h5, h6, p {
 	margin: 0;
 }
@@ -46,13 +42,25 @@ p {
 	margin: 10px 16px;
 }
 
+#logout {
+	float: right;
+	background: none;
+	color: #ffffff;
+	margin: 10px 0;
+	font-weight: normal;
+}
+
+#logout:hover, #logout:focus {
+	background: #ffffff11;
+}
+
 header {
 	background-color: #262626;
 	width: 100%;
 	height: 56px;
 }
 
-header > a {
+header a {
 	display: inline-block;
 	text-decoration: none;
 	height: 32px;
@@ -66,40 +74,6 @@ header h1 {
 	line-height: 32px;
 	color: white;
 	padding-left: 56px;
-}
-
-#header-links {
-	display: flex;
-	align-items: center;
-	float: right;
-	padding: 10px 0;
-	box-sizing: border-box;
-	height: 100%;
-}
-
-#header-links > a {
-	display: inline-block;
-	background: none;
-	color: #ffffff;
-	font-weight: normal;
-	padding: 10px;
-	border-radius: 4px;
-	text-decoration: none;
-	font-size: 10pt;
-	line-height: 10pt;
-}
-
-#header-links > a:hover, #header-links > a:focus {
-	background: #ffffff11;
-}
-
-#content-wrapper {
-	max-width: 800px;
-	margin: 16px auto;
-	padding: 16px;
-	background-color: #ffffff;
-	box-shadow: 0 0 10px -5px black;
-	border-radius: 4px;
 }
 
 #geo-button {
@@ -249,11 +223,5 @@ button.confirm {
 
 button.confirm:disabled {
 	background-color: #ababab;
-}
-
-#prev-bookings > div {
-	display: flex;
-	justify-content: space-between;
-	margin: 16px 0;
 }
 

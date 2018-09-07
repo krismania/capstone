@@ -138,21 +138,6 @@ var view = (function() {
 			infoContents.appendChild(bookBtn);
 			
 			return infoContents;
-		},
-		
-		previousBooking: function(booking) {
-			var container = document.createElement("div");
-			var vehicleInfo = this.vehicleInfo(booking.vehicle);
-			var date = document.createElement("p");
-			
-			// create date string
-			var dateString = booking.timestamp.date.day + '/' +  booking.timestamp.date.month + '/' + booking.timestamp.date.year
-			date.innerText = dateString;
-			
-			container.appendChild(vehicleInfo);
-			container.appendChild(date);
-			
-			return container;
 		}
 		
 	}

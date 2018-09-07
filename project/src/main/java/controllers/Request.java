@@ -21,6 +21,10 @@ class Request {
 	PositionRequest endLocation;
     }
 
+    static class EditBookingRequest extends BookingRequest {
+	String customerId;
+    }
+
     static class VehicleAvailabilityRequest {
 	String registration;
 	boolean active;

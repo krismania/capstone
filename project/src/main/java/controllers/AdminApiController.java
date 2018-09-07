@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
-import controllers.Request.BookingRequest;
+import controllers.Request.EditBookingRequest;
 import controllers.Request.VehicleAvailabilityRequest;
 import controllers.Request.VehicleRequest;
 import model.Booking;
@@ -141,14 +141,14 @@ public class AdminApiController {
 
 	    Position location_start, location_end;
 	    LocalDateTime dateTime;
-	    BookingRequest br;
+	    EditBookingRequest br;
 
 	    int id = Integer.parseInt(req.params(":id"));
 
 	    try {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-		br = new Gson().fromJson(req.body(), BookingRequest.class);
+		br = new Gson().fromJson(req.body(), EditBookingRequest.class);
 
 		dateTime = LocalDateTime.parse(br.timestamp, formatter);
 		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
@@ -160,10 +160,9 @@ public class AdminApiController {
 	    }
 
 	    Database db = new Database();
-	    String clientId = req.session().attribute("clientId");
 
-	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, clientId, br.duration, location_start,
-		    location_end);
+	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration,
+		    location_start, location_end);
 
 	    db.close();
 

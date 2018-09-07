@@ -23,7 +23,7 @@ rebu = (function() {
 	return {
 		
 		getVehicles: function(callback) {
-			console.log("[api] getting all vehicles");
+			console.log("[api] getting all available vehicles");
 			var vehicles = [];
 			var request = new Request('/api/vehicles');
 			fetch(request)

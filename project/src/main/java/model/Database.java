@@ -212,11 +212,13 @@ public class Database implements Closeable {
 	    int year = vehicles.get(i).getYear();
 	    String colour = vehicles.get(i).getColour();
 	    Position positionC = vehicles.get(i).getPosition();
+	    int available = vehicles.get(i).getAvaliable();
 
 	    double distance = Util.distance(position.getLat(), position.getLng(), positionC.getLat(),
 		    positionC.getLng());
 
-	    NearbyVehicle nV = new NearbyVehicle(registration, make, model, year, colour, positionC, distance);
+	    NearbyVehicle nV = new NearbyVehicle(registration, make, model, year, colour, positionC, available,
+		    distance);
 	    nearVehicles.add(nV);
 	}
 

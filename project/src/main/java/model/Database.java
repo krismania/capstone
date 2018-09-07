@@ -458,4 +458,21 @@ public class Database implements Closeable {
 	return false; // Not double Booked.
     }
 
+    public Boolean changeVehicleAvailability(String registration, int available) {
+	try {
+	    String query = "UPDATE vehicles set available = ? WHERE registration = ?;";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
+
+	    ps.setInt(1, available);
+	    ps.setString(2, registration);
+	    ps.executeUpdate();
+
+	    return true;
+
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
+    }
+
 }

@@ -171,7 +171,7 @@ public class ApiController {
 	    return new Gson().toJson(vehicles);
 	});
 
-	post("/api/vehicle", (req, res) -> {
+	post("/api/vehicle/availability", (req, res) -> {
 
 	    VehicleAvailabilityRequest var;
 	    int available;
@@ -189,16 +189,15 @@ public class ApiController {
 	    logger.info("Changing availability of a car with rego: " + var.registration);
 
 	    Database db = new Database();
-	    // Boolean dbResponse = db.changeVehicleAvailability(var.registration,
-	    // var.available);
+	    Boolean dbResponse = db.changeVehicleAvailability(var.registration, available);
 	    db.close();
 
-	    // if (dbResponse) {
-	    // res.status(200);
-	    // logger.info("Changed availability of vehicle (" + var.registration + ")!");
-	    // } else {
-	    // res.status(400);
-	    // }
+	    if (dbResponse) {
+		res.status(200);
+		logger.info("Changed availability of vehicle (" + var.registration + ")!");
+	    } else {
+		res.status(400);
+	    }
 
 	    return "";
 	});

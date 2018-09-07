@@ -493,7 +493,7 @@ public class Database implements Closeable {
 
 	logger.info("Editing  Booking id:" + id);
 	try {
-	    if (checkId(id)) {
+	    if (bookingExists(id)) {
 		if (checkReg(registration)) {
 		    // Gets the latest timestamp of a car booking.
 		    String query = "UPDATE bookings set registration = ?, customer_id = ?, duration = ?, start_location = Point(?,?), end_location = Point(?,?) WHERE id = "
@@ -529,8 +529,8 @@ public class Database implements Closeable {
 	return false;
     }
 
-    // Checks if ID exists.
-    public Boolean checkId(int id) {
+    // Checks if booking exists.
+    public Boolean bookingExists(int id) {
 
 	logger.info("Checking if ID exists");
 	try {

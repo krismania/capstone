@@ -18,6 +18,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.gson.Gson;
 
+import spark.Session;
 import util.Util;
 
 public class UiController {
@@ -35,43 +36,44 @@ public class UiController {
 	    LoginRequest loginRequest = new Gson().fromJson(req.body(), LoginRequest.class);
 	    // set up session
 	    if (req.session(false) == null || req.session().attribute("clientId") == null) {
-		String sub = null;
-
 		NetHttpTransport transport = new NetHttpTransport();
 		JsonFactory jsonFactory = new JacksonFactory();
 
 		if (loginRequest.id != null) {
-
 		    GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(transport, jsonFactory)
 			    .setAudience(Collections.singletonList(googleClientId)).build();
-
 		    GoogleIdToken idToken = verifier.verify(loginRequest.id);
 
 		    if (idToken != null) {
 			Payload payload = idToken.getPayload();
 
-			// Print user identifier
-			String userId = payload.getSubject();
-			logger.info("USER ID: " + userId);
-			// what we are saving
-			sub = payload.getSubject();
+			// save details to session
+			Session s = req.session(true);
+			s.attribute("clientId", payload.getSubject());
+			s.attribute("clientEmail", payload.getEmail());
+			s.attribute("clientName", payload.get("name"));
 
+			logger.info(String.format("Client logged in: %s (%s)", s.attribute("clientName"),
+				s.attribute("clientEmail")));
+			logger.info("Client ID: " + s.attribute("clientId"));
+
+			res.status(200);
+			return "";
 		    } else {
 			logger.info("Invalid ID token.");
 		    }
 		}
-		req.session(true);
-		req.session().attribute("clientId", sub);
-		logger.info("Client logged in: " + sub);
 	    }
-	    res.status(200);
+	    // if anything failed, send 400
+	    res.status(400);
 	    return "";
 	});
 
 	get("/logout", (req, res) -> {
 	    if (req.session(false) != null) {
 		String id = req.session().attribute("clientId");
-		req.session().removeAttribute("clientId");
+		// destroy the session
+		req.session().raw().invalidate();
 		logger.info("Client logged out: " + id);
 		res.status(200);
 	    } else {

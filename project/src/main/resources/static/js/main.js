@@ -29,7 +29,9 @@ function onLogin(user) {
 	    console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
 	    var id_token = googleUser.getAuthResponse().id_token;
 	    // show logout button
-	    document.getElementById("logout").style.visibility = 'visible';
+	    document.getElementById("header-links").style.visibility = 'visible';
+	    // fire event
+	    document.dispatchEvent(new Event("login"));
 	});
 }
 
@@ -42,7 +44,9 @@ function signOut() {
 			googleUser = null;
 			console.log('User signed out.');
 			// hide logout button
-		    document.getElementById("logout").style.visibility = 'hidden';
+		    document.getElementById("header-links").style.visibility = 'hidden';
+		    // fire event
+		    document.dispatchEvent(new Event("logout"));
 		});
 	});
 }
@@ -256,7 +260,4 @@ sidepane.setCloseCallback(function() {
 	document.getElementById('sidepane').style.width = '0';
 	document.getElementById('map-wrapper').style.left = null;
 });
-
-// Display the geolocate button initially
-showGeoButton();
 

@@ -13,14 +13,15 @@ var geoMarker = null;
 var googleUser = null;
 
 function onLogin(user) {
-	// post the client ID to the server
+	// post the client ID to the servera
+	console.log("Token: ", user.getAuthResponse().id_token);
 	var headers = new Headers();
 	headers.append("Content-Type", "application/json");
 	var request = new Request("/login", {
 		method: 'post',
 		headers: headers,
 		body: JSON.stringify({
-			id: user.getBasicProfile().getEmail()
+			id: user.getAuthResponse().id_token
 		})
 	});
 	fetch(request)

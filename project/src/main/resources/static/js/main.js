@@ -199,38 +199,43 @@ function bookingForm(vehicle) {
 
 function submitBooking(vehicle) {	
 	// collect booking details
-	var form = document.getElementById("booking-form");
-	var timeSelect = document.getElementById("dropoff-time");
-	var duration = timeSelect.options[timeSelect.selectedIndex].value;
-	var location = document.getElementById("dropoff-location").value;
-	var registration = document.getElementById("registration").value;
-	
-	// TODO: turn location into coordinates
-	location = {
-		lat: 123,
-		lng: -123
-	};
-	
-	var bookingRequest = {
-		registration: registration,
-		duration: duration,
-		pickup: geoMarker.marker.getPosition().toJSON(),
-		dropoff: location,
-		client: googleUser.getBasicProfile().getEmail()
-	};
-	
-	rebu.requestBooking(bookingRequest, function(succeeded) {
-		if (succeeded) {
-			// show the confirmation screen
-			var vehicleInfo = view.vehicleInfo(vehicle);
-			sidepane.clear();
-			sidepane.appendHeader("BOOK YOUR CAR");
-			sidepane.append(vehicleInfo);
-			sidepane.append(view.bookingConfirmed());
-		} else {
-			alert("Booking failed");
-		}
-	});
+	if (googleUser != null){
+		var form = document.getElementById("booking-form");
+		var timeSelect = document.getElementById("dropoff-time");
+		var duration = timeSelect.options[timeSelect.selectedIndex].value;
+		var location = document.getElementById("dropoff-location").value;
+		var registration = document.getElementById("registration").value;
+		
+		// TODO: turn location into coordinates
+		location = {
+			lat: 123,
+			lng: -123
+		};
+		
+		var bookingRequest = {
+			registration: registration,
+			duration: duration,
+			pickup: geoMarker.marker.getPosition().toJSON(),
+			dropoff: location,
+			client: googleUser.getBasicProfile().getEmail()
+		};
+		
+		rebu.requestBooking(bookingRequest, function(succeeded) {
+			if (succeeded) {
+				// show the confirmation screen
+				var vehicleInfo = view.vehicleInfo(vehicle);
+				sidepane.clear();
+				sidepane.appendHeader("BOOK YOUR CAR");
+				sidepane.append(vehicleInfo);
+				sidepane.append(view.bookingConfirmed());
+			} else {
+				alert("Booking failed");
+			}
+		});
+	} else {
+		alert("You are not logged in! Please login before making a booking.");
+	}
+
 }
 
 function nearbyCars(pos) {

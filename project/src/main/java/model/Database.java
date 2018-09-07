@@ -494,27 +494,30 @@ public class Database implements Closeable {
 	logger.info("Editing  Booking id:" + id);
 	try {
 	    if (checkId(id)) {
-		// Gets the latest timestamp of a car booking.
-		String query = "UPDATE bookings set registration = ?, set customer_id = ?, set duration = ?, set start_location = Point(?,?), set end_location = Point(?,?)  where id = "
-			+ id + ";";
+		if (checkReg(registration)) {
+		    // Gets the latest timestamp of a car booking.
+		    String query = "UPDATE bookings set registration = ?, customer_id = ?, duration = ?, start_location = Point(?,?), end_location = Point(?,?) WHERE id = "
+			    + id + ";";
 
-		PreparedStatement ps = this.conn.prepareStatement(query);
+		    PreparedStatement ps = this.conn.prepareStatement(query);
 
-		ps.setString(1, registration);
-		ps.setString(2, customerId);
-		ps.setInt(3, duration);
+		    ps.setString(1, registration);
+		    ps.setString(2, customerId);
+		    ps.setInt(3, duration);
 
-		ps.setDouble(4, startLocation.getLat());
-		ps.setDouble(5, startLocation.getLng());
+		    ps.setDouble(4, startLocation.getLat());
+		    ps.setDouble(5, startLocation.getLng());
 
-		ps.setDouble(6, endLocation.getLat());
-		ps.setDouble(7, endLocation.getLng());
+		    ps.setDouble(6, endLocation.getLat());
+		    ps.setDouble(7, endLocation.getLng());
 
-		ps.executeUpdate();
+		    ps.executeUpdate();
 
-		ps.close();
+		    ps.close();
+		    logger.info("Successfully edited");
+		    return true;
+		}
 
-		return true;
 	    }
 
 	} catch (SQLException e) {
@@ -526,6 +529,7 @@ public class Database implements Closeable {
 	return false;
     }
 
+    // Checks if ID exists.
     public Boolean checkId(int id) {
 
 	logger.info("Checking if ID exists");
@@ -554,7 +558,37 @@ public class Database implements Closeable {
 	    e.printStackTrace();
 	    return false;
 	}
+    }
 
+    // Checks whether vehicles exist.
+    public Boolean checkReg(String reg) {
+
+	logger.info("Checking if Vehicle exists");
+	try {
+	    // Gets the latest timestamp of a car booking.
+	    String query = "SELECT * FROM vehicles where registration=?;";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
+
+	    ps.setString(1, reg);
+
+	    ResultSet rs = ps.executeQuery();
+
+	    if (rs.next()) {
+		rs.close();
+		ps.close();
+		logger.info("Vehicle exists");
+		return true; // This ID exists
+	    }
+	    rs.close();
+	    ps.close();
+	    logger.info("Vehicle does not exists");
+
+	    return false; // Does not exist.
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return false;
+	}
     }
 
 }

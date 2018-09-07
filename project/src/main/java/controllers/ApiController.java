@@ -2,6 +2,7 @@ package controllers;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
+import static spark.Spark.put;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -39,16 +40,6 @@ public class ApiController {
     }
 
     static class BookingRequest {
-	String timestamp;
-	String registration;
-	String customerId;
-	int duration;
-	PositionRequest startLocation;
-	PositionRequest endLocation;
-    }
-
-    static class UpdateBookingRequest {
-	int id;
 	String timestamp;
 	String registration;
 	String customerId;
@@ -185,19 +176,25 @@ public class ApiController {
 	    return "";
 	});
 
-	post("/api/bookings/update", (req, res) -> {
+	put("/api/bookings/:id", (req, res) -> {
+	    res.type("application/json");
+
 	    Position location_start, location_end;
-	    UpdateBookingRequest ubr;
 	    LocalDateTime dateTime;
+	    BookingRequest br;
+
+	    int id = Integer.parseInt(req.params(":id"));
 
 	    try {
-		ubr = new Gson().fromJson(req.body(), UpdateBookingRequest.class);
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		dateTime = LocalDateTime.parse(ubr.timestamp, formatter);
 
-		location_start = new Position(ubr.startLocation.lat, ubr.startLocation.lng);
-		location_end = new Position(ubr.endLocation.lat, ubr.endLocation.lng);
+		br = new Gson().fromJson(req.body(), BookingRequest.class);
+
+		dateTime = LocalDateTime.parse(br.timestamp, formatter);
+		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
+		location_end = new Position(br.endLocation.lat, br.endLocation.lng);
+
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
 		return "Error parsing request";
@@ -205,7 +202,7 @@ public class ApiController {
 
 	    Database db = new Database();
 
-	    Boolean dbResponse = db.editBooking(ubr.id, dateTime, ubr.registration, ubr.customerId, ubr.duration,
+	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration,
 		    location_start, location_end);
 
 	    db.close();

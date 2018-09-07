@@ -88,7 +88,7 @@ public class UiController {
 
 	get("/account", (req, res) -> {
 	    Map<String, Object> m = new HashMap<>(model);
-	    m.put("clientId", req.session().attribute("clientId"));
+	    m.put("name", req.session().attribute("clientName"));
 	    return Util.render(m, "account");
 	});
 

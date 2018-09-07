@@ -1,5 +1,5 @@
 insert ignore into `vehicles`
-	(`registration`, `make`, `model`, `year`, `colour`, `location`, `available`)
+	(`registration`, `make`, `model`, `year`, `colour`, `location`, `active`)
 values
     ("ABC123","Toyota", "Corolla", 2014, "Blue", POINT(-37.808401, 144.956159), 0),
     ("QRB990","BMW", "325i", 2003, "Black", POINT(-37.809741, 144.970895), 0),

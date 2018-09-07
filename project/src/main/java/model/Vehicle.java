@@ -21,7 +21,7 @@ public class Vehicle {
 	this.active = active;
     }
 
-    public int getAvaliable() {
+    public int getActive() {
 	return this.active;
     }
 

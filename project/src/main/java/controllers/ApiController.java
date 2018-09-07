@@ -36,7 +36,7 @@ public class ApiController {
 	int year;
 	String colour;
 	PositionRequest position;
-	boolean available;
+	boolean active;
     }
 
     static class BookingRequest {
@@ -50,7 +50,7 @@ public class ApiController {
 
     static class VehicleAvailabilityRequest {
 	String registration;
-	boolean available;
+	boolean active;
     }
 
     public ApiController() {
@@ -105,14 +105,14 @@ public class ApiController {
 
 	    Position pos;
 	    VehicleRequest vr;
-	    int available;
+	    int active;
 	    try {
 		vr = new Gson().fromJson(req.body(), VehicleRequest.class);
 		pos = new Position(vr.position.lat, vr.position.lng);
-		if (vr.available == true) {
-		    available = 1;
+		if (vr.active == true) {
+		    active = 1;
 		} else {
-		    available = 0;
+		    active = 0;
 		}
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
@@ -122,7 +122,7 @@ public class ApiController {
 
 	    Database db = new Database();
 	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
-		    available);
+		    active);
 	    db.close();
 
 	    logger.info("Inserted successfully!");
@@ -164,32 +164,31 @@ public class ApiController {
 	    res.type("application/json");
 
 	    Database db = new Database();
-	    List<Vehicle> vehicles = db.getAvailableVehicles();
+	    List<Vehicle> vehicles = db.getActiveVehicles();
 	    db.close();
 
 	    logger.info("Found " + vehicles.size() + " vehicles");
 	    return new Gson().toJson(vehicles);
 	});
 
-	post("/api/vehicle/availability", (req, res) -> {
+	post("/api/vehicle/status", (req, res) -> {
 
 	    VehicleAvailabilityRequest var;
-	    int available;
+	    int active;
 	    try {
 		var = new Gson().fromJson(req.body(), VehicleAvailabilityRequest.class);
-		if (var.available == true) {
-		    available = 1;
+		if (var.active == true) {
+		    active = 1;
 		} else {
-		    available = 0;
+		    active = 0;
 		}
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
 		return "Error parsing request";
 	    }
-	    logger.info("Changing availability of a car with rego: " + var.registration);
 
 	    Database db = new Database();
-	    Boolean dbResponse = db.changeVehicleAvailability(var.registration, available);
+	    Boolean dbResponse = db.changeVehicleAvailability(var.registration, active);
 	    db.close();
 
 	    if (dbResponse) {

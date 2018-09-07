@@ -48,6 +48,11 @@ public class ApiController {
 	PositionRequest endLocation;
     }
 
+    static class VehicleAvailabilityRequest {
+	String registration;
+	boolean available;
+    }
+
     public ApiController() {
 
 	final Logger logger = LoggerFactory.getLogger(ApiController.class);
@@ -164,6 +169,38 @@ public class ApiController {
 
 	    logger.info("Found " + vehicles.size() + " vehicles");
 	    return new Gson().toJson(vehicles);
+	});
+
+	post("/api/vehicle", (req, res) -> {
+
+	    VehicleAvailabilityRequest var;
+	    int available;
+	    try {
+		var = new Gson().fromJson(req.body(), VehicleAvailabilityRequest.class);
+		if (var.available == true) {
+		    available = 1;
+		} else {
+		    available = 0;
+		}
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+	    logger.info("Changing availability of a car with rego: " + var.registration);
+
+	    Database db = new Database();
+	    // Boolean dbResponse = db.changeVehicleAvailability(var.registration,
+	    // var.available);
+	    db.close();
+
+	    // if (dbResponse) {
+	    // res.status(200);
+	    // logger.info("Changed availability of vehicle (" + var.registration + ")!");
+	    // } else {
+	    // res.status(400);
+	    // }
+
+	    return "";
 	});
 
     }

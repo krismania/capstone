@@ -85,10 +85,13 @@ public class Database implements Closeable {
 		+ "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
+	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
+		+ "PRIMARY KEY (`admin_id`));";
+
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
 	stmt.execute(bookingsSql);
-
+	stmt.execute(admin);
 	stmt.close();
     }
 

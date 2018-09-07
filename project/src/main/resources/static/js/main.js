@@ -231,6 +231,8 @@ function submitBooking(vehicle) {
 			alert("Booking failed");
 		}
 	});
+	
+	initMap();
 }
 
 function nearbyCars(pos) {

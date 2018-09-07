@@ -2,6 +2,7 @@ package controllers;
 
 import static spark.Spark.get;
 import static spark.Spark.post;
+import static spark.Spark.put;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -42,7 +43,6 @@ public class ApiController {
     static class BookingRequest {
 	String timestamp;
 	String registration;
-	String customerId;
 	int duration;
 	PositionRequest startLocation;
 	PositionRequest endLocation;
@@ -89,7 +89,7 @@ public class ApiController {
 	    return new Gson().toJson(nearby);
 	});
 
-	get("/api/bookings", (req, res) -> {
+	get("/api/bookings/all", (req, res) -> {
 	    res.type("application/json");
 
 	    Database db = new Database();
@@ -151,7 +151,9 @@ public class ApiController {
 	    logger.info("Inserting a booking!");
 	    Database db = new Database();
 
-	    Booking booking = db.createBooking(dateTime, br.registration, br.customerId, br.duration, location_start,
+	    String clientId = req.session().attribute("clientId");
+
+	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration, location_start,
 		    location_end);
 
 	    db.close();
@@ -182,6 +184,7 @@ public class ApiController {
 		} else {
 		    active = 0;
 		}
+
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
 		return "Error parsing request";
@@ -194,6 +197,75 @@ public class ApiController {
 	    if (dbResponse) {
 		res.status(200);
 		logger.info("Changed availability of vehicle (" + var.registration + ")!");
+	    } else {
+		res.status(400);
+	    }
+
+	    return "";
+	});
+
+	get("/api/bookings", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.session().attribute("clientId");
+
+	    Database db = new Database();
+	    List<Booking> bookings = db.getBookingsOfUser(clientId);
+
+	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
+
+	    db.close();
+	    return new Gson().toJson(bookings);
+	});
+
+	get("/api/bookings/delete", (req, res) -> {
+	    int id = Integer.parseInt(req.queryParams("id"));
+
+	    Database db = new Database();
+	    Boolean dbResponse = db.deleteBooking(id);
+	    db.close();
+	    if (dbResponse) {
+		res.status(200);
+	    } else {
+		res.status(400);
+	    }
+
+	    return "";
+	});
+
+	put("/api/bookings/:id", (req, res) -> {
+	    res.type("application/json");
+
+	    Position location_start, location_end;
+	    LocalDateTime dateTime;
+	    BookingRequest br;
+
+	    int id = Integer.parseInt(req.params(":id"));
+
+	    try {
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+		br = new Gson().fromJson(req.body(), BookingRequest.class);
+
+		dateTime = LocalDateTime.parse(br.timestamp, formatter);
+		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
+		location_end = new Position(br.endLocation.lat, br.endLocation.lng);
+
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+
+	    Database db = new Database();
+	    String clientId = req.session().attribute("clientId");
+
+	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, clientId, br.duration, location_start,
+		    location_end);
+
+	    db.close();
+
+	    if (dbResponse) {
+		res.status(200);
 	    } else {
 		res.status(400);
 	    }

@@ -90,7 +90,7 @@ var view = (function() {
 			// append everything to the fieldset
 			dropoff.appendChild(dropoffLegend);
 			dropoff.appendChild(dropoffTime);
-			dropoff.appendChild(dropoffLocation);
+			// dropoff.appendChild(dropoffLocation); //TODO: Temporarily removed
 			
 			// set up submit button
 			submit.className = "confirm";

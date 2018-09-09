@@ -208,7 +208,7 @@ public class Database implements Closeable {
 	List<NearbyVehicle> nearVehicles = new ArrayList<NearbyVehicle>();
 	List<NearbyVehicle> sortedNearestVehicles = new ArrayList<NearbyVehicle>();
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
-	vehicles = getVehicles();
+	vehicles = getAvailableVehicles();
 
 	for (int i = 0; i < vehicles.size(); i++) {
 	    String registration = vehicles.get(i).getRegistration();

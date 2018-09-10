@@ -1,2 +1,16 @@
 language: java
-before_install: cd project
+before_install:
+- openssl aes-256-cbc -K $encrypted_45bbf244f1aa_key -iv $encrypted_45bbf244f1aa_iv
+  -in secrets.tar.enc -out secrets.tar -d
+- tar xvf secrets.tar
+- mv config.properties project/src/main/resources/config.properties
+- cd project
+deploy:
+  provider: gae
+  keyfile: "../service_account.json"
+  project: "$PROJECT"
+  on:
+    all_branches: true
+env:
+  global:
+  - secure: Fba3FKYhNSM4/UBsRLoTrEisytqJZJCehXEnKOEz6F0svD0bADgP0cmOmKlnsuKgStHYV/3nd4Q4um6X1BFWM4acpqthrDEtXdh8lOxLhXJN3izAhz9jiVYKApMBGeFv93XFRnPuDDPohS3wh5xPFLECHA1BwUORNr3l+mrpjGx0PzKk19svMTYljWf2FY6JW99O2/tBNadLmFBFMC+aoDiENFW26reLcYEiS3l3I/kvruBeJhx30GH9EaqDMUAf7YGDHwIC7TU/eVVg8sTSTRx4Y1dOwiEdm7/iTdrspfbqCgBL9kY+nqdEElYiBm6G2phRaDZ0VFq1kPb+qWqP2qq13o+2P0YyJyx/47SufRzvjqCpf3xPJgpecxMBOUo7cX8/M8PJppLecNpdsLudwe0WA8ri86YkIpBKXQ3qlJqD6Eu49HFE5CUDqxAUI6MA6wwj05ikGFbX9/sw5sO4QsFyT6hYQcLMBg/bV4cTNGX8xcke4TpdldeE7mWEaLtqBnL9AsZuOMgciGINXVvxhOm2Cv4BcToGWyoBVeXA+2uzpMeNEnGzDiDADac1cyGcDs40qa69/iboYSVpZ0kTwkmOFooV1qP3/+pyhZvdQCWqxaaB36Y2U8s3Du75JMOd4tgtCcqcBswJNxVudR6QZeJLNZ+0iMC7XVePRxEPyy0=

@@ -23,7 +23,7 @@ rebu = (function() {
 	return {
 		
 		getVehicles: function(callback) {
-			console.log("[api] getting all vehicles");
+			console.log("[api] getting all available vehicles");
 			var vehicles = [];
 			var request = new Request('/api/vehicles');
 			fetch(request)
@@ -106,6 +106,16 @@ rebu = (function() {
 				} else {
 					callback(true);
 				}
+			});
+		},
+		
+		getBookings: function(user, callback) {
+			console.log("[api] getting bookings for " + user);
+			var request = new Request('/api/bookings?id=' + user);
+			fetch(request)
+			.then(res => res.json())
+			.then(json => {
+				callback(json);
 			});
 		}
 	

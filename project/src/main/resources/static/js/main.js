@@ -13,20 +13,42 @@ var geoMarker = null;
 var googleUser = null;
 
 function onLogin(user) {
-    googleUser = user;
-    console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
-    var id_token = googleUser.getAuthResponse().id_token;
-    // show logout button
-    document.getElementById("logout").style.visibility = 'visible';
+	// post the client ID to the servera
+	console.log("Token: ", user.getAuthResponse().id_token);
+	var headers = new Headers();
+	headers.append("Content-Type", "application/json");
+	var request = new Request("/login", {
+		method: 'post',
+		headers: headers,
+		body: JSON.stringify({
+			id: user.getAuthResponse().id_token
+		})
+	});
+	fetch(request)
+	.then(res => {
+		googleUser = user;
+	    console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
+	    var id_token = googleUser.getAuthResponse().id_token;
+	    // show logout button
+	    document.getElementById("header-links").style.visibility = 'visible';
+	    // fire event
+	    document.dispatchEvent(new Event("login"));
+	});
 }
 
 function signOut() {
-	var auth2 = gapi.auth2.getAuthInstance();
-	auth2.signOut().then(function () {
-		googleUser = null;
-		console.log('User signed out.');
-		// hide logout button
-	    document.getElementById("logout").style.visibility = 'hidden';
+	// kill the session
+	fetch(new Request("/logout"))
+	.then(res => {
+		// sign out on client side
+		gapi.auth2.getAuthInstance().signOut().then(function () {
+			googleUser = null;
+			console.log('User signed out.');
+			// hide logout button
+		    document.getElementById("header-links").style.visibility = 'hidden';
+		    // fire event
+		    document.dispatchEvent(new Event("logout"));
+		});
 	});
 }
 
@@ -177,38 +199,43 @@ function bookingForm(vehicle) {
 
 function submitBooking(vehicle) {	
 	// collect booking details
-	var form = document.getElementById("booking-form");
-	var timeSelect = document.getElementById("dropoff-time");
-	var duration = timeSelect.options[timeSelect.selectedIndex].value;
-	var location = document.getElementById("dropoff-location").value;
-	var registration = document.getElementById("registration").value;
-	
-	// TODO: turn location into coordinates
-	location = {
-		lat: 123,
-		lng: -123
-	};
-	
-	var bookingRequest = {
-		registration: registration,
-		duration: duration,
-		pickup: geoMarker.marker.getPosition().toJSON(),
-		dropoff: location,
-		client: googleUser.getBasicProfile().getEmail()
-	};
-	
-	rebu.requestBooking(bookingRequest, function(succeeded) {
-		if (succeeded) {
-			// show the confirmation screen
-			var vehicleInfo = view.vehicleInfo(vehicle);
-			sidepane.clear();
-			sidepane.appendHeader("BOOK YOUR CAR");
-			sidepane.append(vehicleInfo);
-			sidepane.append(view.bookingConfirmed());
-		} else {
-			alert("Booking failed");
-		}
-	});
+	if (googleUser != null){
+		var form = document.getElementById("booking-form");
+		var timeSelect = document.getElementById("dropoff-time");
+		var duration = timeSelect.options[timeSelect.selectedIndex].value;
+		// var location = document.getElementById("dropoff-location").value; // TODO: temporarily removed
+		var registration = document.getElementById("registration").value;
+		
+		// TODO: turn location into coordinates
+		var location = {
+			lat: 123,
+			lng: -123
+		};
+		
+		var bookingRequest = {
+			registration: registration,
+			duration: duration,
+			pickup: geoMarker.marker.getPosition().toJSON(),
+			dropoff: location,
+			client: googleUser.getBasicProfile().getEmail()
+		};
+		
+		rebu.requestBooking(bookingRequest, function(succeeded) {
+			if (succeeded) {
+				// show the confirmation screen
+				var vehicleInfo = view.vehicleInfo(vehicle);
+				sidepane.clear();
+				sidepane.appendHeader("BOOK YOUR CAR");
+				sidepane.append(vehicleInfo);
+				sidepane.append(view.bookingConfirmed());
+			} else {
+				alert("Booking failed");
+			}
+		});
+	} else {
+		alert("You are not logged in! Please login before making a booking.");
+	}
+
 }
 
 function nearbyCars(pos) {
@@ -239,7 +266,4 @@ sidepane.setCloseCallback(function() {
 	document.getElementById('sidepane').style.width = '0';
 	document.getElementById('map-wrapper').style.left = null;
 });
-
-// Display the geolocate button initially
-showGeoButton();
 

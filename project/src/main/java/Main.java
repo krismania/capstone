@@ -60,13 +60,9 @@ public class Main implements SparkApplication {
 
 	// create routes
 	new UiController(mapsApiKey, googleClientId);
-	path("/api", () -> {
-	    new ApiController();
-	});
+	path("/api", () -> new ApiController());
 	path("/admin", () -> {
-	    path("/api", () -> {
-		new AdminApiController();
-	    });
+	    path("/api", () -> new AdminApiController());
 	});
     }
 

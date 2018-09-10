@@ -1,5 +1,6 @@
 package controllers;
 
+import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.put;
@@ -31,6 +32,9 @@ public class AdminApiController {
     public AdminApiController() {
 
 	final Logger logger = LoggerFactory.getLogger(AdminApiController.class);
+
+	// log every API request
+	before("/*", (req, res) -> logger.info("Admin API Request: " + req.uri()));
 
 	// create a new vehicle
 	post("/vehicles", (req, res) -> {

@@ -203,11 +203,11 @@ function submitBooking(vehicle) {
 		var form = document.getElementById("booking-form");
 		var timeSelect = document.getElementById("dropoff-time");
 		var duration = timeSelect.options[timeSelect.selectedIndex].value;
-		var location = document.getElementById("dropoff-location").value;
+		// var location = document.getElementById("dropoff-location").value; // TODO: temporarily removed
 		var registration = document.getElementById("registration").value;
 		
 		// TODO: turn location into coordinates
-		location = {
+		var location = {
 			lat: 123,
 			lng: -123
 		};

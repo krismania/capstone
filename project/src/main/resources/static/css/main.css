@@ -34,6 +34,10 @@ p {
 	color: #00000099;
 }
 
+p.hint {
+	font-style: italic;
+}
+
 /* Material icon rules */
 .material-icons.md-18 { font-size: 18px; }
 .material-icons.md-24 { font-size: 24px; }
@@ -351,6 +355,25 @@ button.confirm:disabled {
 
 #current-booking .booking-info {
 	text-align: right;
+}
+
+#sidepane ul.menu {
+	list-style: none;
+	margin: 16px -16px;
+	padding: 0;
+}
+
+#sidepane ul.menu button {
+	width: 100%;
+	border-radius: 0;
+	text-align: left;
+	background-color: #00000000;
+}
+
+#sidepane ul.menu button:hover,
+#sidepane ul.menu button:focus {
+	background-color: #00000026;
+	outline: none;
 }
 
 /* account page current booking */

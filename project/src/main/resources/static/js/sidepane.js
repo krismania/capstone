@@ -8,6 +8,7 @@ sidepane = (function() {
 	var closeCallback = function() {console.log("Sidepane Closed")};
 	
 	var isOpen = false;
+	var isStatic = false
 	
 	return {
 		
@@ -19,15 +20,22 @@ sidepane = (function() {
 			closeCallback = callback;
 		},
 		
+		// force the sidepane open & prevent closing
+		setStatic: function(value) {
+			isStatic = value;
+			isOpen = true;
+			openCallback();
+		},
+		
 		open: function() {
-			if (!isOpen) {
+			if (!isStatic && !isOpen) {
 				isOpen = true;
 				openCallback();
 			}
 		},
 		
 		close: function() {
-			if (isOpen) {
+			if (!isStatic && isOpen) {
 				isOpen = false;
 				closeCallback();
 			}
@@ -48,15 +56,15 @@ sidepane = (function() {
 		// create a header with a close button
 		appendHeader: function(headerText) {
 			var header = document.createElement("h2");
-			var close = document.createElement("button");
-			
 			header.innerText = headerText;
-			close.className = "exit";
-			close.addEventListener("click", this.close);
-			close.innerText = "╳";
-			
 			sp.appendChild(header);
-			sp.appendChild(close);
+			if (!isStatic) {
+				var close = document.createElement("button");
+				close.className = "exit";
+				close.addEventListener("click", this.close);
+				close.innerText = "╳";
+				sp.appendChild(close);
+			}
 		}
 	
 	}

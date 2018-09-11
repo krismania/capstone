@@ -121,7 +121,9 @@ function initMap() {
 	
 	// listener which resets the 'geolocate' button on pan
 	map.addListener('center_changed', () => {
-		showGeoButton();
+		if (document.getElementById("geo-button")) {
+			showGeoButton();
+		}
 	});
 	
 	// draw user's location
@@ -376,6 +378,9 @@ sidepane.setCloseCallback(function() {
 	document.getElementById('sidepane').style.width = '0';
 	document.getElementById('map-wrapper').style.left = null;
 });
+if (document.getElementById('sidepane').classList.contains('static')) {
+	sidepane.setStatic(true);
+}
 
 // add listeners for login hint
 var loginHint = document.getElementById("login-hint");

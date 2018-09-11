@@ -234,6 +234,13 @@ header h1 {
 	border-bottom: none;
 }
 
+/* used for the back button*/
+#sidepane h2 i.material-icons {
+	cursor: pointer;
+	vertical-align: text-bottom;
+	margin-right: 16px;
+}
+
 .nearby-info {
 	display: flex;
 	justify-content: space-between;
@@ -368,6 +375,7 @@ button.confirm:disabled {
 	border-radius: 0;
 	text-align: left;
 	background-color: #00000000;
+	cursor: pointer;
 }
 
 #sidepane ul.menu button:hover,

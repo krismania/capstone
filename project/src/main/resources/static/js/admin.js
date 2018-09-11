@@ -15,7 +15,7 @@ var adminView = (function() {
 			return menu;
 		},
 		
-		console: function() {
+		console: function(addVehicleCallback) {
 			var container = document.createElement("div");
 			var addVehicleBtn = document.createElement("button");
 			var manageUserBtn = document.createElement("button");
@@ -25,6 +25,7 @@ var adminView = (function() {
 			hint.className = "hint";
 			
 			addVehicleBtn.innerText = "Add New Vehicle";
+			addVehicleBtn.addEventListener('click', addVehicleCallback);
 			manageUserBtn.innerText = "Manage User";
 			
 			var adminMenu = this.menu([addVehicleBtn, manageUserBtn]);
@@ -33,11 +34,102 @@ var adminView = (function() {
 			container.appendChild(hint);
 			
 			return container;
+		},
+		
+		vehicleForm: function(createCallback) {
+			var form = document.createElement("form");
+			form.id = "vehicle-form";
+			
+			// vehicle details fieldset
+			var details = document.createElement("fieldset");
+			var detailsLegend = document.createElement("legend");
+			detailsLegend.innerText = "Vehicle Details";
+			details.appendChild(detailsLegend);
+			// vehicle status fieldset
+			var status = document.createElement("fieldset");
+			var statusLegend = document.createElement("legend");
+			statusLegend.innerText = "Current Location & Status";
+			status.appendChild(statusLegend);
+			
+			var rego = document.createElement("input");
+			rego.id = "registration";
+			rego.placeholder = "Registration";
+			var year = document.createElement("input");
+			year.id = "year";
+			year.placeholder = "Year";
+			var make = document.createElement("input");
+			make.id = "make";
+			make.placeholder = "Make";
+			var model = document.createElement("input");
+			model.id = "model";
+			model.placeholder = "Model";
+			var colour = document.createElement("input");
+			colour.id = "colour";
+			colour.placeholder = "Colour";
+			var lat = document.createElement("input");
+			lat.id = "current-lat";
+			lat.placeholder = "Latitude";
+			var lng = document.createElement("input");
+			lng.id = "current-lng";
+			lng.placeholder = "Longitude";
+			var available = document.createElement("select");
+			available.id = "active";
+			
+			// add options to availability selector
+			var availableTrue = document.createElement("option");
+			availableTrue.innerText = "Available";
+			availableTrue.value = "true";
+			availableTrue.selected = true;
+			var availableFalse = document.createElement("option");
+			availableFalse.innerText = "Unavailable";
+			availableFalse.value = "false";
+			available.appendChild(availableTrue);
+			available.appendChild(availableFalse);
+			
+			var submit = document.createElement("button");
+			submit.addEventListener("click", function(e) {
+				e.preventDefault();
+				createCallback();
+			});
+			submit.innerText = "CREATE VEHICLE";
+			submit.className = "confirm";
+			submit.type = "submit";
+			
+			details.appendChild(rego);
+			details.appendChild(year);
+			details.appendChild(make);
+			details.appendChild(model);
+			details.appendChild(colour);
+			
+			status.appendChild(lat);
+			status.appendChild(lng);
+			status.appendChild(available);
+			
+			form.appendChild(details);
+			form.appendChild(status);
+			form.appendChild(submit);
+			
+			return form;
 		}
 		
 	}
 	
 })();
 
-sidepane.appendHeader("ADMIN CONSOLE");
-sidepane.append(adminView.console())
+function mainMenu() {
+	sidepane.clear();
+	sidepane.appendHeader("ADMIN CONSOLE");
+	sidepane.append(adminView.console(addVehicle))
+}
+
+function addVehicle() {
+	sidepane.clear();
+	sidepane.appendHeader("ADD VEHICLE", function() {
+		mainMenu();
+	});
+	sidepane.append(adminView.vehicleForm(function() {
+		console.log("Created vehicle"); // TODO: submit vehicle details
+	}));
+}
+
+mainMenu();

@@ -54,9 +54,17 @@ sidepane = (function() {
 		},
 		
 		// create a header with a close button
-		appendHeader: function(headerText) {
+		appendHeader: function(headerText, backButtonCallback) {
 			var header = document.createElement("h2");
-			header.innerText = headerText;
+			// add back button if a callback is provided
+			if (backButtonCallback) {
+				var back = document.createElement("i");
+				back.className = "material-icons";
+				back.innerText = "arrow_back";
+				back.addEventListener("click", backButtonCallback);
+				header.appendChild(back);
+			}
+			header.appendChild(document.createTextNode(headerText));
 			sp.appendChild(header);
 			if (!isStatic) {
 				var close = document.createElement("button");

@@ -1,4 +1,5 @@
 import static spark.Spark.path;
+import static spark.Spark.redirect;
 
 import java.io.IOException;
 
@@ -66,6 +67,9 @@ public class Main implements SparkApplication {
 	    new AdminUiController(mapsApiKey, googleClientId);
 	    path("/api", () -> new AdminApiController());
 	});
+	// fix for /admin 404
+	// routes with & without trailing slash are treated as separate
+	redirect.get("/admin", "/admin/");
     }
 
 }

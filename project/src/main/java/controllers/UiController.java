@@ -19,6 +19,7 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.gson.Gson;
 
 import controllers.Request.LoginRequest;
+import model.Database;
 import spark.Session;
 import util.Util;
 
@@ -46,6 +47,7 @@ public class UiController {
 		    GoogleIdToken idToken = verifier.verify(loginRequest.id);
 
 		    if (idToken != null) {
+			Database db = new Database();
 			Payload payload = idToken.getPayload();
 
 			// save details to session
@@ -53,12 +55,15 @@ public class UiController {
 			s.attribute("clientId", payload.getSubject());
 			s.attribute("clientEmail", payload.getEmail());
 			s.attribute("clientName", payload.get("name"));
+			s.attribute("isAdmin", db.isAdmin(payload.getSubject()));
 
 			logger.info(String.format("Client logged in: %s (%s)", s.attribute("clientName"),
 				s.attribute("clientEmail")));
 			logger.info("Client ID: " + s.attribute("clientId"));
+			logger.info("Client is " + ((boolean) s.attribute("isAdmin") ? "" : "not ") + "an admin");
 
 			res.status(200);
+			db.close();
 			return "";
 		    } else {
 			logger.info("Invalid ID token.");

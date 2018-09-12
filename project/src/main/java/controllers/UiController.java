@@ -93,7 +93,9 @@ public class UiController {
 	});
 
 	get("/", (req, res) -> {
-	    return Util.render(model, "index");
+	    Map<String, Object> m = new HashMap<>(model);
+	    m.put("isAdmin", true); // (boolean) req.session().attribute("isAdmin"));
+	    return Util.render(m, "index");
 	});
 
 	get("/account", (req, res) -> {

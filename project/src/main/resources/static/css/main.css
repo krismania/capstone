@@ -384,6 +384,26 @@ button.confirm:disabled {
 	outline: none;
 }
 
+form.searchbox {
+	display: flex;
+}
+
+form.searchbox input {
+	border-radius: 4px 0 0 4px;
+	outline: none;
+}
+
+form.searchbox button {
+	height: 46px;
+	border-radius: 0 4px 4px 0;
+}
+
+form.searchbox button:hover,
+form.searchbox button:focus {
+	outline: none;
+	background-color: #0000003d;
+}
+
 /* account page current booking */
 
 #cur-booking > div {

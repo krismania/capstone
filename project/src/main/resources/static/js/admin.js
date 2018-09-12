@@ -15,7 +15,7 @@ var adminView = (function() {
 			return menu;
 		},
 		
-		console: function(addVehicleCallback) {
+		console: function(addVehicleCallback, manageUserCallback) {
 			var container = document.createElement("div");
 			var addVehicleBtn = document.createElement("button");
 			var manageUserBtn = document.createElement("button");
@@ -27,6 +27,7 @@ var adminView = (function() {
 			addVehicleBtn.innerText = "Add New Vehicle";
 			addVehicleBtn.addEventListener('click', addVehicleCallback);
 			manageUserBtn.innerText = "Manage User";
+			manageUserBtn.addEventListener('click', manageUserCallback);
 			
 			var adminMenu = this.menu([addVehicleBtn, manageUserBtn]);
 			
@@ -110,6 +111,34 @@ var adminView = (function() {
 			form.appendChild(submit);
 			
 			return form;
+		},
+		
+		manageUserForm: function(requestCallback) {
+			var form = document.createElement("form");
+			form.className = "searchbox";
+						
+			var email = document.createElement("input");
+			email.id = "email";
+			email.type = "email";
+			email.placeholder = "Email Address";
+			
+			form.appendChild(email);
+			
+			var searchIcon = document.createElement("i");
+			searchIcon.innerText = "search";
+			searchIcon.className = "material-icons";
+			
+			var search = document.createElement("button");
+			search.addEventListener("click", function(e) {
+				e.preventDefault();
+				requestCallback();
+			});
+			search.type = "submit";
+			search.appendChild(searchIcon);
+			
+			form.appendChild(search);
+			
+			return form;
 		}
 		
 	}
@@ -119,7 +148,7 @@ var adminView = (function() {
 function mainMenu() {
 	sidepane.clear();
 	sidepane.appendHeader("ADMIN CONSOLE");
-	sidepane.append(adminView.console(addVehicle))
+	sidepane.append(adminView.console(addVehicle, manageUser))
 }
 
 function addVehicle() {
@@ -129,6 +158,17 @@ function addVehicle() {
 	});
 	sidepane.append(adminView.vehicleForm(function() {
 		console.log("Created vehicle"); // TODO: submit vehicle details
+	}));
+}
+
+function manageUser() {
+	sidepane.clear();
+	sidepane.appendHeader("MANAGE USER", function() {
+		mainMenu();
+	});
+	sidepane.append(adminView.manageUserForm(function() {
+		var email = document.getElementById("email").value;
+		console.log("Managing user " + email); // TODO: submit user details request
 	}));
 }
 

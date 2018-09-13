@@ -654,14 +654,22 @@ public class Database implements Closeable {
 	Vehicle vehicle = null;
 
 	Statement stmt = this.conn.createStatement();
-	ResultSet rs = stmt
-		.executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, "
-			+ "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration NOT IN"
-			+ "(SELECT registration, " + clientId + " from bookings"
-			+ " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() ) AND active = 1;");
+	ResultSet rs = stmt.executeQuery("SELECT registration, " + clientId + " from bookings"
+		+ " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() ) AND active = 1;");
+	String registration = null;
 
 	while (rs.next()) {
-	    String registration = rs.getString("registration");
+	    registration = rs.getString("registration");
+	}
+	rs.close();
+
+	ResultSet rs2 = stmt
+		.executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, "
+			+ "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration LIKE " + registration
+			+ ";");
+
+	while (rs2.next()) {
+	    registration = rs.getString("registration");
 	    String make = rs.getString("make");
 	    String model = rs.getString("model");
 	    int year = rs.getInt("year");
@@ -672,7 +680,6 @@ public class Database implements Closeable {
 	    Position location = new Position(loc_x, loc_y);
 	    vehicle = new Vehicle(registration, make, model, year, colour, location, 1);
 	}
-
 	return vehicle;
     }
 }

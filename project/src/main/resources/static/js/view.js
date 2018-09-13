@@ -74,7 +74,7 @@ var view = (function() {
 			// add options to select
 			options = [
 				{value: 60, text: "1 Hour: $25"},
-				{value: 120, text: "2 Hours: $49.50"},
+				{value: 120, text: "2 Hours: $50"},
 				{value: 180, text: "3 Hours: $70"},
 				{value: 360, text: "6 Hours: $120"},
 				{value: 720, text: "12 Hours: $200"},

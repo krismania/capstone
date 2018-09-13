@@ -49,6 +49,8 @@ public class Database implements Closeable {
 		logger.info("Connecting to production database");
 		this.conn = DriverManager.getConnection(url);
 	    } else {
+		// this fixes an issue with AppEngine Dev Server hot reloads
+		Class.forName("com.mysql.jdbc.Driver");
 		String database = Config.get("localSqlDatabase");
 		String username = Config.get("localSqlUsername");
 		String password = Config.get("localSqlPassword");

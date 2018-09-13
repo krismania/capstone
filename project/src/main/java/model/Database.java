@@ -321,43 +321,36 @@ public class Database implements Closeable {
 	logger.info("Create Booking for " + customerId);
 	try {
 
-	    // CHECK
-	    // Checks this timestamp to see if its booked already for the same car.
-	    if (!isCarDoubleBooked(timestamp, registration)) {
-		if (!isUserDoubleBooked(timestamp, customerId)) {
-		    // INSERT
+	    // INSERT
 
-		    String query = "INSERT INTO bookings "
-			    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
-			    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
+	    String query = "INSERT INTO bookings "
+		    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
+		    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
 
-		    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
-		    pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
-		    pStmnt.setString(2, registration);
-		    pStmnt.setString(3, customerId);
-		    pStmnt.setInt(4, duration);
+	    pStmnt.setTimestamp(1, Timestamp.valueOf(timestamp));
+	    pStmnt.setString(2, registration);
+	    pStmnt.setString(3, customerId);
+	    pStmnt.setInt(4, duration);
 
-		    pStmnt.setDouble(5, startLocation.getLat());
-		    pStmnt.setDouble(6, startLocation.getLng());
+	    pStmnt.setDouble(5, startLocation.getLat());
+	    pStmnt.setDouble(6, startLocation.getLng());
 
-		    pStmnt.setDouble(7, endLocation.getLat());
-		    pStmnt.setDouble(8, endLocation.getLng());
+	    pStmnt.setDouble(7, endLocation.getLat());
+	    pStmnt.setDouble(8, endLocation.getLng());
 
-		    pStmnt.executeUpdate();
+	    pStmnt.executeUpdate();
 
-		    // get the inserted booking's ID
-		    ResultSet rs = pStmnt.getGeneratedKeys();
-		    if (rs.next()) {
-			int id = rs.getInt(1);
-			pStmnt.close();
+	    // get the inserted booking's ID
+	    ResultSet rs = pStmnt.getGeneratedKeys();
+	    if (rs.next()) {
+		int id = rs.getInt(1);
+		pStmnt.close();
 
-			Vehicle vehicle = getVehicleByReg(registration);
-			logger.info("Successfully inserted booking");
-			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
-		    }
-		}
-
+		Vehicle vehicle = getVehicleByReg(registration);
+		logger.info("Successfully inserted booking");
+		return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
 	    }
 
 	} catch (SQLException e) {
@@ -552,7 +545,7 @@ public class Database implements Closeable {
 	logger.info("Editing  Booking id:" + id);
 	try {
 	    if (bookingExists(id)) {
-		if (checkReg(registration)) {
+		if (vehicleExists(registration)) {
 		    // Gets the latest timestamp of a car booking.
 		    String query = "UPDATE bookings set timestamp = ?, registration = ?, customer_id = ?, duration = ?, start_location = Point(?,?), end_location = Point(?,?) WHERE id = "
 			    + id + ";";
@@ -620,7 +613,7 @@ public class Database implements Closeable {
     }
 
     // Checks whether vehicles exist.
-    public Boolean checkReg(String reg) {
+    public Boolean vehicleExists(String reg) {
 
 	logger.info("Checking if Vehicle exists");
 	try {

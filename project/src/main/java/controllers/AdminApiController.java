@@ -58,12 +58,19 @@ public class AdminApiController {
 	    logger.info("Inserting a car with rego: " + vr.registration);
 
 	    Database db = new Database();
-	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
-		    active);
-	    db.close();
+	    if (!db.vehicleExists(vr.registration)) {
+		Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
+			active);
+		db.close();
+		res.status(200);
+		return new Gson().toJson(inserted_vehicle);
+	    } else {
+		res.status(400);
 
-	    logger.info("Inserted successfully!");
-	    return new Gson().toJson(inserted_vehicle);
+	    }
+	    db.close();
+	    return "Unknown issue please contact an admin or try again.";
+
 	});
 
 	// set the status of a particular vehicle
@@ -96,7 +103,7 @@ public class AdminApiController {
 		res.status(400);
 	    }
 
-	    return "";
+	    return "Unknown issue please contact an admin or try again.";
 	});
 
 	// returns a list of all vehicles
@@ -136,7 +143,7 @@ public class AdminApiController {
 		res.status(400);
 	    }
 
-	    return "";
+	    return "Unknown issue please contact an admin or try again.";
 	});
 
 	// update a booking
@@ -175,8 +182,9 @@ public class AdminApiController {
 	    } else {
 		res.status(400);
 	    }
+	    res.status(400);
+	    return "Unknown issue please contact an admin or try again.";
 
-	    return "";
 	});
 
     }

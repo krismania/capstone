@@ -1,5 +1,6 @@
 package controllers;
 
+import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.put;
@@ -32,8 +33,11 @@ public class AdminApiController {
 
 	final Logger logger = LoggerFactory.getLogger(AdminApiController.class);
 
+	// log every API request
+	before("/*", (req, res) -> logger.info("Admin API Request: " + req.uri()));
+
 	// create a new vehicle
-	post("/api/vehicles", (req, res) -> {
+	post("/vehicles", (req, res) -> {
 	    res.type("application/json");
 
 	    Position pos;
@@ -64,7 +68,7 @@ public class AdminApiController {
 
 	// set the status of a particular vehicle
 	// inactive vehicles can't be booked by clients
-	post("/api/vehicle/status", (req, res) -> {
+	post("/vehicle/status", (req, res) -> {
 
 	    VehicleAvailabilityRequest var;
 	    int active;
@@ -96,7 +100,7 @@ public class AdminApiController {
 	});
 
 	// returns a list of all vehicles
-	get("/api/vehicles/all", (req, res) -> {
+	get("/vehicles/all", (req, res) -> {
 	    res.type("application/json");
 
 	    Database db = new Database();
@@ -108,7 +112,7 @@ public class AdminApiController {
 	});
 
 	// returns a list of all bookings
-	get("/api/bookings/all", (req, res) -> {
+	get("/bookings/all", (req, res) -> {
 	    res.type("application/json");
 
 	    Database db = new Database();
@@ -120,7 +124,7 @@ public class AdminApiController {
 	});
 
 	// delete a booking
-	get("/api/bookings/delete", (req, res) -> {
+	get("/bookings/delete", (req, res) -> {
 	    int id = Integer.parseInt(req.queryParams("id"));
 
 	    Database db = new Database();
@@ -136,7 +140,7 @@ public class AdminApiController {
 	});
 
 	// update a booking
-	put("/api/bookings/:id", (req, res) -> {
+	put("/bookings/:id", (req, res) -> {
 	    res.type("application/json");
 
 	    Position location_start, location_end;

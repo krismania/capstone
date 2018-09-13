@@ -1,5 +1,6 @@
 package controllers;
 
+import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -27,8 +28,11 @@ public class ApiController {
 
 	final Logger logger = LoggerFactory.getLogger(ApiController.class);
 
+	// log every API request
+	before("/*", (req, res) -> logger.info("Client API Request: " + req.uri()));
+
 	// returns a list of available vehicles
-	get("/api/vehicles", (req, res) -> {
+	get("/vehicles", (req, res) -> {
 	    res.type("application/json");
 
 	    Database db = new Database();
@@ -40,7 +44,7 @@ public class ApiController {
 	});
 
 	// returns a list of nearby vehicles, giving their distance to the client
-	post("/api/vehicles/nearby", (req, res) -> {
+	post("/vehicles/nearby", (req, res) -> {
 	    res.type("application/json");
 	    Position pos;
 	    try {
@@ -62,7 +66,7 @@ public class ApiController {
 	});
 
 	// create a booking
-	post("/api/bookings", (req, res) -> {
+	post("/bookings", (req, res) -> {
 	    res.type("application/json");
 	    Position location_start, location_end;
 	    BookingRequest br;
@@ -96,7 +100,7 @@ public class ApiController {
 	});
 
 	// returns a list of the logged in client's bookings
-	get("/api/bookings", (req, res) -> {
+	get("/bookings", (req, res) -> {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 

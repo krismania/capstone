@@ -330,7 +330,7 @@ public class Database implements Closeable {
 	logger.info("Create Booking for " + customerId);
 
 	try {
-	    int cost = calculateCost(duration);
+	    int cost = checkCost(duration);
 	    // CHECK
 	    // Checks this timestamp to see if its booked already for the same
 	    // car.
@@ -690,7 +690,7 @@ public class Database implements Closeable {
 	return cr;
     }
 
-    public int calculateCost(int duration) {
+    public int checkCost(int duration) {
 
 	int cost = 0;
 

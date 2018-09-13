@@ -349,11 +349,11 @@ public class Database implements Closeable {
 		    pStmnt.setString(3, customerId);
 		    pStmnt.setInt(4, duration);
 		    pStmnt.setInt(5, cost);
-		    pStmnt.setDouble(5, startLocation.getLat());
-		    pStmnt.setDouble(6, startLocation.getLng());
+		    pStmnt.setDouble(6, startLocation.getLat());
+		    pStmnt.setDouble(7, startLocation.getLng());
 
-		    pStmnt.setDouble(7, endLocation.getLat());
-		    pStmnt.setDouble(8, endLocation.getLng());
+		    pStmnt.setDouble(8, endLocation.getLat());
+		    pStmnt.setDouble(9, endLocation.getLng());
 		    pStmnt.executeUpdate();
 
 		    // get the inserted booking's ID

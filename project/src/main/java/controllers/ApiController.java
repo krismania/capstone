@@ -140,6 +140,20 @@ public class ApiController {
 	    }
 	    return "";
 	});
+
+	get("/credit/delete", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.session().attribute("clientId");
+
+	    return "";
+	});
+
+	get("/credit/view", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.session().attribute("clientId");
+
+	    return "";
+	});
     }
 
 }

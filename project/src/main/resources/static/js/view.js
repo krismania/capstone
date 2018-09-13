@@ -73,12 +73,12 @@ var view = (function() {
 			
 			// add options to select
 			options = [
-				{value: 60, text: "1 Hour"},
-				{value: 120, text: "2 Hours"},
-				{value: 180, text: "3 Hours"},
-				{value: 360, text: "6 Hours"},
-				{value: 720, text: "12 Hours"},
-				{value: 1440, text: "24 Hours"},
+				{value: 60, text: "1 Hour: $25"},
+				{value: 120, text: "2 Hours: $49.50"},
+				{value: 180, text: "3 Hours: $70"},
+				{value: 360, text: "6 Hours: $120"},
+				{value: 720, text: "12 Hours: $200"},
+				{value: 1440, text: "24 Hours: $350"},
 			];
 			for (var i = 0; i < options.length; i++) {
 				option = document.createElement("option");

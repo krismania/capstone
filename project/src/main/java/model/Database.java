@@ -10,7 +10,11 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,7 +86,8 @@ public class Database implements Closeable {
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
+		+ "`cost` VARCHAR(50) NOT NULL, " + "`start_location` POINT NOT NULL, "
+		+ "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
 	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
@@ -275,7 +280,7 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.cost, "
 		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
 		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
 		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y, vh.active"
@@ -285,6 +290,7 @@ public class Database implements Closeable {
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
+		int cost = rs.getInt("cost");
 		double lat_start = rs.getDouble("x_start");
 		double lng_start = rs.getDouble("y_start");
 		double lat_end = rs.getDouble("x_end");
@@ -301,7 +307,6 @@ public class Database implements Closeable {
 		double lng_curr = rs.getDouble("current_y");
 		Position car_curr_pos = new Position(lat_curr, lng_curr);
 		int active = rs.getInt("active");
-		int cost = 0;
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, active);
 		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end, cost);
 
@@ -323,8 +328,9 @@ public class Database implements Closeable {
     public Booking createBooking(LocalDateTime timestamp, String registration, String customerId, int duration,
 	    Position startLocation, Position endLocation) {
 	logger.info("Create Booking for " + customerId);
-	try {
 
+	try {
+	    int cost = calculateCost(duration);
 	    // CHECK
 	    // Checks this timestamp to see if its booked already for the same
 	    // car.
@@ -333,8 +339,8 @@ public class Database implements Closeable {
 		    // INSERT
 
 		    String query = "INSERT INTO bookings "
-			    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
-			    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
+			    + "(timestamp, registration, customer_id, duration, cost, start_location, end_location) VALUES "
+			    + "(?, ?, ?, ?, ?, Point(?, ?), Point(?, ?))";
 
 		    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
@@ -342,13 +348,12 @@ public class Database implements Closeable {
 		    pStmnt.setString(2, registration);
 		    pStmnt.setString(3, customerId);
 		    pStmnt.setInt(4, duration);
-
+		    pStmnt.setInt(5, cost);
 		    pStmnt.setDouble(5, startLocation.getLat());
 		    pStmnt.setDouble(6, startLocation.getLng());
 
 		    pStmnt.setDouble(7, endLocation.getLat());
 		    pStmnt.setDouble(8, endLocation.getLng());
-		    int cost = 0;
 		    pStmnt.executeUpdate();
 
 		    // get the inserted booking's ID
@@ -494,7 +499,7 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.cost,"
 		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
 		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
 		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y, vh.active"
@@ -505,6 +510,7 @@ public class Database implements Closeable {
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
+		int cost = rs.getInt("cost");
 		double lat_start = rs.getDouble("x_start");
 		double lng_start = rs.getDouble("y_start");
 		double lat_end = rs.getDouble("x_end");
@@ -521,8 +527,6 @@ public class Database implements Closeable {
 		double lng_curr = rs.getDouble("current_y");
 		Position car_curr_pos = new Position(lat_curr, lng_curr);
 		int active = rs.getInt("active");
-
-		int cost = 0;
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, active);
 		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end, cost);
@@ -684,6 +688,30 @@ public class Database implements Closeable {
 	    e.printStackTrace();
 	}
 	return cr;
+    }
+
+    public int calculateCost(int duration) {
+
+	int cost = 0;
+
+	HashMap<Integer, Integer> hashMap = new HashMap<Integer, Integer>();
+	hashMap.put(60, 25);
+	hashMap.put(120, 50);
+	hashMap.put(180, 70);
+	hashMap.put(360, 120);
+	hashMap.put(720, 200);
+	hashMap.put(1440, 350);
+
+	Set set = hashMap.entrySet();
+	Iterator iterator = set.iterator();
+	while (iterator.hasNext()) {
+	    Map.Entry map = (Map.Entry) iterator.next();
+	    if (duration == (int) map.getKey()) {
+		cost = (int) map.getValue();
+	    }
+	}
+
+	return cost;
     }
 
 }

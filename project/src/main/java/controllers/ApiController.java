@@ -121,6 +121,7 @@ public class ApiController {
 	    String clientId = req.session().attribute("clientId");
 
 	    CreditRequest cr;
+	    CreditCard creditCard;
 
 	    try {
 		cr = new Gson().fromJson(req.body(), CreditRequest.class);
@@ -131,14 +132,14 @@ public class ApiController {
 		String cName = cr.cName;
 
 		Database db = new Database();
-		CreditCard creditCard = db.insertCredit(clientId, cName, cNumber, bNumber, expDate);
+		creditCard = db.insertCredit(clientId, cName, cNumber, bNumber, expDate);
 		db.close();
 
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
 		return "Error parsing request";
 	    }
-	    return "";
+	    return new Gson().toJson(creditCard);
 	});
 
 	get("/credit/delete", (req, res) -> {

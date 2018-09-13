@@ -146,6 +146,10 @@ public class ApiController {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 
+	    Database db = new Database();
+	    boolean done = db.deleteCredit(clientId);
+	    db.close();
+
 	    return "";
 	});
 
@@ -153,7 +157,13 @@ public class ApiController {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 
-	    return "";
+	    CreditCard cr;
+
+	    Database db = new Database();
+	    cr = db.checkCredit(clientId);
+	    db.close();
+
+	    return new Gson().toJson(cr);
 	});
     }
 

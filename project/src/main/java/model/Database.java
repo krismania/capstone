@@ -691,6 +691,48 @@ public class Database implements Closeable {
 	return cr;
     }
 
+    public boolean deleteCredit(String clientId) {
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    int result = stmt.executeUpdate("DELETE FROM creditCard WHERE user_id LIKE '" + clientId + "';");
+
+	    if (result != 0)
+		return true;
+	    else
+		return false;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
+
+    }
+
+    public CreditCard checkCredit(String clientId) {
+	CreditCard cr = null;
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(
+		    "SELECT user_id, cName, cNumber, expDate, bNumber FROM creditCard WHERE user_id LIKE '" + clientId
+			    + "';");
+	    while (rs.next()) {
+		String user_id = rs.getString("user_id");
+		String cName = rs.getString("cName");
+		String cNumber = rs.getString("cNumber");
+		String expDate = rs.getString("expDate");
+		String bNumber = rs.getString("bNumber");
+
+		cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+	    }
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return cr;
+    }
+
     public int checkCost(int duration) {
 
 	int cost = 0;

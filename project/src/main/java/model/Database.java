@@ -28,9 +28,9 @@ public class Database implements Closeable {
 
     /**
      * Create a database object with an underlying {@link java.sql.Connection}
-     * object. This constructor will return a connection to the local development
-     * database when run locally, or a connection to the Cloud SQL database when
-     * deployed.
+     * object. This constructor will return a connection to the local
+     * development database when run locally, or a connection to the Cloud SQL
+     * database when deployed.
      *
      * @throws SQLException
      */
@@ -320,7 +320,8 @@ public class Database implements Closeable {
 	try {
 
 	    // CHECK
-	    // Checks this timestamp to see if its booked already for the same car.
+	    // Checks this timestamp to see if its booked already for the same
+	    // car.
 	    if (!isCarDoubleBooked(timestamp, registration)) {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
@@ -429,7 +430,8 @@ public class Database implements Closeable {
 	return false; // Not double Booked.
     }
 
-    // Work in progress, will probably merge it together with CarDoubleBooked after
+    // Work in progress, will probably merge it together with CarDoubleBooked
+    // after
     // more testing..
     public boolean isUserDoubleBooked(LocalDateTime currtime, String customerId) {
 	logger.info("Checking if user:" + customerId + "double booked.");
@@ -648,4 +650,29 @@ public class Database implements Closeable {
 	}
     }
 
+    public Vehicle getBookingNow(String clientId) throws SQLException {
+	Vehicle vehicle = null;
+
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt
+		.executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, "
+			+ "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration NOT IN"
+			+ "(SELECT registration, " + clientId + " from bookings"
+			+ " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() ) AND active = 1;");
+
+	while (rs.next()) {
+	    String registration = rs.getString("registration");
+	    String make = rs.getString("make");
+	    String model = rs.getString("model");
+	    int year = rs.getInt("year");
+	    String colour = rs.getString("colour");
+	    double loc_x = rs.getDouble("loc_x");
+	    double loc_y = rs.getDouble("loc_y");
+	    // construct the object
+	    Position location = new Position(loc_x, loc_y);
+	    vehicle = new Vehicle(registration, make, model, year, colour, location, 1);
+	}
+
+	return vehicle;
+    }
 }

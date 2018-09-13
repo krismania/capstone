@@ -43,7 +43,8 @@ public class ApiController {
 	    return new Gson().toJson(vehicles);
 	});
 
-	// returns a list of nearby vehicles, giving their distance to the client
+	// returns a list of nearby vehicles, giving their distance to the
+	// client
 	post("/vehicles/nearby", (req, res) -> {
 	    res.type("application/json");
 	    Position pos;
@@ -113,6 +114,17 @@ public class ApiController {
 	    return new Gson().toJson(bookings);
 	});
 
+	get("/bookings/now", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.session().attribute("clientId");
+	    Vehicle vr;
+	    Database db = new Database();
+
+	    vr = db.getBookingNow(clientId);
+	    db.close();
+
+	    return new Gson().toJson(vr);
+	});
     }
 
 }

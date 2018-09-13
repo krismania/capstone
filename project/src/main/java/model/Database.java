@@ -659,4 +659,31 @@ public class Database implements Closeable {
 	}
     }
 
+    public CreditCard insertCredit(String user_id, String cName, String cNumber, String bNumber, String expDate) {
+
+	CreditCard cr = null;
+
+	try {
+	    String query = "INSERT INTO creditCard " + "(user_id, cName, cNumber, expDate, bNumber) VALUES "
+		    + "(?, ?, ?, ?, ?)";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+
+	    pStmnt.setString(1, user_id);
+	    pStmnt.setString(2, cName);
+	    pStmnt.setString(3, cNumber);
+	    pStmnt.setString(4, expDate);
+	    pStmnt.setString(5, bNumber);
+
+	    pStmnt.executeUpdate();
+	    pStmnt.close();
+
+	    cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return cr;
+    }
+
 }

@@ -116,7 +116,7 @@ public class ApiController {
 	    return new Gson().toJson(bookings);
 	});
 
-	get("/credit", (req, res) -> {
+	get("/credit/insert", (req, res) -> {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 

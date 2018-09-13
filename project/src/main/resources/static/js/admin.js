@@ -168,7 +168,32 @@ function manageUser() {
 	});
 	sidepane.append(adminView.manageUserForm(function() {
 		var email = document.getElementById("email").value;
-		console.log("Managing user " + email); // TODO: submit user details request
+		var request = new Request("/admin/api/bookings/" + email) // TODO: currently takes user ID, not email
+		fetch(request)
+		.then(res => res.json())
+		.then(bookings => {
+			if (bookings.length == 0) {
+				var p = document.createElement("p");
+				p.className = "hint";
+				p.innerText = "No bookings found for this user";
+				sidepane.append(p);
+			} else {
+				var bookingBtns = new Array(bookings.length);
+				for (var i = 0; i < bookings.length; i++) {
+					var booking = bookings[i]
+					bookingBtns[i] = document.createElement("button");
+					bookingBtns[i].addEventListener("click", function() {
+						console.log(booking);
+					});
+					bookingBtns[i].innerText = booking.vehicle.registration;
+				}
+				var menu = adminView.menu(bookingBtns);
+				var heading = document.createElement("h3");
+				heading.innerText = "Past Bookings";
+				sidepane.append(menu);
+			}
+			console.log(bookings);
+		});
 	}));
 }
 

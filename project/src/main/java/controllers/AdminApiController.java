@@ -159,6 +159,18 @@ public class AdminApiController {
 	    return new Gson().toJson(bookings);
 	});
 
+	// returns a list of bookings for the given user
+	get("/bookings/:id", (req, res) -> {
+	    String id = req.params().get(":id");
+
+	    Database db = new Database();
+	    List<Booking> bookings = db.getBookingsOfUser(id);
+	    db.close();
+
+	    logger.info("Found " + bookings.size() + " bookings for " + id);
+	    return new Gson().toJson(bookings);
+	});
+
 	// delete a booking
 	delete("/bookings/:id", (req, res) -> {
 	    int id = Integer.parseInt(req.params(":id"));

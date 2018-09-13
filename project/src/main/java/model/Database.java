@@ -665,8 +665,8 @@ public class Database implements Closeable {
 
 	ResultSet rs2 = stmt
 		.executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, "
-			+ "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration LIKE " + registration
-			+ ";");
+			+ "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration LIKE '" + registration
+			+ "';");
 
 	while (rs2.next()) {
 	    registration = rs.getString("registration");

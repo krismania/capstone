@@ -655,7 +655,7 @@ public class Database implements Closeable {
 
 	Statement stmt = this.conn.createStatement();
 	ResultSet rs = stmt.executeQuery("SELECT registration, " + clientId + " from bookings"
-		+ " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() ) AND active = 1;");
+		+ " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() );");
 	String registration = null;
 
 	while (rs.next()) {

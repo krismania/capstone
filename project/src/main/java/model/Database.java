@@ -28,9 +28,9 @@ public class Database implements Closeable {
 
     /**
      * Create a database object with an underlying {@link java.sql.Connection}
-     * object. This constructor will return a connection to the local development
-     * database when run locally, or a connection to the Cloud SQL database when
-     * deployed.
+     * object. This constructor will return a connection to the local
+     * development database when run locally, or a connection to the Cloud SQL
+     * database when deployed.
      *
      * @throws SQLException
      */
@@ -88,10 +88,16 @@ public class Database implements Closeable {
 	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
 		+ "PRIMARY KEY (`admin_id`));";
 
+	String creditCard = "CREATE TABLE IF NOT EXISTS `creditCard` (" + "`user_id` VARCHAR(50) NOT NULL, "
+		+ "`creditNumber` VARCHAR(30) NOT NULL, " + "`expDate` VARCHAR(10) NOT NULL, "
+		+ "`backNumber` VARCHAR(10) NOT NULL, " + "`nameOnCard` VARCHAR(20) NOT NULL, "
+		+ "PRIMARY KEY (`user_id`));";
+
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
 	stmt.execute(bookingsSql);
 	stmt.execute(admin);
+	stmt.execute(creditCard);
 	stmt.close();
     }
 
@@ -295,9 +301,9 @@ public class Database implements Closeable {
 		double lng_curr = rs.getDouble("current_y");
 		Position car_curr_pos = new Position(lat_curr, lng_curr);
 		int active = rs.getInt("active");
-
+		int cost = 0;
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, active);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end, cost);
 
 		bookings.add(booking);
 	    }
@@ -320,7 +326,8 @@ public class Database implements Closeable {
 	try {
 
 	    // CHECK
-	    // Checks this timestamp to see if its booked already for the same car.
+	    // Checks this timestamp to see if its booked already for the same
+	    // car.
 	    if (!isCarDoubleBooked(timestamp, registration)) {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
@@ -341,7 +348,7 @@ public class Database implements Closeable {
 
 		    pStmnt.setDouble(7, endLocation.getLat());
 		    pStmnt.setDouble(8, endLocation.getLng());
-
+		    int cost = 0;
 		    pStmnt.executeUpdate();
 
 		    // get the inserted booking's ID
@@ -352,7 +359,8 @@ public class Database implements Closeable {
 
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
-			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation,
+				cost);
 		    }
 		}
 
@@ -429,7 +437,8 @@ public class Database implements Closeable {
 	return false; // Not double Booked.
     }
 
-    // Work in progress, will probably merge it together with CarDoubleBooked after
+    // Work in progress, will probably merge it together with CarDoubleBooked
+    // after
     // more testing..
     public boolean isUserDoubleBooked(LocalDateTime currtime, String customerId) {
 	logger.info("Checking if user:" + customerId + "double booked.");
@@ -513,8 +522,10 @@ public class Database implements Closeable {
 		Position car_curr_pos = new Position(lat_curr, lng_curr);
 		int active = rs.getInt("active");
 
+		int cost = 0;
+
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, active);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end, cost);
 
 		bookings.add(booking);
 	    }

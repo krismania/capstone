@@ -564,6 +564,7 @@ public class Database implements Closeable {
 
 	logger.info("Editing  Booking id:" + id);
 	try {
+	    int cost = checkCost(duration);
 	    if (bookingExists(id)) {
 		if (checkReg(registration)) {
 		    // Gets the latest timestamp of a car booking.
@@ -576,12 +577,12 @@ public class Database implements Closeable {
 		    ps.setString(2, registration);
 		    ps.setString(3, customerId);
 		    ps.setInt(4, duration);
+		    ps.setInt(5, cost);
+		    ps.setDouble(6, startLocation.getLat());
+		    ps.setDouble(7, startLocation.getLng());
 
-		    ps.setDouble(5, startLocation.getLat());
-		    ps.setDouble(6, startLocation.getLng());
-
-		    ps.setDouble(7, endLocation.getLat());
-		    ps.setDouble(8, endLocation.getLng());
+		    ps.setDouble(8, endLocation.getLat());
+		    ps.setDouble(9, endLocation.getLng());
 
 		    ps.executeUpdate();
 

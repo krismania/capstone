@@ -62,6 +62,7 @@ public class ApiController {
 	    db.close();
 
 	    logger.info("Found " + nearby.size() + " nearby vehicles");
+	    res.status(200);
 	    return new Gson().toJson(nearby);
 	});
 
@@ -89,14 +90,25 @@ public class ApiController {
 	    Database db = new Database();
 
 	    String clientId = req.session().attribute("clientId");
+	    System.out.println(clientId);
+	    if (!db.isCarDoubleBooked(dateTime, br.registration)) {
+		if (!db.isUserDoubleBooked(dateTime, clientId)) {
+		    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration, location_start,
+			    location_end);
+		    db.close();
+		    res.status(200);
+		    return new Gson().toJson(booking);
+		} else {
+		    res.status(400);
+		    db.close();
 
-	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration, location_start,
-		    location_end);
+		}
+	    } else {
+		res.status(400);
+		db.close();
 
-	    db.close();
-
-	    // logger.info("Inserted successfully!");
-	    return new Gson().toJson(booking);
+	    }
+	    return "Unkown Error, Please try again";
 	});
 
 	// returns a list of the logged in client's bookings
@@ -110,6 +122,7 @@ public class ApiController {
 	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
 
 	    db.close();
+	    res.status(200);
 	    return new Gson().toJson(bookings);
 	});
 

@@ -18,6 +18,7 @@ import com.google.gson.JsonParseException;
 import controllers.Request.EditBookingRequest;
 import controllers.Request.VehicleAvailabilityRequest;
 import controllers.Request.VehicleRequest;
+import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.Database;
 import model.Position;
@@ -53,17 +54,24 @@ public class AdminApiController {
 		}
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 	    logger.info("Inserting a car with rego: " + vr.registration);
 
 	    Database db = new Database();
-	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
-		    active);
+	    String body;
+	    if (!db.vehicleExists(vr.registration)) {
+		Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
+			active);
+		res.status(200);
+		body = new Gson().toJson(inserted_vehicle);
+	    } else {
+		res.status(400);
+		body = new Gson().toJson(new ErrorResponse("Vehicle already exists"));
+	    }
 	    db.close();
-
-	    logger.info("Inserted successfully!");
-	    return new Gson().toJson(inserted_vehicle);
+	    return body;
 	});
 
 	// set the status of a particular vehicle
@@ -96,7 +104,7 @@ public class AdminApiController {
 		res.status(400);
 	    }
 
-	    return "";
+	    return "Unknown issue please contact an admin or try again.";
 	});
 
 	// returns a list of all vehicles
@@ -136,7 +144,7 @@ public class AdminApiController {
 		res.status(400);
 	    }
 
-	    return "";
+	    return "Unknown issue please contact an admin or try again.";
 	});
 
 	// update a booking
@@ -175,8 +183,9 @@ public class AdminApiController {
 	    } else {
 		res.status(400);
 	    }
+	    res.status(400);
+	    return "Unknown issue please contact an admin or try again.";
 
-	    return "";
 	});
 
     }

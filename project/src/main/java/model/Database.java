@@ -79,7 +79,7 @@ public class Database implements Closeable {
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (`registration` VARCHAR(10) NOT NULL, "
 		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, "
 		+ "`year` SMALLINT UNSIGNED NOT NULL, " + "`colour` VARCHAR(50) NOT NULL, "
-		+ "location POINT NOT NULL, status TINYINT UNSIGNED NOT NULL, " + "PRIMARY KEY (`registration`));";
+		+ "status TINYINT UNSIGNED NOT NULL, " + "PRIMARY KEY (`registration`));";
 
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
@@ -91,7 +91,7 @@ public class Database implements Closeable {
 		+ "PRIMARY KEY (`admin_id`));";
 
 	String locationSql = "CREATE TABLE IF NOT EXISTS `locations` (`registration` VARCHAR(10) NOT NULL, "
-		+ "location POINT NOT NULL);";
+		+ "timestamp DATETIME NOT NULL, location POINT NOT NULL);";
 
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
@@ -327,7 +327,7 @@ public class Database implements Closeable {
 
 	    // CHECK
 	    // Checks this timestamp to see if its booked already for the same car.
-	    if (!isCarDoubleBooked(timestamp, registration)) {
+	    if (!isCarBooked(timestamp, registration)) {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
 
@@ -404,7 +404,7 @@ public class Database implements Closeable {
 	return v;
     }
 
-    public boolean isCarDoubleBooked(LocalDateTime currtime, String registration) {
+    public boolean isCarBooked(LocalDateTime currtime, String registration) {
 	logger.info("Checking if vehicle:" + registration + " is double booked.");
 	try {
 	    // Gets the latest timestamp of a car booking.
@@ -651,6 +651,40 @@ public class Database implements Closeable {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	    return false;
+	}
+    }
+
+    public Position getVehiclePosition(String registration) {
+	LocalDateTime now = LocalDateTime.now();
+	try {
+	    if (isCarBooked(now, registration)) {
+		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
+			+ registration + "' AND MINUTE(NOW()) > MINUTE(timestamp) "
+			+ "ORDER BY timestamp DESC LIMIT 1;";
+
+		Statement stmt = this.conn.createStatement();
+		ResultSet rs = stmt.executeQuery(query);
+
+		double lat = rs.getDouble("lat");
+		double lng = rs.getDouble("lng");
+		Position carLocation = new Position(lat, lng);
+		return carLocation;
+	    } else {
+		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
+			+ registration + "' AND MINUTE(timestamp) = 0  " + "ORDER BY timestamp DESC LIMIT 1;";
+
+		Statement stmt = this.conn.createStatement();
+		ResultSet rs = stmt.executeQuery(query);
+
+		double lat = rs.getDouble("lat");
+		double lng = rs.getDouble("lng");
+		Position carLocation = new Position(lat, lng);
+		return carLocation;
+	    }
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return null;
 	}
     }
 

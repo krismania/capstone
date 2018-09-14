@@ -1,25 +1,6 @@
 // contains all API requests
 rebu = (function() {
 	
-	function zeroPad(number) {
-		if (number < 10) {
-			return "0" + number;
-		} else {
-			return "" + number;
-		}
-	}
-	
-	function dateToString(d) {
-		var year = d.getFullYear();
-		var month = zeroPad(d.getMonth() + 1);
-		var day = zeroPad(d.getDate());
-		var hours = zeroPad(d.getHours());
-		var minutes = zeroPad(d.getMinutes());
-		var seconds = zeroPad(d.getSeconds());
-		return year + "-" + month + "-" + day + " "
-			+ hours + ":" + minutes + ":" + seconds;
-	}
-	
 	function addVehicleDescription(vehicle) {
 		vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
 	}
@@ -81,7 +62,7 @@ rebu = (function() {
 		requestBooking: function(bookingRequest, callback) {
 			console.log("[api] requesting booking", bookingRequest);
 			var booking = {
-			    timestamp: dateToString(new Date()),
+			    timestamp: view.dateToString(new Date()),
 			    registration: bookingRequest.registration,
 			    customerId: bookingRequest.client,
 			    duration: bookingRequest.duration

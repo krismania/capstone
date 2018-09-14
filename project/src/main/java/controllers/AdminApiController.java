@@ -18,6 +18,7 @@ import com.google.gson.JsonParseException;
 import controllers.Request.EditBookingRequest;
 import controllers.Request.VehicleAvailabilityRequest;
 import controllers.Request.VehicleRequest;
+import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.Database;
 import model.Position;
@@ -53,24 +54,24 @@ public class AdminApiController {
 		}
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 	    logger.info("Inserting a car with rego: " + vr.registration);
 
 	    Database db = new Database();
+	    String body;
 	    if (!db.vehicleExists(vr.registration)) {
 		Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
 			active);
-		db.close();
 		res.status(200);
-		return new Gson().toJson(inserted_vehicle);
+		body = new Gson().toJson(inserted_vehicle);
 	    } else {
 		res.status(400);
-
+		body = new Gson().toJson(new ErrorResponse("Vehicle already exists"));
 	    }
 	    db.close();
-	    return "Unknown issue please contact an admin or try again.";
-
+	    return body;
 	});
 
 	// set the status of a particular vehicle

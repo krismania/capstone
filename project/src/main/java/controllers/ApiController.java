@@ -116,7 +116,7 @@ public class ApiController {
 
 	get("/bookings/now", (req, res) -> {
 	    res.type("application/json");
-	    String clientId = req.session().attribute("clientId");
+	    String clientId = req.queryParams("clientId");
 	    Vehicle vr;
 	    Database db = new Database();
 

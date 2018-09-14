@@ -654,8 +654,9 @@ public class Database implements Closeable {
 	Vehicle vehicle = null;
 
 	Statement stmt = this.conn.createStatement();
-	ResultSet rs = stmt.executeQuery("SELECT registration, " + clientId + " from bookings"
-		+ " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() );");
+	ResultSet rs = stmt.executeQuery(
+		"SELECT registration, customer_id from bookings WHERE (timestamp + INTERVAL duration MINUTE) > NOW() AND customer_id LIKE '"
+			+ clientId + "';");
 	String registration = null;
 
 	while (rs.next()) {
@@ -665,17 +666,17 @@ public class Database implements Closeable {
 
 	ResultSet rs2 = stmt
 		.executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, "
-			+ "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration LIKE '" + registration
-			+ "';");
+			+ "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration LIKE '"
+			+ registration + "';");
 
 	while (rs2.next()) {
-	    registration = rs.getString("registration");
-	    String make = rs.getString("make");
-	    String model = rs.getString("model");
-	    int year = rs.getInt("year");
-	    String colour = rs.getString("colour");
-	    double loc_x = rs.getDouble("loc_x");
-	    double loc_y = rs.getDouble("loc_y");
+	    registration = rs2.getString("registration");
+	    String make = rs2.getString("make");
+	    String model = rs2.getString("model");
+	    int year = rs2.getInt("year");
+	    String colour = rs2.getString("colour");
+	    double loc_x = rs2.getDouble("loc_x");
+	    double loc_y = rs2.getDouble("loc_y");
 	    // construct the object
 	    Position location = new Position(loc_x, loc_y);
 	    vehicle = new Vehicle(registration, make, model, year, colour, location, 1);

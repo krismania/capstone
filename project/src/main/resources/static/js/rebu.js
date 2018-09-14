@@ -80,9 +80,7 @@ rebu = (function() {
 			    timestamp: dateToString(new Date()),
 			    registration: bookingRequest.registration,
 			    customerId: bookingRequest.client,
-			    duration: bookingRequest.duration,
-			    startLocation: bookingRequest.pickup,
-			    endLocation: bookingRequest.dropoff
+			    duration: bookingRequest.duration
 			}
 			
 			booking = JSON.stringify(booking);

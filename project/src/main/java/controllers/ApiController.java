@@ -68,7 +68,6 @@ public class ApiController {
 	// create a booking
 	post("/bookings", (req, res) -> {
 	    res.type("application/json");
-	    Position location_start, location_end;
 	    BookingRequest br;
 	    LocalDateTime dateTime;
 
@@ -77,9 +76,6 @@ public class ApiController {
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		dateTime = LocalDateTime.parse(br.timestamp, formatter);
-
-		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
-		location_end = new Position(br.endLocation.lat, br.endLocation.lng);
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
 		return "Error parsing request";
@@ -90,8 +86,7 @@ public class ApiController {
 
 	    String clientId = req.session().attribute("clientId");
 
-	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration, location_start,
-		    location_end);
+	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
 
 	    db.close();
 

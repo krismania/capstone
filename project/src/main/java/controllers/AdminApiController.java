@@ -147,7 +147,6 @@ public class AdminApiController {
 	put("/bookings/:id", (req, res) -> {
 	    res.type("application/json");
 
-	    Position location_start, location_end;
 	    LocalDateTime dateTime;
 	    EditBookingRequest br;
 
@@ -157,10 +156,7 @@ public class AdminApiController {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 		br = new Gson().fromJson(req.body(), EditBookingRequest.class);
-
 		dateTime = LocalDateTime.parse(br.timestamp, formatter);
-		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
-		location_end = new Position(br.endLocation.lat, br.endLocation.lng);
 
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
@@ -169,8 +165,7 @@ public class AdminApiController {
 
 	    Database db = new Database();
 
-	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration,
-		    location_start, location_end);
+	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration);
 
 	    db.close();
 

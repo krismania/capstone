@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,8 +85,7 @@ public class Database implements Closeable {
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
-		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
+		+ "PRIMARY KEY (`id`), " + "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
 	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
 		+ "PRIMARY KEY (`admin_id`));";
@@ -123,20 +123,30 @@ public class Database implements Closeable {
 	logger.info("Insert Vehicles");
 	Vehicle v = null;
 	try {
-	    String query = "INSERT INTO vehicles (registration, make, model,year,colour,location,status) VALUES (?,?,?,?,?, POINT(?,?),?);";
-	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+	    String queryVehTable = "INSERT INTO vehicles (registration, make, model,year,colour,status) VALUES (?,?,?,?,?,?);";
+	    String queryLocTable = "INSERT INTO colations (registration, timestamp, location) VALUES (?,?,POINT(?,?));";
+	    PreparedStatement pStmntVeh = this.conn.prepareStatement(queryVehTable);
+	    PreparedStatement pStmntLoc = this.conn.prepareStatement(queryLocTable);
 
-	    pStmnt.setString(1, registration);
-	    pStmnt.setString(2, make);
-	    pStmnt.setString(3, model);
-	    pStmnt.setInt(4, year);
-	    pStmnt.setString(5, colour);
-	    pStmnt.setDouble(6, position.getLat());
-	    pStmnt.setDouble(7, position.getLng());
-	    pStmnt.setInt(8, status);
+	    pStmntVeh.setString(1, registration);
+	    pStmntVeh.setString(2, make);
+	    pStmntVeh.setString(3, model);
+	    pStmntVeh.setInt(4, year);
+	    pStmntVeh.setString(5, colour);
+	    pStmntVeh.setInt(6, status);
 
-	    pStmnt.executeUpdate();
-	    pStmnt.close();
+	    pStmntVeh.executeUpdate();
+	    pStmntVeh.close();
+
+	    pStmntLoc.setString(1, registration);
+	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+	    LocalDateTime dateTime = LocalDateTime.parse("2000-01-01 00:00:00", formatter);
+	    pStmntLoc.setTimestamp(2, Timestamp.valueOf(dateTime));
+	    pStmntLoc.setDouble(3, position.getLat());
+	    pStmntLoc.setDouble(4, position.getLng());
+
+	    pStmntLoc.executeUpdate();
+	    pStmntLoc.close();
 
 	    v = new Vehicle(registration, make, model, year, colour, position, status);
 	} catch (SQLException e) {
@@ -153,18 +163,16 @@ public class Database implements Closeable {
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(
-		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, ST_Y(`location`) as `loc_y`, status FROM `vehicles`");
+	    ResultSet rs = stmt
+		    .executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour`, status FROM `vehicles`");
 	    while (rs.next()) {
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
 		int year = rs.getInt("year");
 		String colour = rs.getString("colour");
-		double loc_x = rs.getDouble("loc_x");
-		double loc_y = rs.getDouble("loc_y");
 		// construct the object
-		Position location = new Position(loc_x, loc_y);
+		Position location = getVehiclePosition(registration);
 		int avaliable = rs.getInt("status");
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, avaliable);
 		vehicles.add(vehicle);
@@ -181,21 +189,17 @@ public class Database implements Closeable {
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(
-		    "SELECT `registration`, `make`, `model`, `year`, `colour`, ST_X(`location`) as `loc_x`, "
-			    + "ST_Y(`location`) as `loc_y` FROM `vehicles` WHERE vehicles.registration NOT IN"
-			    + "(SELECT registration from bookings"
-			    + " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() ) AND status = 0;");
+	    ResultSet rs = stmt.executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour` "
+		    + "FROM `vehicles` WHERE vehicles.registration NOT IN" + "(SELECT registration from bookings"
+		    + " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() ) AND status = 0;");
 	    while (rs.next()) {
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
 		int year = rs.getInt("year");
 		String colour = rs.getString("colour");
-		double loc_x = rs.getDouble("loc_x");
-		double loc_y = rs.getDouble("loc_y");
 		// construct the object
-		Position location = new Position(loc_x, loc_y);
+		Position location = getVehiclePosition(registration);
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, 1);
 		vehicles.add(vehicle);
 	    }
@@ -276,34 +280,26 @@ public class Database implements Closeable {
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
-		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
-		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y, vh.status"
-		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
+		    + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
 	    while (rs.next()) {
 		int id = rs.getInt("id");
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
-		double lat_start = rs.getDouble("x_start");
-		double lng_start = rs.getDouble("y_start");
-		double lat_end = rs.getDouble("x_end");
-		double lng_end = rs.getDouble("y_end");
-		Position start = new Position(lat_start, lng_start);
-		Position end = new Position(lat_end, lng_end);
 
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
 		int year = rs.getInt("year");
 		String colour = rs.getString("colour");
-		double lat_curr = rs.getDouble("current_x");
-		double lng_curr = rs.getDouble("current_y");
-		Position car_curr_pos = new Position(lat_curr, lng_curr);
+		Position car_curr_pos = getVehiclePosition(registration);
 		int status = rs.getInt("status");
 
+		Position start = getVehiclePositionByTime(registration, timestamp);
+
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
 
 		bookings.add(booking);
 	    }
@@ -320,8 +316,7 @@ public class Database implements Closeable {
      *
      * @throws SQLException
      */
-    public Booking createBooking(LocalDateTime timestamp, String registration, String customerId, int duration,
-	    Position startLocation, Position endLocation) {
+    public Booking createBooking(LocalDateTime timestamp, String registration, String customerId, int duration) {
 	logger.info("Create Booking for " + customerId);
 	try {
 
@@ -331,9 +326,8 @@ public class Database implements Closeable {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
 
-		    String query = "INSERT INTO bookings "
-			    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
-			    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
+		    String query = "INSERT INTO bookings " + "(timestamp, registration, customer_id, duration) VALUES "
+			    + "(?, ?, ?, ?)";
 
 		    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
@@ -342,14 +336,9 @@ public class Database implements Closeable {
 		    pStmnt.setString(3, customerId);
 		    pStmnt.setInt(4, duration);
 
-		    pStmnt.setDouble(5, startLocation.getLat());
-		    pStmnt.setDouble(6, startLocation.getLng());
-
-		    pStmnt.setDouble(7, endLocation.getLat());
-		    pStmnt.setDouble(8, endLocation.getLng());
-
 		    pStmnt.executeUpdate();
 
+		    Position startLocation = getVehiclePosition(registration);
 		    // get the inserted booking's ID
 		    ResultSet rs = pStmnt.getGeneratedKeys();
 		    if (rs.next()) {
@@ -358,7 +347,7 @@ public class Database implements Closeable {
 
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
-			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation);
 		    }
 		}
 
@@ -379,8 +368,8 @@ public class Database implements Closeable {
 	Position position;
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, ST_X(location) as lat, "
-		    + "ST_Y(location) as lng, status FROM vehicles WHERE registration LIKE '" + registration + "';");
+	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, "
+		    + "status FROM vehicles WHERE registration LIKE '" + registration + "';");
 
 	    if (rs.next()) {
 		String rego = rs.getString("registration");
@@ -388,11 +377,9 @@ public class Database implements Closeable {
 		String model = rs.getString("model");
 		int year = rs.getInt("year");
 		String colour = rs.getString("colour");
-		double lat = rs.getDouble("lat");
-		double lng = rs.getDouble("lng");
 		int status = rs.getInt("status");
 
-		position = new Position(lat, lng);
+		position = getVehiclePosition(rego);
 		v = new Vehicle(rego, make, model, year, colour, position, status);
 
 	    }
@@ -492,35 +479,29 @@ public class Database implements Closeable {
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
-		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
-		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y, vh.status"
-		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration"
-		    + " WHERE bk.customer_id = '" + email + "';");
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
+		    + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration" + " WHERE bk.customer_id = '"
+		    + email + "';");
 	    while (rs.next()) {
 		int id = rs.getInt("id");
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
-		double lat_start = rs.getDouble("x_start");
-		double lng_start = rs.getDouble("y_start");
-		double lat_end = rs.getDouble("x_end");
-		double lng_end = rs.getDouble("y_end");
-		Position start = new Position(lat_start, lng_start);
-		Position end = new Position(lat_end, lng_end);
+		;
 
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
 		int year = rs.getInt("year");
 		String colour = rs.getString("colour");
-		double lat_curr = rs.getDouble("current_x");
-		double lng_curr = rs.getDouble("current_y");
-		Position car_curr_pos = new Position(lat_curr, lng_curr);
+
 		int status = rs.getInt("status");
 
+		Position start = getVehiclePositionByTime(registration, timestamp);
+		Position car_curr_pos = getVehicleLastPosition(registration, LocalDateTime.now());
+
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
 
 		bookings.add(booking);
 	    }
@@ -550,15 +531,14 @@ public class Database implements Closeable {
     }
 
     // Uses the ID of the booking to edit the booking.
-    public Boolean editBooking(int id, LocalDateTime timestamp, String registration, String customerId, int duration,
-	    Position startLocation, Position endLocation) {
+    public Boolean editBooking(int id, LocalDateTime timestamp, String registration, String customerId, int duration) {
 
 	logger.info("Editing  Booking id:" + id);
 	try {
 	    if (bookingExists(id)) {
 		if (checkReg(registration)) {
 		    // Gets the latest timestamp of a car booking.
-		    String query = "UPDATE bookings set timestamp = ?, registration = ?, customer_id = ?, duration = ?, start_location = Point(?,?), end_location = Point(?,?) WHERE id = "
+		    String query = "UPDATE bookings set timestamp = ?, registration = ?, customer_id = ?, duration = ? WHERE id = "
 			    + id + ";";
 
 		    PreparedStatement ps = this.conn.prepareStatement(query);
@@ -567,12 +547,6 @@ public class Database implements Closeable {
 		    ps.setString(2, registration);
 		    ps.setString(3, customerId);
 		    ps.setInt(4, duration);
-
-		    ps.setDouble(5, startLocation.getLat());
-		    ps.setDouble(6, startLocation.getLng());
-
-		    ps.setDouble(7, endLocation.getLat());
-		    ps.setDouble(8, endLocation.getLng());
 
 		    ps.executeUpdate();
 
@@ -658,29 +632,76 @@ public class Database implements Closeable {
 	LocalDateTime now = LocalDateTime.now();
 	try {
 	    if (isCarBooked(now, registration)) {
+		System.out.println("in if");
 		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
-			+ registration + "' AND MINUTE(NOW()) > MINUTE(timestamp) "
+			+ registration + "' AND MINUTE(NOW()) >= MINUTE(timestamp) "
 			+ "ORDER BY timestamp DESC LIMIT 1;";
 
 		Statement stmt = this.conn.createStatement();
 		ResultSet rs = stmt.executeQuery(query);
 
+		rs.next();
 		double lat = rs.getDouble("lat");
 		double lng = rs.getDouble("lng");
 		Position carLocation = new Position(lat, lng);
 		return carLocation;
 	    } else {
+		System.out.println("in esle");
 		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
 			+ registration + "' AND MINUTE(timestamp) = 0  " + "ORDER BY timestamp DESC LIMIT 1;";
 
 		Statement stmt = this.conn.createStatement();
 		ResultSet rs = stmt.executeQuery(query);
 
+		rs.next();
 		double lat = rs.getDouble("lat");
 		double lng = rs.getDouble("lng");
 		Position carLocation = new Position(lat, lng);
 		return carLocation;
 	    }
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return null;
+	}
+    }
+
+    public Position getVehiclePositionByTime(String registration, LocalDateTime dateTime) {
+	try {
+	    String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
+		    + registration + "' AND timestamp <= '" + dateTime + "' ORDER BY timestamp DESC LIMIT 1;";
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query);
+
+	    rs.next();
+	    double lat = rs.getDouble("lat");
+	    double lng = rs.getDouble("lng");
+	    Position carLocation = new Position(lat, lng);
+	    return carLocation;
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return null;
+	}
+    }
+
+    public Position getVehicleLastPosition(String registration, LocalDateTime dateTime) {
+	try {
+	    String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
+		    + registration + "' AND MINUTE(timestamp) <= '" + dateTime.getMinute()
+		    + "' ORDER BY timestamp DESC LIMIT 1;";
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query);
+
+	    rs.next();
+	    double lat = rs.getDouble("lat");
+	    double lng = rs.getDouble("lng");
+	    Position carLocation = new Position(lat, lng);
+	    return carLocation;
+
 	} catch (SQLException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();

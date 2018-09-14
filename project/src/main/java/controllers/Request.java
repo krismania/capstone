@@ -31,8 +31,6 @@ class Request {
 	String timestamp;
 	String registration;
 	int duration;
-	PositionRequest startLocation;
-	PositionRequest endLocation;
     }
 
     /**

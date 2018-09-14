@@ -144,8 +144,7 @@ public class ApiController {
 
 	get("/credit/delete", (req, res) -> {
 	    res.type("application/json");
-	    String clientId = req.session().attribute("clientId");
-
+	    String clientId = req.queryParams("clientId");
 	    Database db = new Database();
 	    boolean done = db.deleteCredit(clientId);
 	    db.close();
@@ -155,7 +154,7 @@ public class ApiController {
 
 	get("/credit/view", (req, res) -> {
 	    res.type("application/json");
-	    String clientId = req.session().attribute("clientId");
+	    String clientId = req.queryParams("clientId");
 
 	    CreditCard cr;
 

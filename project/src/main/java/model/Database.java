@@ -669,21 +669,21 @@ public class Database implements Closeable {
 	CreditCard cr = null;
 
 	try {
-	    String query = "INSERT INTO creditCard " + "(user_id, cName, cNumber, expDate, bNumber) VALUES "
-		    + "(?, ?, ?, ?, ?)";
+	    String query = "INSERT INTO creditCard "
+		    + "(user_id, creditNumber, expDate, backNumber, nameOnCard) VALUES " + "(?, ?, ?, ?, ?)";
 	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
 
 	    pStmnt.setString(1, user_id);
-	    pStmnt.setString(2, cName);
-	    pStmnt.setString(3, cNumber);
-	    pStmnt.setString(4, expDate);
-	    pStmnt.setString(5, bNumber);
+	    pStmnt.setString(2, cNumber);
+	    pStmnt.setString(3, expDate);
+	    pStmnt.setString(4, bNumber);
+	    pStmnt.setString(5, cName);
 
 	    pStmnt.executeUpdate();
 	    pStmnt.close();
 
 	    cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
-
+	    logger.info("Credit card inserted to database");
 	} catch (SQLException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
@@ -696,7 +696,7 @@ public class Database implements Closeable {
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    int result = stmt.executeUpdate("DELETE FROM creditCard WHERE user_id LIKE '" + clientId + "';");
-
+	    logger.info("Credit card with user:" + clientId + " deleted from database");
 	    if (result != 0)
 		return true;
 	    else
@@ -714,16 +714,17 @@ public class Database implements Closeable {
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery(
-		    "SELECT user_id, cName, cNumber, expDate, bNumber FROM creditCard WHERE user_id LIKE '" + clientId
-			    + "';");
+		    "SELECT user_id, creditNumber, expDate, backNumber, nameOnCard FROM creditCard WHERE user_id LIKE '"
+			    + clientId + "';");
 	    while (rs.next()) {
 		String user_id = rs.getString("user_id");
-		String cName = rs.getString("cName");
-		String cNumber = rs.getString("cNumber");
+		String cName = rs.getString("nameOnCard");
+		String cNumber = rs.getString("creditNumber");
 		String expDate = rs.getString("expDate");
-		String bNumber = rs.getString("bNumber");
+		String bNumber = rs.getString("backNumber");
 
 		cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+		logger.info("Credit card with user:" + clientId + " being shown");
 	    }
 
 	} catch (SQLException e) {

@@ -43,8 +43,7 @@ public class ApiController {
 	    return new Gson().toJson(vehicles);
 	});
 
-	// returns a list of nearby vehicles, giving their distance to the
-	// client
+	// returns a list of nearby vehicles, giving their distance to the client
 	post("/vehicles/nearby", (req, res) -> {
 	    res.type("application/json");
 	    Position pos;

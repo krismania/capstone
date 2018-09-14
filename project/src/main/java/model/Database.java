@@ -632,7 +632,6 @@ public class Database implements Closeable {
 	LocalDateTime now = LocalDateTime.now();
 	try {
 	    if (isCarBooked(now, registration)) {
-		System.out.println("in if");
 		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
 			+ registration + "' AND MINUTE(NOW()) >= MINUTE(timestamp) "
 			+ "ORDER BY timestamp DESC LIMIT 1;";
@@ -646,7 +645,6 @@ public class Database implements Closeable {
 		Position carLocation = new Position(lat, lng);
 		return carLocation;
 	    } else {
-		System.out.println("in esle");
 		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
 			+ registration + "' AND MINUTE(timestamp) = 0  " + "ORDER BY timestamp DESC LIMIT 1;";
 

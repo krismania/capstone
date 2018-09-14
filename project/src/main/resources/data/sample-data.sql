@@ -13,7 +13,7 @@ values
     ("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black", POINT(-37.807232, 144.963620), 1);
 
 insert ignore into `bookings`
-	(`timestamp`, `registration`, `customer_id`, `duration`, `start_location`, `end_location`)
+	(`timestamp`, `registration`, `customer_id`, `duration`, `cost`, `start_location`, `end_location`)
 values
 	("2018-04-02 13:11:00", "YODUDE", "112606983151403770748", 120, 50, POINT(-37.815603, 144.969967), POINT(-37.807232, 144.963620)),
     ("2018-04-02 13:11:00", "ABC123", "112606983151403770748", 720, 200, POINT(-37.814022, 144.961954), POINT(-37.808401, 144.956159)),
@@ -31,3 +31,13 @@ values
     ("117051605584473461533"),
     ("110833881946064880314"),
     ("112606983151403770748");
+
+insert ignore into `creditcard`
+	(`user_id`, `creditNumber`, `expDate`, `backNumber`, `nameOnCard`)
+values
+	("102908696637872505288", "5121212121", "11/09", "111", "AARON"),
+    ("117051605584473461533", "5121212121", "11/09", "111", "MARTIN"),
+    ("110833881946064880314", "5121212121", "11/09", "111", "KYRL"),
+    ("112606983151403770748", "5121212121", "11/09", "111", "KRIS");
+
+    

@@ -86,7 +86,7 @@ public class Database implements Closeable {
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "`cost` VARCHAR(50) NOT NULL, " + "`start_location` POINT NOT NULL, "
+		+ "`cost` SMALLINT UNSIGNED NOT NULL, " + "`start_location` POINT NOT NULL, "
 		+ "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 

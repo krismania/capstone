@@ -228,4 +228,6 @@ function manageUser() {
 	}));
 }
 
+// set admin status
+rebu.setAdmin(true);
 mainMenu();

@@ -1,16 +1,23 @@
 // contains all API requests
 rebu = (function() {
 	
+	// if true, calls will use admin API routes when possible
+	var isAdmin = false;
+	
 	function addVehicleDescription(vehicle) {
 		vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
 	}
 	
 	return {
 		
+		setAdmin: function(value) {
+			isAdmin = value;
+		},
+		
 		getVehicles: function(callback) {
 			console.log("[api] getting all available vehicles");
 			var vehicles = [];
-			var request = new Request('/api/vehicles');
+			var request = new Request(isAdmin ? '/admin/api/vehicles/all' : '/api/vehicles');
 			fetch(request)
 			.then(res => res.json())
 			.then(json => {
@@ -19,7 +26,7 @@ rebu = (function() {
 					
 					// TODO: temporary fix for model mismatch
 					addVehicleDescription(vehicle)
-					vehicle.available = true;
+					vehicle.available = (vehicle.active == 1);
 					
 					vehicles.push(vehicle);
 				};

@@ -139,6 +139,33 @@ var adminView = (function() {
 			form.appendChild(search);
 			
 			return form;
+		},
+		
+		bookingList: function(bookings) {
+			console.log(bookings);
+			if (bookings.length == 0) {
+				var p = document.createElement("p");
+				p.className = "hint";
+				p.innerText = "No bookings found for this user";
+				return p;
+			} else {
+				var bookingBtns = new Array(bookings.length);
+				for (var i = 0; i < bookings.length; i++) {
+					// closure prevents incorrect listener values
+					(function() {
+						var booking = bookings[i]
+						bookingBtns[i] = document.createElement("button");
+						bookingBtns[i].addEventListener("click", function() {
+							console.log(booking);
+						});
+						bookingBtns[i].innerText = view.jsonDateToString(booking.timestamp) + " (" + booking.vehicle.registration + ")";
+					})();
+				}
+				var menu = adminView.menu(bookingBtns);
+				var heading = document.createElement("h3");
+				heading.innerText = "Past Bookings";
+				return menu;
+			}
 		}
 		
 	}
@@ -171,29 +198,7 @@ function manageUser() {
 		var request = new Request("/admin/api/bookings/" + email) // TODO: currently takes user ID, not email
 		fetch(request)
 		.then(res => res.json())
-		.then(bookings => {
-			if (bookings.length == 0) {
-				var p = document.createElement("p");
-				p.className = "hint";
-				p.innerText = "No bookings found for this user";
-				sidepane.append(p);
-			} else {
-				var bookingBtns = new Array(bookings.length);
-				for (var i = 0; i < bookings.length; i++) {
-					var booking = bookings[i]
-					bookingBtns[i] = document.createElement("button");
-					bookingBtns[i].addEventListener("click", function() {
-						console.log(booking);
-					});
-					bookingBtns[i].innerText = booking.vehicle.registration;
-				}
-				var menu = adminView.menu(bookingBtns);
-				var heading = document.createElement("h3");
-				heading.innerText = "Past Bookings";
-				sidepane.append(menu);
-			}
-			console.log(bookings);
-		});
+		.then(bookings => sidepane.append(adminView.bookingList(bookings)));
 	}));
 }
 

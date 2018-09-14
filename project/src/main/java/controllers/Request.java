@@ -46,9 +46,9 @@ class Request {
     /**
      * Parses requests for setting vehicle active status
      */
-    static class VehicleAvailabilityRequest {
+    static class VehicleStatusRequest {
 	String registration;
-	boolean active;
+	String status;
     }
 
     /**
@@ -61,7 +61,7 @@ class Request {
 	int year;
 	String colour;
 	PositionRequest position;
-	boolean active;
+	String status;
     }
 
 }

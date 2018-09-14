@@ -16,8 +16,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.EditBookingRequest;
-import controllers.Request.VehicleAvailabilityRequest;
 import controllers.Request.VehicleRequest;
+import controllers.Request.VehicleStatusRequest;
 import model.Booking;
 import model.Database;
 import model.Position;
@@ -42,14 +42,16 @@ public class AdminApiController {
 
 	    Position pos;
 	    VehicleRequest vr;
-	    int active;
+	    int status = 2;
 	    try {
 		vr = new Gson().fromJson(req.body(), VehicleRequest.class);
 		pos = new Position(vr.position.lat, vr.position.lng);
-		if (vr.active == true) {
-		    active = 1;
-		} else {
-		    active = 0;
+		if (vr.status.equals("active")) {
+		    status = 0;
+		} else if (vr.status.equals("inactive")) {
+		    status = 1;
+		} else if (vr.status.equals("retired")) {
+		    status = 2;
 		}
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
@@ -59,7 +61,7 @@ public class AdminApiController {
 
 	    Database db = new Database();
 	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
-		    active);
+		    status);
 	    db.close();
 
 	    logger.info("Inserted successfully!");
@@ -70,14 +72,16 @@ public class AdminApiController {
 	// inactive vehicles can't be booked by clients
 	post("/vehicle/status", (req, res) -> {
 
-	    VehicleAvailabilityRequest var;
-	    int active;
+	    VehicleStatusRequest var;
+	    int status = 2;
 	    try {
-		var = new Gson().fromJson(req.body(), VehicleAvailabilityRequest.class);
-		if (var.active == true) {
-		    active = 1;
-		} else {
-		    active = 0;
+		var = new Gson().fromJson(req.body(), VehicleStatusRequest.class);
+		if (var.status.equals("active")) {
+		    status = 0;
+		} else if (var.status.equals("inactive")) {
+		    status = 1;
+		} else if (var.status.equals("retired")) {
+		    status = 2;
 		}
 
 	    } catch (JsonParseException e) {
@@ -86,7 +90,7 @@ public class AdminApiController {
 	    }
 
 	    Database db = new Database();
-	    Boolean dbResponse = db.changeVehicleAvailability(var.registration, active);
+	    Boolean dbResponse = db.changeVehicleStatus(var.registration, status);
 	    db.close();
 
 	    if (dbResponse) {

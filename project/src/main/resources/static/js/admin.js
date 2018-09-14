@@ -184,7 +184,33 @@ function addVehicle() {
 		mainMenu();
 	});
 	sidepane.append(adminView.vehicleForm(function() {
-		console.log("Created vehicle"); // TODO: submit vehicle details
+		var vehicle = {
+			registration: document.getElementById("registration").value,
+			year: parseInt(document.getElementById("year").value),
+			make: document.getElementById("make").value,
+			model: document.getElementById("model").value,
+			colour: document.getElementById("colour").value,
+			position: {
+				lat: parseFloat(document.getElementById("current-lat").value),
+				lng: parseFloat(document.getElementById("current-lng").value)
+			},
+			active: (document.getElementById("active").selectedIndex == 0)
+		};
+		console.log("Creating vehicle", vehicle);
+		var headers = new Headers();
+		headers.append("Content-Type", "application/json");
+		var request = new Request("/admin/api/vehicles", {
+			method: "POST",
+			headers: headers,
+			body: JSON.stringify(vehicle)
+		});
+		
+		fetch(request)
+		.then(res => {
+			if (res.ok) {
+				alert("Vehicle created.");
+			}
+		});
 	}));
 }
 

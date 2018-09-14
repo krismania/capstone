@@ -10,7 +10,11 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +32,9 @@ public class Database implements Closeable {
 
     /**
      * Create a database object with an underlying {@link java.sql.Connection}
-     * object. This constructor will return a connection to the local development
-     * database when run locally, or a connection to the Cloud SQL database when
-     * deployed.
+     * object. This constructor will return a connection to the local
+     * development database when run locally, or a connection to the Cloud SQL
+     * database when deployed.
      *
      * @throws SQLException
      */
@@ -84,16 +88,23 @@ public class Database implements Closeable {
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "`start_location` POINT NOT NULL, " + "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
+		+ "`cost` VARCHAR(50) NOT NULL, " + "`start_location` POINT NOT NULL, "
+		+ "`end_location` POINT NOT NULL, " + "PRIMARY KEY (`id`), "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
 	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
 		+ "PRIMARY KEY (`admin_id`));";
 
+	String creditCard = "CREATE TABLE IF NOT EXISTS `creditCard` (" + "`user_id` VARCHAR(50) NOT NULL, "
+		+ "`creditNumber` VARCHAR(30) NOT NULL, " + "`expDate` VARCHAR(10) NOT NULL, "
+		+ "`backNumber` VARCHAR(10) NOT NULL, " + "`nameOnCard` VARCHAR(20) NOT NULL, "
+		+ "PRIMARY KEY (`user_id`));";
+
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
 	stmt.execute(bookingsSql);
 	stmt.execute(admin);
+	stmt.execute(creditCard);
 	stmt.close();
     }
 
@@ -271,7 +282,7 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.cost, "
 		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
 		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
 		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y, vh.active"
@@ -281,6 +292,7 @@ public class Database implements Closeable {
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
+		int cost = rs.getInt("cost");
 		double lat_start = rs.getDouble("x_start");
 		double lng_start = rs.getDouble("y_start");
 		double lat_end = rs.getDouble("x_end");
@@ -297,9 +309,8 @@ public class Database implements Closeable {
 		double lng_curr = rs.getDouble("current_y");
 		Position car_curr_pos = new Position(lat_curr, lng_curr);
 		int active = rs.getInt("active");
-
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, active);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end, cost);
 
 		bookings.add(booking);
 	    }
@@ -319,17 +330,19 @@ public class Database implements Closeable {
     public Booking createBooking(LocalDateTime timestamp, String registration, String customerId, int duration,
 	    Position startLocation, Position endLocation) {
 	logger.info("Create Booking for " + customerId);
-	try {
 
+	try {
+	    int cost = checkCost(duration);
 	    // CHECK
-	    // Checks this timestamp to see if its booked already for the same car.
+	    // Checks this timestamp to see if its booked already for the same
+	    // car.
 	    if (!isCarDoubleBooked(timestamp, registration)) {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
 
 		    String query = "INSERT INTO bookings "
-			    + "(timestamp, registration, customer_id, duration, start_location, end_location) VALUES "
-			    + "(?, ?, ?, ?, Point(?, ?), Point(?, ?))";
+			    + "(timestamp, registration, customer_id, duration, cost, start_location, end_location) VALUES "
+			    + "(?, ?, ?, ?, ?, Point(?, ?), Point(?, ?))";
 
 		    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
@@ -337,13 +350,12 @@ public class Database implements Closeable {
 		    pStmnt.setString(2, registration);
 		    pStmnt.setString(3, customerId);
 		    pStmnt.setInt(4, duration);
+		    pStmnt.setInt(5, cost);
+		    pStmnt.setDouble(6, startLocation.getLat());
+		    pStmnt.setDouble(7, startLocation.getLng());
 
-		    pStmnt.setDouble(5, startLocation.getLat());
-		    pStmnt.setDouble(6, startLocation.getLng());
-
-		    pStmnt.setDouble(7, endLocation.getLat());
-		    pStmnt.setDouble(8, endLocation.getLng());
-
+		    pStmnt.setDouble(8, endLocation.getLat());
+		    pStmnt.setDouble(9, endLocation.getLng());
 		    pStmnt.executeUpdate();
 
 		    // get the inserted booking's ID
@@ -354,7 +366,8 @@ public class Database implements Closeable {
 
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
-			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation);
+			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, endLocation,
+				cost);
 		    }
 		}
 
@@ -431,7 +444,8 @@ public class Database implements Closeable {
 	return false; // Not double Booked.
     }
 
-    // Work in progress, will probably merge it together with CarDoubleBooked after
+    // Work in progress, will probably merge it together with CarDoubleBooked
+    // after
     // more testing..
     public boolean isUserDoubleBooked(LocalDateTime currtime, String customerId) {
 	logger.info("Checking if user:" + customerId + "double booked.");
@@ -487,7 +501,7 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.cost,"
 		    + " ST_X(start_location) as x_start, ST_Y(start_location) as y_start,"
 		    + " ST_X(end_location) as x_end, ST_Y(end_location) as y_end,"
 		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, ST_X(location) as current_x, ST_Y(location) as current_y, vh.active"
@@ -498,6 +512,7 @@ public class Database implements Closeable {
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
+		int cost = rs.getInt("cost");
 		double lat_start = rs.getDouble("x_start");
 		double lng_start = rs.getDouble("y_start");
 		double lat_end = rs.getDouble("x_end");
@@ -516,7 +531,7 @@ public class Database implements Closeable {
 		int active = rs.getInt("active");
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, active);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, end, cost);
 
 		bookings.add(booking);
 	    }
@@ -551,6 +566,7 @@ public class Database implements Closeable {
 
 	logger.info("Editing  Booking id:" + id);
 	try {
+	    int cost = checkCost(duration);
 	    if (bookingExists(id)) {
 		if (checkReg(registration)) {
 		    // Gets the latest timestamp of a car booking.
@@ -563,12 +579,12 @@ public class Database implements Closeable {
 		    ps.setString(2, registration);
 		    ps.setString(3, customerId);
 		    ps.setInt(4, duration);
+		    ps.setInt(5, cost);
+		    ps.setDouble(6, startLocation.getLat());
+		    ps.setDouble(7, startLocation.getLng());
 
-		    ps.setDouble(5, startLocation.getLat());
-		    ps.setDouble(6, startLocation.getLng());
-
-		    ps.setDouble(7, endLocation.getLat());
-		    ps.setDouble(8, endLocation.getLng());
+		    ps.setDouble(8, endLocation.getLat());
+		    ps.setDouble(9, endLocation.getLng());
 
 		    ps.executeUpdate();
 
@@ -648,6 +664,99 @@ public class Database implements Closeable {
 	    e.printStackTrace();
 	    return false;
 	}
+    }
+
+    public CreditCard insertCredit(String user_id, String cName, String cNumber, String bNumber, String expDate) {
+
+	CreditCard cr = null;
+
+	try {
+	    String query = "INSERT INTO creditCard " + "(user_id, cName, cNumber, expDate, bNumber) VALUES "
+		    + "(?, ?, ?, ?, ?)";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+
+	    pStmnt.setString(1, user_id);
+	    pStmnt.setString(2, cName);
+	    pStmnt.setString(3, cNumber);
+	    pStmnt.setString(4, expDate);
+	    pStmnt.setString(5, bNumber);
+
+	    pStmnt.executeUpdate();
+	    pStmnt.close();
+
+	    cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return cr;
+    }
+
+    public boolean deleteCredit(String clientId) {
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    int result = stmt.executeUpdate("DELETE FROM creditCard WHERE user_id LIKE '" + clientId + "';");
+
+	    if (result != 0)
+		return true;
+	    else
+		return false;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
+
+    }
+
+    public CreditCard checkCredit(String clientId) {
+	CreditCard cr = null;
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(
+		    "SELECT user_id, cName, cNumber, expDate, bNumber FROM creditCard WHERE user_id LIKE '" + clientId
+			    + "';");
+	    while (rs.next()) {
+		String user_id = rs.getString("user_id");
+		String cName = rs.getString("cName");
+		String cNumber = rs.getString("cNumber");
+		String expDate = rs.getString("expDate");
+		String bNumber = rs.getString("bNumber");
+
+		cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+	    }
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return cr;
+    }
+
+    public int checkCost(int duration) {
+
+	int cost = 0;
+
+	HashMap<Integer, Integer> hashMap = new HashMap<Integer, Integer>();
+	hashMap.put(60, 25);
+	hashMap.put(120, 50);
+	hashMap.put(180, 70);
+	hashMap.put(360, 120);
+	hashMap.put(720, 200);
+	hashMap.put(1440, 350);
+
+	Set set = hashMap.entrySet();
+	Iterator iterator = set.iterator();
+	while (iterator.hasNext()) {
+	    Map.Entry map = (Map.Entry) iterator.next();
+	    if (duration == (int) map.getKey()) {
+		cost = (int) map.getValue();
+	    }
+	}
+
+	return cost;
     }
 
 }

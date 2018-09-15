@@ -1,5 +1,9 @@
 var map;
 
+// list of vehicles currently being displayed on the map
+// map markers are stored in vehicles[i].marker
+var mapVehicles = [];
+
 var urlAvail = '/img/vehicle-pin-available.png';
 var urlUnavail = '/img/vehicle-pin-unavailable.png';
 
@@ -107,11 +111,20 @@ function initMap() {
 		displayLocation(pos);
 	}, console.error, {enableHighAccuracy: true});
 	
-	rebu.getVehicles(function(vehicles) {
-		for (var i = 0; i < vehicles.length; i++) {
-			addMarker(vehicles[i], map);
-		};
-	})
+	// fetch & display vehicles
+	rebu.getVehicles(displayVehicles);
+}
+
+function displayVehicles(vehicles) {
+	// clear old markers
+	for (var i = 0; i < mapVehicles.length; i++) {
+		mapVehicles[i].marker.setMap(null);
+	}
+	// display new markers
+	for (var i = 0; i < vehicles.length; i++) {
+		vehicles[i].marker = createVehicleMarker(vehicles[i], map);
+	};
+	mapVehicles = vehicles;
 }
 
 function displayLocation(pos) {
@@ -144,7 +157,7 @@ function displayLocation(pos) {
 	}
 }
 
-function addMarker(vehicle, map) {	
+function createVehicleMarker(vehicle, map) {	
 	var marker = new google.maps.Marker({
 		position: vehicle.position,
 		map: map,
@@ -173,6 +186,8 @@ function addMarker(vehicle, map) {
 		// update the current window var
 		currentInfoWindow = info;
 	});
+	
+	return marker;
 }
 
 function bookingForm(vehicle) {
@@ -219,6 +234,8 @@ function submitBooking(vehicle) {
 				sidepane.appendHeader("BOOK YOUR CAR");
 				sidepane.append(vehicleInfo);
 				sidepane.append(view.bookingConfirmed());
+				// refresh the map
+				rebu.getVehicles(displayVehicles);
 			} else {
 				alert("Booking failed");
 			}
@@ -258,3 +275,7 @@ sidepane.setCloseCallback(function() {
 	document.getElementById('map-wrapper').style.left = null;
 });
 
+// refresh the map automatically every 60 seconds
+setInterval(function() {
+	rebu.getVehicles(displayVehicles);
+}, 60000);

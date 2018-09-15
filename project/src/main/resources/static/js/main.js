@@ -234,6 +234,8 @@ function submitBooking(vehicle) {
 				sidepane.appendHeader("BOOK YOUR CAR");
 				sidepane.append(vehicleInfo);
 				sidepane.append(view.bookingConfirmed());
+				// refresh the map
+				rebu.getVehicles(displayVehicles);
 			} else {
 				alert("Booking failed");
 			}

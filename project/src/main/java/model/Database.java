@@ -98,11 +98,17 @@ public class Database implements Closeable {
 	String locationSql = "CREATE TABLE IF NOT EXISTS `locations` (`registration` VARCHAR(10) NOT NULL, "
 		+ "timestamp DATETIME NOT NULL, location POINT NOT NULL);";
 
+	String creditCard = "CREATE TABLE IF NOT EXISTS `creditcard` (`user_id` VARCHAR(50) NOT NULL, "
+		+ "`creditNumber` VARCHAR(50) NOT NULL," + "`expDate` VARCHAR(50) NOT NULL,"
+		+ "`backNumber` VARCHAR(50) NOT NULL," + "`nameOnCard` VARCHAR(50) NOT NULL, "
+		+ "PRIMARY KEY (`creditNumber`));";
+
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
 	stmt.execute(bookingsSql);
 	stmt.execute(admin);
 	stmt.execute(locationSql);
+	stmt.execute(creditCard);
 	stmt.close();
     }
 

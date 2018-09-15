@@ -124,7 +124,7 @@ public class Database implements Closeable {
 	Vehicle v = null;
 	try {
 	    String queryVehTable = "INSERT INTO vehicles (registration, make, model,year,colour,status) VALUES (?,?,?,?,?,?);";
-	    String queryLocTable = "INSERT INTO colations (registration, timestamp, location) VALUES (?,?,POINT(?,?));";
+	    String queryLocTable = "INSERT INTO locations (registration, timestamp, location) VALUES (?,?,POINT(?,?));";
 	    PreparedStatement pStmntVeh = this.conn.prepareStatement(queryVehTable);
 	    PreparedStatement pStmntLoc = this.conn.prepareStatement(queryLocTable);
 

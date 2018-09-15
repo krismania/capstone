@@ -24,6 +24,14 @@ class Request {
 	double lng;
     }
 
+    static class CreditRequest {
+	// these variables will be changed if needed
+	String cNumber;
+	String expDate;
+	String bNumber;
+	String cName;
+    }
+
     /**
      * Parses booking creation requests from clients
      */

@@ -15,8 +15,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.BookingRequest;
+import controllers.Request.CreditRequest;
 import controllers.Request.PositionRequest;
 import model.Booking;
+import model.CreditCard;
 import model.Database;
 import model.NearbyVehicle;
 import model.Position;
@@ -106,6 +108,55 @@ public class ApiController {
 
 	    db.close();
 	    return new Gson().toJson(bookings);
+	});
+
+	post("/credit/insert", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.session().attribute("clientId");
+
+	    CreditRequest cr;
+	    CreditCard creditCard;
+
+	    try {
+		cr = new Gson().fromJson(req.body(), CreditRequest.class);
+
+		String cNumber = cr.cNumber;
+		String bNumber = cr.bNumber;
+		String expDate = cr.expDate;
+		String cName = cr.cName;
+
+		Database db = new Database();
+		creditCard = db.insertCredit(clientId, cName, cNumber, bNumber, expDate);
+		db.close();
+
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+	    return new Gson().toJson(creditCard);
+	});
+
+	get("/credit/delete", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.queryParams("clientId");
+	    Database db = new Database();
+	    boolean done = db.deleteCredit(clientId);
+	    db.close();
+
+	    return "";
+	});
+
+	get("/credit/view", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.queryParams("clientId");
+
+	    CreditCard cr;
+
+	    Database db = new Database();
+	    cr = db.checkCredit(clientId);
+	    db.close();
+
+	    return new Gson().toJson(cr);
 	});
 
     }

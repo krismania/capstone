@@ -10,15 +10,17 @@ public class Booking {
     private final String customerId;
     private final int duration;
     private final Position startLocation;
+    private final int cost;
 
     protected Booking(int id, LocalDateTime timestamp, Vehicle vehicle, String customerId, int duration,
-	    Position startLocation) {
+	    Position startLocation, int cost) {
 	this.id = id;
 	this.timestamp = timestamp;
 	this.vehicle = vehicle;
 	this.customerId = customerId;
 	this.duration = duration;
 	this.startLocation = startLocation;
+	this.cost = cost;
     }
 
     public int getId() {

@@ -11,7 +11,11 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +89,8 @@ public class Database implements Closeable {
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "PRIMARY KEY (`id`), " + "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
+		+ "`cost` SMALLINT UNSIGNED NOT NULL, " + "PRIMARY KEY (`id`), "
+		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
 	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
 		+ "PRIMARY KEY (`admin_id`));";
@@ -279,7 +284,7 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.cost"
 		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
 		    + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
 	    while (rs.next()) {
@@ -287,7 +292,7 @@ public class Database implements Closeable {
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
-
+		int cost = rs.getInt("cost");
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
@@ -299,7 +304,7 @@ public class Database implements Closeable {
 		Position start = getVehiclePositionByTime(registration, timestamp);
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, cost);
 
 		bookings.add(booking);
 	    }
@@ -320,8 +325,10 @@ public class Database implements Closeable {
 	logger.info("Create Booking for " + customerId);
 	try {
 
+	    int cost = checkCost(duration);
 	    // CHECK
-	    // Checks this timestamp to see if its booked already for the same car.
+	    // Checks this timestamp to see if its booked already for the same
+	    // car.
 	    if (!isCarBooked(timestamp, registration)) {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
@@ -335,7 +342,7 @@ public class Database implements Closeable {
 		    pStmnt.setString(2, registration);
 		    pStmnt.setString(3, customerId);
 		    pStmnt.setInt(4, duration);
-
+		    pStmnt.setInt(5, cost);
 		    pStmnt.executeUpdate();
 
 		    Position startLocation = getVehiclePosition(registration);
@@ -347,7 +354,7 @@ public class Database implements Closeable {
 
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
-			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation);
+			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, cost);
 		    }
 		}
 
@@ -478,7 +485,7 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.cost, "
 		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
 		    + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration" + " WHERE bk.customer_id = '"
 		    + email + "';");
@@ -487,6 +494,7 @@ public class Database implements Closeable {
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
+		int cost = rs.getInt("cost");
 		;
 
 		String registration = rs.getString("registration");
@@ -501,7 +509,7 @@ public class Database implements Closeable {
 		Position car_curr_pos = getVehicleLastPosition(registration, LocalDateTime.now());
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, cost);
 
 		bookings.add(booking);
 	    }
@@ -705,6 +713,100 @@ public class Database implements Closeable {
 	    e.printStackTrace();
 	    return null;
 	}
+    }
+
+    public CreditCard insertCredit(String user_id, String cName, String cNumber, String bNumber, String expDate) {
+
+	CreditCard cr = null;
+
+	try {
+	    String query = "INSERT INTO creditCard "
+		    + "(user_id, creditNumber, expDate, backNumber, nameOnCard) VALUES " + "(?, ?, ?, ?, ?)";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+
+	    pStmnt.setString(1, user_id);
+	    pStmnt.setString(2, cNumber);
+	    pStmnt.setString(3, expDate);
+	    pStmnt.setString(4, bNumber);
+	    pStmnt.setString(5, cName);
+
+	    pStmnt.executeUpdate();
+	    pStmnt.close();
+
+	    cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+	    logger.info("Credit card inserted to database");
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return cr;
+    }
+
+    public boolean deleteCredit(String clientId) {
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    int result = stmt.executeUpdate("DELETE FROM creditCard WHERE user_id LIKE '" + clientId + "';");
+	    logger.info("Credit card with user:" + clientId + " deleted from database");
+	    if (result != 0)
+		return true;
+	    else
+		return false;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
+
+    }
+
+    public CreditCard checkCredit(String clientId) {
+	CreditCard cr = null;
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(
+		    "SELECT user_id, creditNumber, expDate, backNumber, nameOnCard FROM creditCard WHERE user_id LIKE '"
+			    + clientId + "';");
+	    while (rs.next()) {
+		String user_id = rs.getString("user_id");
+		String cName = rs.getString("nameOnCard");
+		String cNumber = rs.getString("creditNumber");
+		String expDate = rs.getString("expDate");
+		String bNumber = rs.getString("backNumber");
+
+		cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+		logger.info("Credit card with user:" + clientId + " being shown");
+	    }
+	    return cr;
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return null;
+	}
+    }
+
+    public int checkCost(int duration) {
+
+	int cost = 0;
+
+	HashMap<Integer, Integer> hashMap = new HashMap<Integer, Integer>();
+	hashMap.put(60, 25);
+	hashMap.put(120, 50);
+	hashMap.put(180, 70);
+	hashMap.put(360, 120);
+	hashMap.put(720, 200);
+	hashMap.put(1440, 350);
+
+	Set set = hashMap.entrySet();
+	Iterator iterator = set.iterator();
+	while (iterator.hasNext()) {
+	    Map.Entry map = (Map.Entry) iterator.next();
+	    if (duration == (int) map.getKey()) {
+		cost = (int) map.getValue();
+	    }
+	}
+
+	return cost;
     }
 
 }

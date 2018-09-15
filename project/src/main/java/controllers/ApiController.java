@@ -108,6 +108,18 @@ public class ApiController {
 	    return new Gson().toJson(bookings);
 	});
 
+	get("/bookings/now", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.queryParams("clientId");
+	    Booking br;
+	    Database db = new Database();
+
+	    br = db.getBookingNow(clientId);
+	    db.close();
+
+	    return new Gson().toJson(br);
+	});
+
     }
 
 }

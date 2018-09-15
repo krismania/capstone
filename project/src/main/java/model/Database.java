@@ -89,9 +89,8 @@ public class Database implements Closeable {
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "`cost` SMALLINT UNSIGNED NOT NULL,
-		+ "PRIMARY KEY (`id`), " + "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
-
+		+ "`cost` SMALLINT UNSIGNED NOT NULL," + "PRIMARY KEY (`id`), "
+		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
 
 	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
 		+ "PRIMARY KEY (`admin_id`));";
@@ -336,13 +335,14 @@ public class Database implements Closeable {
 	    int cost = checkCost(duration);
 	    // CHECK
 
-	    // Checks this timestamp to see if its booked already for the same car.
+	    // Checks this timestamp to see if its booked already for the same
+	    // car.
 	    if (!isCarBooked(timestamp, registration)) {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
 
-		    String query = "INSERT INTO bookings " + "(timestamp, registration, customer_id, duration, cost) VALUES "
-			    + "(?, ?, ?, ?)";
+		    String query = "INSERT INTO bookings "
+			    + "(timestamp, registration, customer_id, duration, cost) VALUES " + "(?, ?, ?, ?)";
 
 		    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 
@@ -652,7 +652,6 @@ public class Database implements Closeable {
 	}
     }
 
-
     public CreditCard insertCredit(String user_id, String cName, String cNumber, String bNumber, String expDate) {
 
 	CreditCard cr = null;
@@ -796,8 +795,9 @@ public class Database implements Closeable {
 	}
 
 	return cost;
-	    return null;
-	}
+	return null;
+    }
+
     }
 
     public Position getVehicleLastPosition(String registration, LocalDateTime dateTime) {

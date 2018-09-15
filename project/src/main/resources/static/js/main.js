@@ -133,8 +133,8 @@ function displayLocation(pos) {
 				}
 			}),
 			circle: new google.maps.Circle({
-				fillColor: "#687BF1",
-				fillOpacity: 0.2,
+				fillColor: "#F44336",
+				fillOpacity: 0.25,
 				strokeWeight: 0,
 				map: map,
 				center: p,

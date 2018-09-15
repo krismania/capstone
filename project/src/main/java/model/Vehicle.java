@@ -8,21 +8,22 @@ public class Vehicle {
     private final int year;
     private final String colour;
     private final Position position;
-    private final int active;
+    // 0 - active; 1 - inactive; 2 - retired
+    private final int status;
 
     protected Vehicle(String registration, String make, String model, int year, String colour, Position position,
-	    int active) {
+	    int status) {
 	this.registration = registration;
 	this.make = make;
 	this.model = model;
 	this.year = year;
 	this.colour = colour;
 	this.position = position;
-	this.active = active;
+	this.status = status;
     }
 
-    public int getActive() {
-	return this.active;
+    public int getStatus() {
+	return this.status;
     }
 
     public String getRegistration() {

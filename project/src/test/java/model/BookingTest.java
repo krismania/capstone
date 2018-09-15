@@ -14,7 +14,7 @@ public class BookingTest {
 
     @BeforeEach
     void setUp() throws Exception {
-	this.booking = new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), this.vehicle, "123", 2, new Position(1, 1),
+	this.booking = new Booking(1, LocalDateTime.of(2018, 8, 23, 18, 30), this.vehicle, "123", 2,
 		new Position(1, 1));
     }
 

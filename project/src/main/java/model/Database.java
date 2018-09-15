@@ -200,7 +200,7 @@ public class Database implements Closeable {
 		String colour = rs.getString("colour");
 		// construct the object
 		Position location = getVehiclePosition(registration);
-		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, 1);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, 0);
 		vehicles.add(vehicle);
 	    }
 	    return vehicles;

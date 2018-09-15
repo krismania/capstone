@@ -33,6 +33,14 @@ class Request {
 	int duration;
     }
 
+    static class CreditRequest {
+	// these variables will be changed if needed
+	String cNumber;
+	String expDate;
+	String bNumber;
+	String cName;
+    }
+
     /**
      * Adds a customerId field to {@link BookingRequest} for admin editing of
      * bookings

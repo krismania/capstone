@@ -52,6 +52,9 @@ public class AdminApiController {
 		    status = 1;
 		} else if (vr.status.equals("retired")) {
 		    status = 2;
+		} else {
+		    res.status(400);
+		    return "";
 		}
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
@@ -82,6 +85,9 @@ public class AdminApiController {
 		    status = 1;
 		} else if (var.status.equals("retired")) {
 		    status = 2;
+		} else {
+		    res.status(400);
+		    return "";
 		}
 
 	    } catch (JsonParseException e) {

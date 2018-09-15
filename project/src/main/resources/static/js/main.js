@@ -188,7 +188,7 @@ function createVehicleMarker(vehicle, map, booked = false) {
 		position: vehicle.position,
 		map: map,
 		icon: {
-			url: booked ? urlBooked : (vehicle.available ? urlAvail : urlUnavail),
+			url: (vehicle.status == 0) ? urlAvail : urlUnavail,
 			size: new google.maps.Size(40, 40),
 			origin: new google.maps.Point(0, 0),
 			anchor: new google.maps.Point(20, 40)

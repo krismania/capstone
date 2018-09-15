@@ -207,7 +207,7 @@ var view = (function() {
 			
 			bookBtn.className = "confirm";
 			// disable button if car unavailable
-			if (vehicle.available) {
+			if (vehicle.status == 0) {
 				bookBtn.innerText = "BOOK NOW";
 				bookBtn.addEventListener("click", callback);
 			} else {

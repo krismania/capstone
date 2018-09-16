@@ -109,6 +109,12 @@ public class ApiController {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
 	    Database db = new Database();
 	    List<Booking> bookings = db.getBookingsOfUser(clientId);
 
@@ -120,6 +126,13 @@ public class ApiController {
 
 	get("/bookings/now", (req, res) -> {
 	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
 	    Booking br;
 	    Database db = new Database();
 

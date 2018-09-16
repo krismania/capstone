@@ -98,16 +98,26 @@ public class ApiController {
 
 	    boolean isBooked = db.isCarBooked(dateTime, br.registration);
 	    if (isBooked == false) {
-		Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
 
-		db.close();
-		if (booking != null) {
-		    res.type("application/json");
-		    return new Gson().toJson(booking);
+		int status = db.checkVehicleStatus(br.registration);
+
+		if (status == 0) {
+		    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
+
+		    db.close();
+		    if (booking != null) {
+			res.type("application/json");
+			return new Gson().toJson(booking);
+		    } else {
+			res.status(400);
+			return new Gson().toJson(new ErrorResponse("Bad Request"));
+		    }
 		} else {
+		    db.close();
 		    res.status(400);
 		    return new Gson().toJson(new ErrorResponse("Bad Request"));
 		}
+
 	    } else {
 		db.close();
 		res.status(400);

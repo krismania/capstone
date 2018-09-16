@@ -124,8 +124,14 @@ public class ApiController {
 
 	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
 
-	    db.close();
-	    return new Gson().toJson(bookings);
+	    if (bookings.size() > 0) {
+		res.type("application/json");
+		return new Gson().toJson(bookings);
+	    } else {
+		// send "no-content" status
+		res.status(204);
+		return "";
+	    }
 	});
 
 	get("/bookings/now", (req, res) -> {

@@ -16,6 +16,7 @@ import com.google.gson.JsonParseException;
 
 import controllers.Request.BookingRequest;
 import controllers.Request.PositionRequest;
+import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.Database;
 import model.NearbyVehicle;
@@ -89,9 +90,16 @@ public class ApiController {
 	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
 
 	    db.close();
+	    if (booking != null) {
+		res.type("application/json");
+		return new Gson().toJson(booking);
+	    } else {
+		res.status(400);
+		new Gson().toJson(new ErrorResponse("Bad Request"));
+	    }
+	    res.status(204);
+	    return "";
 
-	    // logger.info("Inserted successfully!");
-	    return new Gson().toJson(booking);
 	});
 
 	// returns a list of the logged in client's bookings

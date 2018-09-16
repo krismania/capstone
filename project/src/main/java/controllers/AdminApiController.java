@@ -18,6 +18,7 @@ import com.google.gson.JsonParseException;
 import controllers.Request.EditBookingRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
+import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.Database;
 import model.Position;
@@ -54,7 +55,7 @@ public class AdminApiController {
 		    status = 2;
 		} else {
 		    res.status(400);
-		    return "";
+		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Creation Error"));
 		}
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
@@ -87,7 +88,7 @@ public class AdminApiController {
 		    status = 2;
 		} else {
 		    res.status(400);
-		    return "";
+		    return new Gson().toJson(new ErrorResponse("Bad Request"));
 		}
 
 	    } catch (JsonParseException e) {
@@ -104,9 +105,10 @@ public class AdminApiController {
 		logger.info("Changed availability of vehicle (" + var.registration + ")!");
 	    } else {
 		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Status"));
 	    }
 
-	    return "";
+	    return new Gson().toJson("Success");
 	});
 
 	// returns a list of all vehicles
@@ -144,9 +146,10 @@ public class AdminApiController {
 		res.status(200);
 	    } else {
 		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request - Delete Booking"));
 	    }
 
-	    return "";
+	    return new Gson().toJson("Success");
 	});
 
 	// update a booking
@@ -179,9 +182,10 @@ public class AdminApiController {
 		res.status(200);
 	    } else {
 		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request - Update Booking"));
 	    }
 
-	    return "";
+	    return new Gson().toJson("Success");
 	});
 
     }

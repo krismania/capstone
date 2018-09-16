@@ -18,6 +18,7 @@ import com.google.gson.JsonParseException;
 import controllers.Request.BookingRequest;
 import controllers.Request.CreditRequest;
 import controllers.Request.PositionRequest;
+import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.CreditCard;
 import model.Database;
@@ -56,7 +57,8 @@ public class ApiController {
 		pos = new Position(pr.lat, pr.lng);
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 	    logger.info("Getting vehicles near " + pos);
 
@@ -71,6 +73,15 @@ public class ApiController {
 	// create a booking
 	post("/bookings", (req, res) -> {
 	    res.type("application/json");
+
+	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
 	    BookingRequest br;
 	    LocalDateTime dateTime;
 
@@ -81,20 +92,23 @@ public class ApiController {
 		dateTime = LocalDateTime.parse(br.timestamp, formatter);
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 
 	    logger.info("Inserting a booking!");
 	    Database db = new Database();
 
-	    String clientId = req.session().attribute("clientId");
-
 	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
 
 	    db.close();
-
-	    // logger.info("Inserted successfully!");
-	    return new Gson().toJson(booking);
+	    if (booking != null) {
+		res.type("application/json");
+		return new Gson().toJson(booking);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request"));
+	    }
 	});
 
 	// returns a list of the logged in client's bookings
@@ -102,13 +116,51 @@ public class ApiController {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
 	    Database db = new Database();
 	    List<Booking> bookings = db.getBookingsOfUser(clientId);
+	    db.close();
 
 	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
 
+	    if (bookings.size() > 0) {
+		res.type("application/json");
+		return new Gson().toJson(bookings);
+	    } else {
+		// send "no-content" status
+		res.status(204);
+		return "";
+	    }
+	});
+
+	get("/bookings/now", (req, res) -> {
+	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    Booking br;
+	    Database db = new Database();
+
+	    br = db.getBookingNow(clientId);
 	    db.close();
-	    return new Gson().toJson(bookings);
+
+	    if (br != null) {
+		res.type("application/json");
+		return new Gson().toJson(br);
+	    } else {
+		// send "no-content" status
+		res.status(204);
+		return "";
+	    }
 	});
 
 	post("/credit", (req, res) -> {

@@ -132,7 +132,6 @@ public class Database implements Closeable {
 	    Position position, int status) {
 
 	logger.info("Insert Vehicles");
-	Vehicle v = null;
 	try {
 	    String queryVehTable = "INSERT INTO vehicles (registration, make, model,year,colour,status) VALUES (?,?,?,?,?,?);";
 	    String queryLocTable = "INSERT INTO locations (registration, timestamp, location) VALUES (?,?,POINT(?,?));";
@@ -159,12 +158,11 @@ public class Database implements Closeable {
 	    pStmntLoc.executeUpdate();
 	    pStmntLoc.close();
 
-	    v = new Vehicle(registration, make, model, year, colour, position, status);
+	    return new Vehicle(registration, make, model, year, colour, position, status);
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    logger.warn("SQL error while inserting vehicle: " + e.getMessage());
+	    return null;
 	}
-	return v;
     }
 
     /**
@@ -721,6 +719,38 @@ public class Database implements Closeable {
 	}
     }
 
+    public Booking getBookingNow(String clientId) throws SQLException {
+	Booking br = null;
+
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.cost"
+		+ " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
+		+ " LEFT JOIN vehicles as vh ON bk.registration=vh.registration WHERE (timestamp + INTERVAL duration MINUTE) > NOW() AND customer_id LIKE '"
+		+ clientId + "';");
+
+	while (rs.next()) {
+	    int id = rs.getInt("id");
+	    LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+	    String customer_id = rs.getString("customer_id");
+	    int duration = rs.getInt("duration");
+	    int cost = rs.getInt("cost");
+
+	    String registration = rs.getString("registration");
+	    String make = rs.getString("make");
+	    String model = rs.getString("model");
+	    int year = rs.getInt("year");
+	    String colour = rs.getString("colour");
+	    Position car_curr_pos = getVehiclePosition(registration);
+	    int status = rs.getInt("status");
+
+	    Position start = getVehiclePositionByTime(registration, timestamp);
+
+	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
+	    br = new Booking(id, timestamp, vehicle, customer_id, duration, start, cost);
+	}
+	return br;
+    }
+
     public CreditCard insertCredit(String user_id, String cName, String cNumber, String bNumber, String expDate) {
 
 	CreditCard cr = null;
@@ -814,5 +844,4 @@ public class Database implements Closeable {
 
 	return cost;
     }
-
 }

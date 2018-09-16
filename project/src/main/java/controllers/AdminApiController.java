@@ -1,6 +1,7 @@
 package controllers;
 
 import static spark.Spark.before;
+import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.put;
@@ -18,6 +19,7 @@ import com.google.gson.JsonParseException;
 import controllers.Request.EditBookingRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
+import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.Database;
 import model.Position;
@@ -54,11 +56,12 @@ public class AdminApiController {
 		    status = 2;
 		} else {
 		    res.status(400);
-		    return "";
+		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Creation Error"));
 		}
-	    } catch (JsonParseException e) {
+	    } catch (JsonParseException | NullPointerException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 	    logger.info("Inserting a car with rego: " + vr.registration);
 
@@ -67,13 +70,20 @@ public class AdminApiController {
 		    status);
 	    db.close();
 
-	    logger.info("Inserted successfully!");
-	    return new Gson().toJson(inserted_vehicle);
+	    if (inserted_vehicle != null) {
+		logger.info("Inserted successfully!");
+		return new Gson().toJson(inserted_vehicle);
+	    } else {
+		logger.info("Clould not insert vehicle");
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Vehicle was not created"));
+	    }
 	});
 
 	// set the status of a particular vehicle
 	// inactive vehicles can't be booked by clients
 	post("/vehicle/status", (req, res) -> {
+	    res.type("application/json");
 
 	    VehicleStatusRequest var;
 	    int status = 2;
@@ -87,12 +97,13 @@ public class AdminApiController {
 		    status = 2;
 		} else {
 		    res.status(400);
-		    return "";
+		    return new Gson().toJson(new ErrorResponse("Bad Request"));
 		}
 
-	    } catch (JsonParseException e) {
+	    } catch (JsonParseException | NullPointerException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 
 	    Database db = new Database();
@@ -102,11 +113,11 @@ public class AdminApiController {
 	    if (dbResponse) {
 		res.status(200);
 		logger.info("Changed availability of vehicle (" + var.registration + ")!");
+		return "";
 	    } else {
 		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Status"));
 	    }
-
-	    return "";
 	});
 
 	// returns a list of all vehicles
@@ -134,19 +145,20 @@ public class AdminApiController {
 	});
 
 	// delete a booking
-	get("/bookings/delete", (req, res) -> {
-	    int id = Integer.parseInt(req.queryParams("id"));
+	delete("/bookings/:id", (req, res) -> {
+	    int id = Integer.parseInt(req.params(":id"));
 
 	    Database db = new Database();
 	    Boolean dbResponse = db.deleteBooking(id);
 	    db.close();
 	    if (dbResponse) {
 		res.status(200);
+		return "";
 	    } else {
 		res.status(400);
+		res.type("application/json");
+		return new Gson().toJson(new ErrorResponse("Couldn't delete booking"));
 	    }
-
-	    return "";
 	});
 
 	// update a booking
@@ -164,9 +176,10 @@ public class AdminApiController {
 		br = new Gson().fromJson(req.body(), EditBookingRequest.class);
 		dateTime = LocalDateTime.parse(br.timestamp, formatter);
 
-	    } catch (JsonParseException e) {
+	    } catch (JsonParseException | NullPointerException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 
 	    Database db = new Database();
@@ -177,11 +190,11 @@ public class AdminApiController {
 
 	    if (dbResponse) {
 		res.status(200);
+		return "";
 	    } else {
 		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request - Update Booking"));
 	    }
-
-	    return "";
 	});
 
     }

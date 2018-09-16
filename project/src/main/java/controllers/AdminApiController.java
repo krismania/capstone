@@ -83,6 +83,7 @@ public class AdminApiController {
 	// set the status of a particular vehicle
 	// inactive vehicles can't be booked by clients
 	post("/vehicle/status", (req, res) -> {
+	    res.type("application/json");
 
 	    VehicleStatusRequest var;
 	    int status = 2;
@@ -155,6 +156,7 @@ public class AdminApiController {
 		return "";
 	    } else {
 		res.status(400);
+		res.type("application/json");
 		return new Gson().toJson(new ErrorResponse("Couldn't delete booking"));
 	    }
 	});

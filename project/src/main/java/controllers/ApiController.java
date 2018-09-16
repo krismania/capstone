@@ -1,6 +1,7 @@
 package controllers;
 
 import static spark.Spark.before;
+import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -110,7 +111,7 @@ public class ApiController {
 	    return new Gson().toJson(bookings);
 	});
 
-	post("/credit/insert", (req, res) -> {
+	post("/credit", (req, res) -> {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 
@@ -121,12 +122,12 @@ public class ApiController {
 		cr = new Gson().fromJson(req.body(), CreditRequest.class);
 
 		String cNumber = cr.cNumber;
-		String bNumber = cr.bNumber;
+		String backNumber = cr.backNumber;
 		String expDate = cr.expDate;
 		String cName = cr.cName;
 
 		Database db = new Database();
-		creditCard = db.insertCredit(clientId, cName, cNumber, bNumber, expDate);
+		creditCard = db.insertCredit(clientId, cName, cNumber, backNumber, expDate);
 		db.close();
 
 	    } catch (JsonParseException e) {
@@ -136,7 +137,7 @@ public class ApiController {
 	    return new Gson().toJson(creditCard);
 	});
 
-	get("/credit/delete", (req, res) -> {
+	delete("/credit", (req, res) -> {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 
@@ -147,7 +148,7 @@ public class ApiController {
 	    return "";
 	});
 
-	get("/credit/view", (req, res) -> {
+	get("/credit", (req, res) -> {
 	    res.type("application/json");
 
 	    String clientId = req.session().attribute("clientId");

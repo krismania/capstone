@@ -54,7 +54,8 @@ public class ApiController {
 		pos = new Position(pr.lat, pr.lng);
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 	    logger.info("Getting vehicles near " + pos);
 
@@ -79,7 +80,8 @@ public class ApiController {
 		dateTime = LocalDateTime.parse(br.timestamp, formatter);
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 
 	    logger.info("Inserting a booking!");

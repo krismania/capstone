@@ -99,7 +99,7 @@ public class AdminApiController {
 		    return new Gson().toJson(new ErrorResponse("Bad Request"));
 		}
 
-	    } catch (JsonParseException e) {
+	    } catch (JsonParseException | NullPointerException e) {
 		logger.error(e.getMessage());
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Error parsing request"));
@@ -174,7 +174,7 @@ public class AdminApiController {
 		br = new Gson().fromJson(req.body(), EditBookingRequest.class);
 		dateTime = LocalDateTime.parse(br.timestamp, formatter);
 
-	    } catch (JsonParseException e) {
+	    } catch (JsonParseException | NullPointerException e) {
 		logger.error(e.getMessage());
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Error parsing request"));

@@ -96,16 +96,21 @@ public class ApiController {
 	    logger.info("Inserting a booking!");
 	    Database db = new Database();
 
-	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
+	    boolean isBooked = db.isCarBooked(dateTime, br.registration);
+	    if (isBooked == false) {
+		Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
 
-	    db.close();
-	    if (booking != null) {
-		res.type("application/json");
-		return new Gson().toJson(booking);
-	    } else {
-		res.status(400);
-		return new Gson().toJson(new ErrorResponse("Bad Request"));
+		db.close();
+		if (booking != null) {
+		    res.type("application/json");
+		    return new Gson().toJson(booking);
+		} else {
+		    res.status(400);
+		    return new Gson().toJson(new ErrorResponse("Bad Request"));
+		}
 	    }
+	    db.close();
+	    return "";
 	});
 
 	// returns a list of the logged in client's bookings

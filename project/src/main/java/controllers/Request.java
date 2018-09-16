@@ -47,6 +47,7 @@ class Request {
      */
     static class EditBookingRequest extends BookingRequest {
 	String customerId;
+	int cost;
     }
 
     /**

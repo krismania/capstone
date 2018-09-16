@@ -543,7 +543,8 @@ public class Database implements Closeable {
     }
 
     // Uses the ID of the booking to edit the booking.
-    public Boolean editBooking(int id, LocalDateTime timestamp, String registration, String customerId, int duration) {
+    public Boolean editBooking(int id, LocalDateTime timestamp, String registration, String customerId, int duration,
+	    int cost) {
 
 	logger.info("Editing  Booking id:" + id);
 	try {
@@ -559,7 +560,6 @@ public class Database implements Closeable {
 		    ps.setString(2, registration);
 		    ps.setString(3, customerId);
 		    ps.setInt(4, duration);
-		    int cost = checkCost(duration);
 		    ps.setInt(5, cost);
 		    ps.executeUpdate();
 

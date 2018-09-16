@@ -40,8 +40,6 @@ function onLogin(user) {
 	    document.getElementById("header-links").style.visibility = 'visible';
 	    // fire event
 	    document.dispatchEvent(new Event("login"));
-	    // check if the newly logged in user has a booking
-	    displayCurrentBooking()
 	});
 }
 
@@ -57,8 +55,6 @@ function signOut() {
 		    document.getElementById("header-links").style.visibility = 'hidden';
 		    // fire event
 		    document.dispatchEvent(new Event("logout"));
-		    // hide current booking if it was displayed
-		    removeCurrentBooking();
 		});
 	});
 }

@@ -109,15 +109,21 @@ public class ApiController {
 	});
 
 	get("/bookings/now", (req, res) -> {
-	    res.type("application/json");
-	    String clientId = req.queryParams("clientId");
+	    String clientId = req.session().attribute("clientId");
 	    Booking br;
 	    Database db = new Database();
 
 	    br = db.getBookingNow(clientId);
 	    db.close();
 
-	    return new Gson().toJson(br);
+	    if (br != null) {
+		res.type("application/json");
+		return new Gson().toJson(br);
+	    } else {
+		// send "no-content" status
+		res.status(204);
+		return "";
+	    }
 	});
 
     }

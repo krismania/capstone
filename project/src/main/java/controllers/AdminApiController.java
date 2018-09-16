@@ -183,18 +183,26 @@ public class AdminApiController {
 	    }
 
 	    Database db = new Database();
+	    int status = db.checkVehicleStatus(br.registration);
 
-	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration);
+	    if (status == 0) {
+		Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration);
 
-	    db.close();
+		db.close();
 
-	    if (dbResponse) {
-		res.status(200);
-		return "";
+		if (dbResponse) {
+		    res.status(200);
+		    return "";
+		} else {
+		    res.status(400);
+		    return new Gson().toJson(new ErrorResponse("Bad Request - Update Booking"));
+		}
 	    } else {
+		db.close();
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Bad Request - Update Booking"));
 	    }
+
 	});
 
     }

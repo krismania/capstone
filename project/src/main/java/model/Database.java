@@ -707,4 +707,34 @@ public class Database implements Closeable {
 	}
     }
 
+    public Booking getBookingNow(String clientId) throws SQLException {
+	Booking br = null;
+
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+		+ " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
+		+ " LEFT JOIN vehicles as vh ON bk.registration=vh.registration WHERE (timestamp + INTERVAL duration MINUTE) > NOW() AND customer_id LIKE '"
+		+ clientId + "';");
+
+	while (rs.next()) {
+	    int id = rs.getInt("id");
+	    LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+	    String customer_id = rs.getString("customer_id");
+	    int duration = rs.getInt("duration");
+
+	    String registration = rs.getString("registration");
+	    String make = rs.getString("make");
+	    String model = rs.getString("model");
+	    int year = rs.getInt("year");
+	    String colour = rs.getString("colour");
+	    Position car_curr_pos = getVehiclePosition(registration);
+	    int status = rs.getInt("status");
+
+	    Position start = getVehiclePositionByTime(registration, timestamp);
+
+	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
+	    br = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+	}
+	return br;
+    }
 }

@@ -70,6 +70,15 @@ public class ApiController {
 	// create a booking
 	post("/bookings", (req, res) -> {
 	    res.type("application/json");
+
+	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
 	    BookingRequest br;
 	    LocalDateTime dateTime;
 
@@ -87,8 +96,6 @@ public class ApiController {
 	    logger.info("Inserting a booking!");
 	    Database db = new Database();
 
-	    String clientId = req.session().attribute("clientId");
-
 	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
 
 	    db.close();
@@ -97,11 +104,8 @@ public class ApiController {
 		return new Gson().toJson(booking);
 	    } else {
 		res.status(400);
-		new Gson().toJson(new ErrorResponse("Bad Request"));
+		return new Gson().toJson(new ErrorResponse("Bad Request"));
 	    }
-	    res.status(204);
-	    return "";
-
 	});
 
 	// returns a list of the logged in client's bookings

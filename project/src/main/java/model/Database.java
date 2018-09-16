@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -550,7 +550,7 @@ public class Database implements Closeable {
 	    if (bookingExists(id)) {
 		if (checkReg(registration)) {
 		    // Gets the latest timestamp of a car booking.
-		    String query = "UPDATE bookings set timestamp = ?, registration = ?, customer_id = ?, duration = ? WHERE id = "
+		    String query = "UPDATE bookings set timestamp = ?, registration = ?, customer_id = ?, duration = ?, cost = ? WHERE id = "
 			    + id + ";";
 
 		    PreparedStatement ps = this.conn.prepareStatement(query);
@@ -559,7 +559,8 @@ public class Database implements Closeable {
 		    ps.setString(2, registration);
 		    ps.setString(3, customerId);
 		    ps.setInt(4, duration);
-
+		    int cost = checkCost(duration);
+		    ps.setInt(5, cost);
 		    ps.executeUpdate();
 
 		    ps.close();
@@ -833,12 +834,12 @@ public class Database implements Closeable {
 	hashMap.put(720, 200);
 	hashMap.put(1440, 350);
 
-	Set set = hashMap.entrySet();
-	Iterator iterator = set.iterator();
+	Set<Entry<Integer, Integer>> set = hashMap.entrySet();
+	Iterator<Entry<Integer, Integer>> iterator = set.iterator();
 	while (iterator.hasNext()) {
-	    Map.Entry map = (Map.Entry) iterator.next();
-	    if (duration == (int) map.getKey()) {
-		cost = (int) map.getValue();
+	    Entry<Integer, Integer> map = iterator.next();
+	    if (duration == map.getKey()) {
+		cost = map.getValue();
 	    }
 	}
 

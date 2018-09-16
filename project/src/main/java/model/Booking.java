@@ -43,6 +43,10 @@ public class Booking {
 	return this.duration;
     }
 
+    public int getCost() {
+	return this.cost;
+    }
+
     public Position getStartLocation() {
 	return this.startLocation;
     }

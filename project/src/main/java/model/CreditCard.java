@@ -15,4 +15,24 @@ public class CreditCard {
 	this.expDate = expDate;
 	this.backNumber = backNumber;
     }
+
+    public String getUserId() {
+	return this.userId;
+    }
+
+    public String getCName() {
+	return this.cName;
+    }
+
+    public String getCNumber() {
+	return this.cNumber;
+    }
+
+    public String getExpDate() {
+	return this.expDate;
+    }
+
+    public String getBackNumber() {
+	return this.backNumber;
+    }
 }

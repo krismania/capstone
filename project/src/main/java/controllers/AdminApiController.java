@@ -182,12 +182,11 @@ public class AdminApiController {
 
 	    if (dbResponse) {
 		res.status(200);
+		return "";
 	    } else {
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Bad Request - Update Booking"));
 	    }
-
-	    return new Gson().toJson("Success");
 	});
 
     }

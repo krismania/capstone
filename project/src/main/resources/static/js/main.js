@@ -296,8 +296,14 @@ function displayCurrentBooking() {
 	});
 }
 
-// removes the current booking card
+// removes the current booking card & marker
 function removeCurrentBooking() {
+	// remove the marker first
+	if (bookedVehicle) {
+		bookedVehicle.marker.setMap(null);
+		bookedVehicle = null;
+	}
+	// remove the card
 	var currentBookingCard = document.getElementById("current-booking");
 	if (currentBookingCard) {
 		// fancy transition

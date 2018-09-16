@@ -184,7 +184,7 @@ public class AdminApiController {
 
 	    Database db = new Database();
 
-	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration);
+	    Boolean dbResponse = db.editBooking(id, dateTime, br.registration, br.customerId, br.duration, br.cost);
 
 	    db.close();
 

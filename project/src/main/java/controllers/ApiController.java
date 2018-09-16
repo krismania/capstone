@@ -121,6 +121,7 @@ public class ApiController {
 
 	    Database db = new Database();
 	    List<Booking> bookings = db.getBookingsOfUser(clientId);
+	    db.close();
 
 	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
 

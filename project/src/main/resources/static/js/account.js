@@ -4,6 +4,7 @@ document.addEventListener("login", function() {
 	rebu.getBookings(user, function(bookings) {
 		console.log(bookings);
 		var bookingsDiv = document.getElementById("prev-bookings");
+		// TODO: set the ordering on the server side rather than here
 		for (var i = bookings.length-1; i >=0 ; i--) {
 			// TODO: server may need to send this as a seperate field
 			bookings[i].vehicle.description = bookings[i].vehicle.make + " "

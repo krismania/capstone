@@ -60,7 +60,8 @@ public class AdminApiController {
 		}
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 	    logger.info("Inserting a car with rego: " + vr.registration);
 
@@ -94,7 +95,8 @@ public class AdminApiController {
 
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 
 	    Database db = new Database();
@@ -168,7 +170,8 @@ public class AdminApiController {
 
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 
 	    Database db = new Database();

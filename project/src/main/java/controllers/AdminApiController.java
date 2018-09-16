@@ -1,6 +1,7 @@
 package controllers;
 
 import static spark.Spark.before;
+import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.put;
@@ -136,20 +137,19 @@ public class AdminApiController {
 	});
 
 	// delete a booking
-	get("/bookings/delete", (req, res) -> {
-	    int id = Integer.parseInt(req.queryParams("id"));
+	delete("/bookings/:id", (req, res) -> {
+	    int id = Integer.parseInt(req.params(":id"));
 
 	    Database db = new Database();
 	    Boolean dbResponse = db.deleteBooking(id);
 	    db.close();
 	    if (dbResponse) {
 		res.status(200);
+		return "";
 	    } else {
 		res.status(400);
-		return new Gson().toJson(new ErrorResponse("Bad Request - Delete Booking"));
+		return new Gson().toJson(new ErrorResponse("Couldn't delete booking"));
 	    }
-
-	    return new Gson().toJson("Success");
 	});
 
 	// update a booking

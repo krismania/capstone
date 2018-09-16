@@ -1,6 +1,14 @@
 // contains JS blueprints for dynamic views
 var view = (function() {
 	
+	function zeroPad(number) {
+		if (number < 10) {
+			return "0" + number;
+		} else {
+			return "" + number;
+		}
+	}
+	
 	function jsonToDate(timestamp) {
 		// 1 is subtracted from month as JS months are 0-based
 		return new Date(timestamp.date.year, timestamp.date.month - 1, timestamp.date.day, 
@@ -26,7 +34,7 @@ var view = (function() {
 			hours = hours - 12;
 			meridian = "PM";
 		}
-		return "" + hours + ":" + minutes + " " + meridian;
+		return "" + hours + ":" + zeroPad(minutes) + " " + meridian;
 	}
 	
 	return {

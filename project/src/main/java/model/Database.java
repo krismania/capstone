@@ -121,7 +121,6 @@ public class Database implements Closeable {
 	    Position position, int status) {
 
 	logger.info("Insert Vehicles");
-	Vehicle v = null;
 	try {
 	    String queryVehTable = "INSERT INTO vehicles (registration, make, model,year,colour,status) VALUES (?,?,?,?,?,?);";
 	    String queryLocTable = "INSERT INTO locations (registration, timestamp, location) VALUES (?,?,POINT(?,?));";
@@ -148,12 +147,11 @@ public class Database implements Closeable {
 	    pStmntLoc.executeUpdate();
 	    pStmntLoc.close();
 
-	    v = new Vehicle(registration, make, model, year, colour, position, status);
+	    return new Vehicle(registration, make, model, year, colour, position, status);
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
-	    e.printStackTrace();
+	    logger.warn("SQL error while inserting vehicle: " + e.getMessage());
+	    return null;
 	}
-	return v;
     }
 
     /**

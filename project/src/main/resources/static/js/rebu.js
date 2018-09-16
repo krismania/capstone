@@ -94,15 +94,12 @@ rebu = (function() {
 				body: booking
 			});
 			
-			fetch(request)
-			.then(res => res.json())
-			.then(json => {
-				console.log(json);
-				// if response was null, booking failed
-				if (json == null) {
-					callback(false);
+			fetch(request).then(res => {
+				if (res.status == 200) {
+					res.json()
+					.then(booking(callback(booking)));
 				} else {
-					callback(true);
+					callback(null);
 				}
 			});
 		},

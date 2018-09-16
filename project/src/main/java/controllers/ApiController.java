@@ -138,9 +138,10 @@ public class ApiController {
 
 	get("/credit/delete", (req, res) -> {
 	    res.type("application/json");
-	    String clientId = req.queryParams("clientId");
+	    String clientId = req.session().attribute("clientId");
+
 	    Database db = new Database();
-	    boolean done = db.deleteCredit(clientId);
+	    db.deleteCredit(clientId);
 	    db.close();
 
 	    return "";
@@ -148,7 +149,8 @@ public class ApiController {
 
 	get("/credit/view", (req, res) -> {
 	    res.type("application/json");
-	    String clientId = req.queryParams("clientId");
+
+	    String clientId = req.session().attribute("clientId");
 
 	    CreditCard cr;
 

@@ -16,6 +16,7 @@ import com.google.gson.JsonParseException;
 
 import controllers.Request.BookingRequest;
 import controllers.Request.PositionRequest;
+import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.Database;
 import model.NearbyVehicle;
@@ -88,7 +89,7 @@ public class ApiController {
 
 	    logger.info("Inserting a booking!");
 	    Database db = new Database();
-
+	    String body;
 	    String clientId = req.session().attribute("clientId");
 	    System.out.println(clientId);
 	    if (!db.isCarDoubleBooked(dateTime, br.registration)) {
@@ -101,14 +102,16 @@ public class ApiController {
 		} else {
 		    res.status(400);
 		    db.close();
+		    body = new Gson().toJson(new ErrorResponse("Bad Request: User cannot book."));
 
 		}
 	    } else {
 		res.status(400);
 		db.close();
+		body = new Gson().toJson(new ErrorResponse("Bad Request: Unable to book car."));
 
 	    }
-	    return "Unkown Error, Please try again";
+	    return body;
 	});
 
 	// returns a list of the logged in client's bookings

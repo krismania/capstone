@@ -77,7 +77,7 @@ public class AdminApiController {
 	// set the status of a particular vehicle
 	// inactive vehicles can't be booked by clients
 	post("/vehicle/status", (req, res) -> {
-
+	    String body;
 	    VehicleAvailabilityRequest var;
 	    int active;
 	    try {
@@ -100,11 +100,14 @@ public class AdminApiController {
 	    if (dbResponse) {
 		res.status(200);
 		logger.info("Changed availability of vehicle (" + var.registration + ")!");
+		body = new Gson().toJson("Success");
 	    } else {
 		res.status(400);
+		body = new Gson().toJson(new ErrorResponse("Bad Request - Unable to change Vehicle"));
+
 	    }
 
-	    return "Unknown issue please contact an admin or try again.";
+	    return body;
 	});
 
 	// returns a list of all vehicles
@@ -155,6 +158,8 @@ public class AdminApiController {
 	    LocalDateTime dateTime;
 	    EditBookingRequest br;
 
+	    String body;
+
 	    int id = Integer.parseInt(req.params(":id"));
 
 	    try {
@@ -180,11 +185,13 @@ public class AdminApiController {
 
 	    if (dbResponse) {
 		res.status(200);
+		body = new Gson().toJson("Success");
 	    } else {
 		res.status(400);
+		body = new Gson().toJson(new ErrorResponse("Bad Request"));
 	    }
 	    res.status(400);
-	    return "Unknown issue please contact an admin or try again.";
+	    return body;
 
 	});
 

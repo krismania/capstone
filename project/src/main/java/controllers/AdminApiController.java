@@ -104,12 +104,11 @@ public class AdminApiController {
 	    if (dbResponse) {
 		res.status(200);
 		logger.info("Changed availability of vehicle (" + var.registration + ")!");
+		return "";
 	    } else {
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Status"));
 	    }
-
-	    return new Gson().toJson("Success");
 	});
 
 	// returns a list of all vehicles

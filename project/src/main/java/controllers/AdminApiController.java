@@ -58,7 +58,7 @@ public class AdminApiController {
 		    res.status(400);
 		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Creation Error"));
 		}
-	    } catch (JsonParseException e) {
+	    } catch (JsonParseException | NullPointerException e) {
 		logger.error(e.getMessage());
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Error parsing request"));
@@ -70,8 +70,14 @@ public class AdminApiController {
 		    status);
 	    db.close();
 
-	    logger.info("Inserted successfully!");
-	    return new Gson().toJson(inserted_vehicle);
+	    if (inserted_vehicle != null) {
+		logger.info("Inserted successfully!");
+		return new Gson().toJson(inserted_vehicle);
+	    } else {
+		logger.info("Clould not insert vehicle");
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Vehicle was not created"));
+	    }
 	});
 
 	// set the status of a particular vehicle

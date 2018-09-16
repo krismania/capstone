@@ -285,15 +285,26 @@ function displayCurrentBooking() {
 			// map.setZoom(18); // this doesn't work very well
 		}
 		// display the card
-		document.body.appendChild(view.currentBookingCard(booking, findCallback));
+		var currentBookingCard = view.currentBookingCard(booking, findCallback)
+			
+		// fancy transition
+		currentBookingCard.className = "transition-start";
+		setTimeout(function() {
+			currentBookingCard.className = "";
+		}, 200);
+		document.body.appendChild(currentBookingCard);
 	});
 }
 
 // removes the current booking card
 function removeCurrentBooking() {
-	var currentBooking = document.getElementById("current-booking");
-	if (currentBooking) {
-		document.body.removeChild(currentBooking);
+	var currentBookingCard = document.getElementById("current-booking");
+	if (currentBookingCard) {
+		// fancy transition
+		currentBookingCard.className = "transition-start";
+		setTimeout(function() {
+			document.body.removeChild(currentBookingCard);
+		}, 200);
 	}
 }
 

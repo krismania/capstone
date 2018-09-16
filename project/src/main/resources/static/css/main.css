@@ -267,6 +267,11 @@ button.confirm:disabled {
 	border-radius: 4px;
 	box-shadow: 0 2px 10px -2px black;
 	padding: 16px;
+	transition: transform 0.2s ease-out;
+}
+
+#current-booking.transition-start {
+	transform: translate(-110%);
 }
 
 #current-booking > h3 {
@@ -308,5 +313,3 @@ button.confirm:disabled {
 	background-color: #ffffffde;
 	outline: none;
 }
-
-

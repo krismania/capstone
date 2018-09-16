@@ -116,9 +116,6 @@ function initMap() {
 	
 	// fetch & display vehicles
 	rebu.getVehicles(displayVehicles);
-	
-	// check if the user has a booking currently
-	displayCurrentBooking();
 }
 
 function displayVehicles(vehicles) {

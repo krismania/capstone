@@ -37,6 +37,8 @@ function onLogin(user) {
 	    document.getElementById("header-links").style.visibility = 'visible';
 	    // fire event
 	    document.dispatchEvent(new Event("login"));
+	    // check if the newly logged in user has a booking
+	    displayCurrentBooking()
 	});
 }
 
@@ -52,6 +54,8 @@ function signOut() {
 		    document.getElementById("header-links").style.visibility = 'hidden';
 		    // fire event
 		    document.dispatchEvent(new Event("logout"));
+		    // hide current booking if it was displayed
+		    removeCurrentBooking();
 		});
 	});
 }
@@ -113,6 +117,9 @@ function initMap() {
 	
 	// fetch & display vehicles
 	rebu.getVehicles(displayVehicles);
+	
+	// check if the user has a booking currently
+	displayCurrentBooking();
 }
 
 function displayVehicles(vehicles) {
@@ -263,6 +270,26 @@ function nearbyCars(pos) {
 		}
 		sidepane.open();
 	});
+}
+
+// Queries for the user's current booking & displays it as a card
+function displayCurrentBooking() {
+	rebu.getCurrentBooking(function(booking) {
+		
+		var findCallback = function(booking) {
+			console.log("Find ", booking.vehicle);
+		}
+		
+		document.body.appendChild(view.currentBookingCard(booking, findCallback));
+	});
+}
+
+// removes the current booking card
+function removeCurrentBooking() {
+	var currentBooking = document.getElementById("current-booking");
+	if (currentBooking) {
+		document.body.removeChild(currentBooking);
+	}
 }
 
 // initialize sidepane

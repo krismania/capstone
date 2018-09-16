@@ -20,6 +20,10 @@ rebu = (function() {
 			+ hours + ":" + minutes + ":" + seconds;
 	}
 	
+	function addVehicleDescription(vehicle) {
+		vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
+	}
+	
 	return {
 		
 		getVehicles: function(callback) {
@@ -33,7 +37,7 @@ rebu = (function() {
 					var vehicle = json[i];
 					
 					// TODO: temporary fix for model mismatch
-					vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
+					addVehicleDescription(vehicle)
 					vehicle.available = true;
 					
 					vehicles.push(vehicle);
@@ -61,7 +65,7 @@ rebu = (function() {
 					var vehicle = json[i];
 					
 					// TODO: temporary fix for model mismatch
-					vehicle.description = vehicle.make + " " + vehicle.model + " (" + vehicle.year + ")";
+					addVehicleDescription(vehicle)
 					vehicle.available = true;
 					
 					// make the distance prettier
@@ -111,6 +115,24 @@ rebu = (function() {
 			.then(res => res.json())
 			.then(json => {
 				callback(json);
+			});
+		},
+		
+		getCurrentBooking: function(callback) {
+			console.log("[api] getting current booking");
+			var request = new Request('/api/bookings/now');
+			fetch(request)
+			.then(res => {
+				if (res.status == 200) {
+					res.json()
+					.then(booking => {
+						addVehicleDescription(booking.vehicle);
+						console.log(booking);
+						callback(booking);
+					})
+				} else {
+					console.log("No current booking");
+				}
 			});
 		}
 	

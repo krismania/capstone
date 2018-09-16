@@ -3,9 +3,12 @@ var map;
 // list of vehicles currently being displayed on the map
 // map markers are stored in vehicles[i].marker
 var mapVehicles = [];
+// currently booked vehicle if applicable, marker is stored as above
+var bookedVehicle = null;
 
 var urlAvail = '/img/vehicle-pin-available.png';
 var urlUnavail = '/img/vehicle-pin-unavailable.png';
+var urlBooked = '/img/vehicle-pin-booked.png';
 
 // keep track of the currently open info window
 var currentInfoWindow = null;
@@ -113,6 +116,9 @@ function initMap() {
 	
 	// fetch & display vehicles
 	rebu.getVehicles(displayVehicles);
+	
+	// check if the user has a booking currently
+	displayCurrentBooking();
 }
 
 function displayVehicles(vehicles) {
@@ -157,35 +163,37 @@ function displayLocation(pos) {
 	}
 }
 
-function createVehicleMarker(vehicle, map) {	
+function createVehicleMarker(vehicle, map, booked = false) {
 	var marker = new google.maps.Marker({
 		position: vehicle.position,
 		map: map,
 		icon: {
-			url: vehicle.available ? urlAvail : urlUnavail,
+			url: booked ? urlBooked : (vehicle.available ? urlAvail : urlUnavail),
 			size: new google.maps.Size(40, 40),
 			origin: new google.maps.Point(0, 0),
 			anchor: new google.maps.Point(20, 40)
 		},
 		title: vehicle.registration
 	});
-		
-	marker.addListener('click', function() {
-		console.log("Clicked on marker for", vehicle)
-		// close the currently opened window
-		if (currentInfoWindow) currentInfoWindow.close();
-		
-		// create info window & open it
-		var content = view.infoWindow(vehicle, function(e) {
-			e.preventDefault();
-			bookingForm(vehicle);
+	
+	if (!booked) {
+		marker.addListener('click', function() {
+			console.log("Clicked on marker for", vehicle)
+			// close the currently opened window
+			if (currentInfoWindow) currentInfoWindow.close();
+			
+			// create info window & open it
+			var content = view.infoWindow(vehicle, function(e) {
+				e.preventDefault();
+				bookingForm(vehicle);
+			});
+			var info = new google.maps.InfoWindow({content: content});
+			info.open(map, marker);
+			
+			// update the current window var
+			currentInfoWindow = info;
 		});
-		var info = new google.maps.InfoWindow({content: content});
-		info.open(map, marker);
-		
-		// update the current window var
-		currentInfoWindow = info;
-	});
+	}
 	
 	return marker;
 }
@@ -236,6 +244,8 @@ function submitBooking(vehicle) {
 				sidepane.append(view.bookingConfirmed());
 				// refresh the map
 				rebu.getVehicles(displayVehicles);
+				// show booking marker & card
+				displayCurrentBooking()
 			} else {
 				alert("Booking failed");
 			}
@@ -263,6 +273,47 @@ function nearbyCars(pos) {
 		}
 		sidepane.open();
 	});
+}
+
+// Queries for the user's current booking & displays it as a card
+function displayCurrentBooking() {
+	rebu.getCurrentBooking(function(booking) {
+		// create vehicle marker
+		bookedVehicle = booking.vehicle;
+		bookedVehicle.marker = createVehicleMarker(bookedVehicle, map, true);
+		// callback for "find car" button
+		var findCallback = function(booking) {
+			map.panTo(bookedVehicle.marker.getPosition());
+			// map.setZoom(18); // this doesn't work very well
+		}
+		// display the card
+		var currentBookingCard = view.currentBookingCard(booking, findCallback)
+			
+		// fancy transition
+		currentBookingCard.className = "transition-start";
+		setTimeout(function() {
+			currentBookingCard.className = "";
+		}, 200);
+		document.body.appendChild(currentBookingCard);
+	});
+}
+
+// removes the current booking card & marker
+function removeCurrentBooking() {
+	// remove the marker first
+	if (bookedVehicle) {
+		bookedVehicle.marker.setMap(null);
+		bookedVehicle = null;
+	}
+	// remove the card
+	var currentBookingCard = document.getElementById("current-booking");
+	if (currentBookingCard) {
+		// fancy transition
+		currentBookingCard.className = "transition-start";
+		setTimeout(function() {
+			document.body.removeChild(currentBookingCard);
+		}, 200);
+	}
 }
 
 // initialize sidepane

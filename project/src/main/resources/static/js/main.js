@@ -244,6 +244,8 @@ function submitBooking(vehicle) {
 				sidepane.append(view.bookingConfirmed());
 				// refresh the map
 				rebu.getVehicles(displayVehicles);
+				// show booking marker & card
+				displayCurrentBooking()
 			} else {
 				alert("Booking failed");
 			}

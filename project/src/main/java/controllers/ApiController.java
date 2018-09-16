@@ -108,9 +108,11 @@ public class ApiController {
 		    res.status(400);
 		    return new Gson().toJson(new ErrorResponse("Bad Request"));
 		}
+	    } else {
+		db.close();
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request"));
 	    }
-	    db.close();
-	    return "";
 	});
 
 	// returns a list of the logged in client's bookings

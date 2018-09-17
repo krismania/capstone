@@ -1,3 +1,5 @@
+import static spark.Spark.path;
+
 import java.io.IOException;
 
 import org.slf4j.Logger;
@@ -57,9 +59,11 @@ public class Main implements SparkApplication {
 	Spark.staticFiles.location("static");
 
 	// create routes
-	new ApiController();
-	new AdminApiController();
 	new UiController(mapsApiKey, googleClientId);
+	path("/api", () -> new ApiController());
+	path("/admin", () -> {
+	    path("/api", () -> new AdminApiController());
+	});
     }
 
 }

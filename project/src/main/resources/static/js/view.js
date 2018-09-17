@@ -1,6 +1,42 @@
 // contains JS blueprints for dynamic views
 var view = (function() {
 	
+	function zeroPad(number) {
+		if (number < 10) {
+			return "0" + number;
+		} else {
+			return "" + number;
+		}
+	}
+	
+	function jsonToDate(timestamp) {
+		// 1 is subtracted from month as JS months are 0-based
+		return new Date(timestamp.date.year, timestamp.date.month - 1, timestamp.date.day, 
+			timestamp.time.hour, timestamp.time.minute, timestamp.time.second);
+	}
+	
+	function addMinutes(date, minutes) {
+		// reference: https://stackoverflow.com/a/1214753/2393133
+		return new Date(date.getTime() + minutes*60000);
+	}
+	
+	function diffHours(date1, date2) {
+		return Math.round((date1 - date2) / 3600000);
+	}
+	
+	function timeToString(date) {
+		var hours = date.getHours();
+		var minutes = date.getMinutes();
+		var meridian;
+		if (hours <= 12) {
+			meridian = "AM"
+		} else {
+			hours = hours - 12;
+			meridian = "PM";
+		}
+		return "" + hours + ":" + zeroPad(minutes) + " " + meridian;
+	}
+	
 	return {
 		
 		vehicleInfo: function(vehicle) {
@@ -17,6 +53,28 @@ var view = (function() {
 			container.appendChild(desc);
 			container.appendChild(colour);
 			container.appendChild(rego);
+			
+			return container;
+		},
+		
+		bookingInfo: function(booking) {
+			var container = document.createElement("div");
+			var remaining = document.createElement("h3");
+			var end = document.createElement("p");
+			
+			var currentDate = new Date();
+			var startDate = jsonToDate(booking.timestamp);
+			var endDate = addMinutes(startDate, booking.duration);
+			
+			var remainingTime = diffHours(endDate, currentDate)
+			var endTime = timeToString(endDate);
+						
+			container.className = "booking-info";
+			remaining.innerText = "" + remainingTime + " Hours Remaining";
+			end.innerText = "Booked until " + endTime;
+			
+			container.appendChild(remaining);
+			container.appendChild(end);
 			
 			return container;
 		},
@@ -151,6 +209,36 @@ var view = (function() {
 			
 			container.appendChild(vehicleInfo);
 			container.appendChild(date);
+			
+			return container;
+		},
+		
+		currentBookingCard: function(booking, findCallback) {
+			var container = document.createElement("div");
+			container.id = "current-booking";
+			
+			var header = document.createElement("h3");
+			var info = document.createElement("div");
+			var bookingInfo = this.bookingInfo(booking);
+			var vehicleInfo = this.vehicleInfo(booking.vehicle);
+			var findVehicleButton = document.createElement("button");
+			
+			info.appendChild(vehicleInfo);
+			info.appendChild(bookingInfo);
+			
+			header.innerText = "CURRENT BOOKING";
+			bookingInfo.className = "booking-info";
+			findVehicleButton.innerText = "FIND CAR";
+			findVehicleButton.style = "float: right";
+			
+			findVehicleButton.addEventListener("click", function(e) {
+				e.preventDefault();
+				findCallback(booking);
+			});
+			
+			container.appendChild(header);
+			container.appendChild(info);
+			container.appendChild(findVehicleButton)
 			
 			return container;
 		}

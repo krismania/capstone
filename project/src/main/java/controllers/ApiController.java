@@ -1,5 +1,6 @@
 package controllers;
 
+import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -15,6 +16,7 @@ import com.google.gson.JsonParseException;
 
 import controllers.Request.BookingRequest;
 import controllers.Request.PositionRequest;
+import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.Database;
 import model.NearbyVehicle;
@@ -27,8 +29,11 @@ public class ApiController {
 
 	final Logger logger = LoggerFactory.getLogger(ApiController.class);
 
+	// log every API request
+	before("/*", (req, res) -> logger.info("Client API Request: " + req.uri()));
+
 	// returns a list of available vehicles
-	get("/api/vehicles", (req, res) -> {
+	get("/vehicles", (req, res) -> {
 	    res.type("application/json");
 
 	    Database db = new Database();
@@ -40,7 +45,7 @@ public class ApiController {
 	});
 
 	// returns a list of nearby vehicles, giving their distance to the client
-	post("/api/vehicles/nearby", (req, res) -> {
+	post("/vehicles/nearby", (req, res) -> {
 	    res.type("application/json");
 	    Position pos;
 	    try {
@@ -49,7 +54,8 @@ public class ApiController {
 		pos = new Position(pr.lat, pr.lng);
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 	    logger.info("Getting vehicles near " + pos);
 
@@ -62,9 +68,17 @@ public class ApiController {
 	});
 
 	// create a booking
-	post("/api/bookings", (req, res) -> {
+	post("/bookings", (req, res) -> {
 	    res.type("application/json");
-	    Position location_start, location_end;
+
+	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
 	    BookingRequest br;
 	    LocalDateTime dateTime;
 
@@ -73,40 +87,94 @@ public class ApiController {
 
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 		dateTime = LocalDateTime.parse(br.timestamp, formatter);
-
-		location_start = new Position(br.startLocation.lat, br.startLocation.lng);
-		location_end = new Position(br.endLocation.lat, br.endLocation.lng);
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());
-		return "Error parsing request";
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 
 	    logger.info("Inserting a booking!");
 	    Database db = new Database();
 
-	    String clientId = req.session().attribute("clientId");
+	    boolean isBooked = db.isCarBooked(dateTime, br.registration);
+	    if (isBooked == false) {
 
-	    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration, location_start,
-		    location_end);
+		int status = db.checkVehicleStatus(br.registration);
 
-	    db.close();
+		if (status == 0) {
+		    Booking booking = db.createBooking(dateTime, br.registration, clientId, br.duration);
 
-	    // logger.info("Inserted successfully!");
-	    return new Gson().toJson(booking);
+		    db.close();
+		    if (booking != null) {
+			res.type("application/json");
+			return new Gson().toJson(booking);
+		    } else {
+			res.status(400);
+			return new Gson().toJson(new ErrorResponse("Bad Request"));
+		    }
+		} else {
+		    db.close();
+		    res.status(400);
+		    return new Gson().toJson(new ErrorResponse("Bad Request"));
+		}
+
+	    } else {
+		db.close();
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request"));
+	    }
 	});
 
 	// returns a list of the logged in client's bookings
-	get("/api/bookings", (req, res) -> {
+	get("/bookings", (req, res) -> {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
 	    Database db = new Database();
 	    List<Booking> bookings = db.getBookingsOfUser(clientId);
+	    db.close();
 
 	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
 
+	    if (bookings.size() > 0) {
+		res.type("application/json");
+		return new Gson().toJson(bookings);
+	    } else {
+		// send "no-content" status
+		res.status(204);
+		return "";
+	    }
+	});
+
+	get("/bookings/now", (req, res) -> {
+	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    Booking br;
+	    Database db = new Database();
+
+	    br = db.getBookingNow(clientId);
 	    db.close();
-	    return new Gson().toJson(bookings);
+
+	    if (br != null) {
+		res.type("application/json");
+		return new Gson().toJson(br);
+	    } else {
+		// send "no-content" status
+		res.status(204);
+		return "";
+	    }
 	});
 
     }

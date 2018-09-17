@@ -337,8 +337,8 @@ public class Database implements Closeable {
 		if (!isUserDoubleBooked(timestamp, customerId)) {
 		    // INSERT
 
-		    String query = "INSERT INTO bookings " + "(timestamp, registration, customer_id, duration) VALUES "
-			    + "(?, ?, ?, ?)";
+		    String query = "INSERT INTO bookings "
+			    + "(timestamp, registration, customer_id, duration, cost) VALUES " + "(?, ?, ?, ?, ?)";
 
 		    PreparedStatement pStmnt = this.conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
 

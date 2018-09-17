@@ -735,4 +735,17 @@ public class Database implements Closeable {
 	}
 	return br;
     }
+
+    public int checkVehicleStatus(String reg) throws SQLException {
+	int status = 1;
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt
+		.executeQuery("SELECT vh.status FROM vehicles as vh WHERE vh.registration LIKE '" + reg + "';");
+
+	while (rs.next()) {
+	    status = rs.getInt("status");
+	}
+	return status;
+
+    }
 }

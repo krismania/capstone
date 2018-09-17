@@ -195,6 +195,7 @@ public class AdminApiController {
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Bad Request - Update Booking"));
 	    }
+
 	});
 
     }

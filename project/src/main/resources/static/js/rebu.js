@@ -26,7 +26,7 @@ rebu = (function() {
 					
 					// TODO: temporary fix for model mismatch
 					addVehicleDescription(vehicle)
-					vehicle.available = (vehicle.active == 1);
+					vehicle.available = (vehicle.status == 0);
 					
 					vehicles.push(vehicle);
 				};
@@ -89,7 +89,7 @@ rebu = (function() {
 			fetch(request).then(res => {
 				if (res.status == 200) {
 					res.json()
-					.then(booking(callback(booking)));
+					.then(callback(booking));
 				} else {
 					callback(null);
 				}

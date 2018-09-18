@@ -3,6 +3,7 @@ package controllers;
 import static spark.Spark.before;
 import static spark.Spark.delete;
 import static spark.Spark.get;
+import static spark.Spark.halt;
 import static spark.Spark.post;
 import static spark.Spark.put;
 
@@ -35,8 +36,20 @@ public class AdminApiController {
 
 	final Logger logger = LoggerFactory.getLogger(AdminApiController.class);
 
-	// log every API request
-	before("/*", (req, res) -> logger.info("Admin API Request: " + req.uri()));
+	// authenticate admin users
+	before("/*", (req, res) -> {
+	    logger.info("Admin API Request: " + req.uri());
+	    if (req.session(false) == null) {
+		logger.info("User is not logged in");
+		halt(401);
+	    }
+	    boolean isAdmin = req.session().attribute("isAdmin");
+	    if (!isAdmin) {
+		logger.info("User is NOT an administrator");
+		halt(403);
+	    }
+	    logger.info("User is an administrator");
+	});
 
 	// create a new vehicle
 	post("/vehicles", (req, res) -> {

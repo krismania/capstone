@@ -196,23 +196,30 @@ function createVehicleMarker(vehicle, map, booked = false) {
 		title: vehicle.registration
 	});
 	
-	if (!booked) {
+	if (rebu.isAdmin()) {
 		marker.addListener('click', function() {
-			console.log("Clicked on marker for", vehicle)
-			// close the currently opened window
-			if (currentInfoWindow) currentInfoWindow.close();
-			
-			// create info window & open it
-			var content = view.infoWindow(vehicle, function(e) {
-				e.preventDefault();
-				bookingForm(vehicle);
-			});
-			var info = new google.maps.InfoWindow({content: content});
-			info.open(map, marker);
-			
-			// update the current window var
-			currentInfoWindow = info;
+			console.log("Editing", vehicle);
+			editVehicle(vehicle);
 		});
+	} else {
+		if (!booked) {
+			marker.addListener('click', function() {
+				console.log("Clicked on marker for", vehicle)
+				// close the currently opened window
+				if (currentInfoWindow) currentInfoWindow.close();
+				
+				// create info window & open it
+				var content = view.infoWindow(vehicle, function(e) {
+					e.preventDefault();
+					bookingForm(vehicle);
+				});
+				var info = new google.maps.InfoWindow({content: content});
+				info.open(map, marker);
+				
+				// update the current window var
+				currentInfoWindow = info;
+			});
+		}
 	}
 	
 	return marker;

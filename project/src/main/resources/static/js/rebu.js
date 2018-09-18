@@ -14,6 +14,10 @@ rebu = (function() {
 			isAdmin = value;
 		},
 		
+		isAdmin: function() {
+			return isAdmin;
+		},
+		
 		getVehicles: function(callback) {
 			console.log("[api] getting all available vehicles");
 			var vehicles = [];

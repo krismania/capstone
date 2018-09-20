@@ -10,7 +10,17 @@ values
     ("BLA555","Mazda", "3", 2010, "White", 0),
     ("QOP299","Kia", "Rio", 2013, "Pink", 0),
     ("YODUDE","Nissan", "Skyline", 2010, "Black", 0),
-    ("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black", 0);
+    ("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black", 0),
+    ("OOT564","Ford", "Fiesta Sport", 2015, "Red", 0),
+    ("YFJ532","BMW", "X1", 2018, "White", 0),
+    ("WGD401","Toyota", "Landcruiser Prado GXL", 2016, "Grey", 0),
+    ("CFM842","Nissan", "X-Trail", 2017, "White", 0),
+    ("IWI955","Skoda", "Octavia", 2017, "White", 0),
+    ("HOLDI","Holden", "Caprice", 2015, "Grey", 0),
+    ("OHYEAH","Lexus", "IS300", 2018, "Black", 0),
+    ("UFJ759","Kia", "Stinger", 2018, "White", 0),
+    ("MERZ","Mercedes-Benz", "SL55 AMG", 2003, "Gold", 0),
+    ("IDA833","Mazda", "BT-50 XTR", 2016, "White", 0);
 
 insert ignore into `bookings`
 	(`timestamp`, `registration`, `customer_id`, `duration`)
@@ -44,5 +54,15 @@ values
     ("BLA555", "2000-01-01 00:00:00", POINT(-37.818681, 144.958982)),
     ("QOP299", "2000-01-01 00:00:00", POINT(-37.811510, 144.965667)),
     ("YODUDE", "2000-01-01 00:00:00", POINT(-37.810422, 144.968597)),
-    ("MAGPIES", "2000-01-01 00:00:00", POINT(-37.807232, 144.963620));
+    ("MAGPIES", "2000-01-01 00:00:00", POINT(-37.807232, 144.963620)),
+    ("OOT564", "2000-01-01 00:00:00", POINT(-37.810915, 144.975427)),
+    ("YFJ532", "2000-01-01 00:00:00", POINT(-37.804444, 144.955329)),
+    ("WGD401", "2000-01-01 00:00:00", POINT(-37.823369, 144.966751)),
+    ("CFM842", "2000-01-01 00:00:00", POINT(-37.820822, 144.940730)),
+    ("IWI955", "2000-01-01 00:00:00", POINT(-37.816623, 144.986340)),
+    ("HOLDI", "2000-01-01 00:00:00", POINT(-37.796537, 144.963106)),
+    ("OHYEAH", "2000-01-01 00:00:00", POINT(-37.802760, 144.982991)),
+    ("UFJ759", "2000-01-01 00:00:00", POINT(-37.800482, 144.941963)),
+    ("MERZ", "2000-01-01 00:00:00", POINT(-37.826453, 144.954995)),
+    ("IDA833", "2000-01-01 00:00:00", POINT(-37.824094, 144.977051));
 

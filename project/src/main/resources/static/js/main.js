@@ -282,6 +282,11 @@ function displayCurrentBooking() {
 		var findCallback = function(booking) {
 			map.panTo(bookedVehicle.marker.getPosition());
 			// map.setZoom(18); // this doesn't work very well
+			// open a google maps link navigating to the vehicle
+			var pos = bookedVehicle.marker.getPosition();
+			var link = "https://maps.google.com/maps?daddr=" + pos.lat() + "," + pos.lng();
+			var win = window.open(link, '_blank');
+			win.focus();
 		}
 		// display the card
 		var currentBookingCard = view.currentBookingCard(booking, findCallback)

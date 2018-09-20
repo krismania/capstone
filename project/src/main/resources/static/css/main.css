@@ -97,7 +97,7 @@ header h1 {
 
 /* Login hint */
 
-div.login-hint {
+#login-hint {
 	position: absolute;
 	right: 16px;
 	top: 66px;
@@ -111,12 +111,16 @@ div.login-hint {
 	user-select: none;
 }
 
-div.login-hint p {
+#login-hint.hidden {
+	display: none;
+}
+
+#login-hint p {
 	font-weight: bold;
 	text-align: center;
 }
 
-div.login-hint:after {
+#login-hint:after {
 	content: '';
 	position: absolute;
 	top: 0;

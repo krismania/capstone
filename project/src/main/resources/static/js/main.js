@@ -40,6 +40,8 @@ function onLogin(user) {
 	    document.getElementsByClassName("g-signin2")[0].style.display = 'none';
 	    // show logout button
 	    document.getElementById("header-links").style.visibility = 'visible';
+	    // hide login hint if visible
+	    document.getElementById("login-hint").className = "hidden";
 	    // fire event
 	    document.dispatchEvent(new Event("login"));
 	});
@@ -61,6 +63,10 @@ function signOut() {
 		    document.dispatchEvent(new Event("logout"));
 		});
 	});
+}
+
+function showLoginHint() {
+    document.getElementById("login-hint").className = "";
 }
 
 function showNearbyButton() {
@@ -253,7 +259,7 @@ function submitBooking(vehicle) {
 			}
 		});
 	} else {
-		alert("You are not logged in! Please login before making a booking.");
+		showLoginHint();
 	}
 
 }

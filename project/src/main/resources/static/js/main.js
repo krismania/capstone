@@ -120,6 +120,11 @@ function initMap() {
 	
 	// fetch & display vehicles
 	rebu.getVehicles(displayVehicles);
+
+	// refresh the map automatically every 60 seconds
+	setInterval(function() {
+		rebu.getVehicles(displayVehicles);
+	}, 60000);
 }
 
 function displayVehicles(vehicles) {
@@ -332,8 +337,3 @@ sidepane.setCloseCallback(function() {
 	document.getElementById('sidepane').style.width = '0';
 	document.getElementById('map-wrapper').style.left = null;
 });
-
-// refresh the map automatically every 60 seconds
-setInterval(function() {
-	rebu.getVehicles(displayVehicles);
-}, 60000);

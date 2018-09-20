@@ -99,8 +99,22 @@ header h1 {
 
 #login-hint {
 	position: absolute;
+	top: 56px;
+	left: 0;
+	width: 100%;
+	height: calc(100% - 56px);
+	background-color: #00000099;
+	z-index: 1;
+}
+
+#login-hint.hidden {
+	display: none;
+}
+
+#login-hint div {
+	position: absolute;
 	right: 16px;
-	top: 66px;
+	top: 10px;
 	z-index: 1;
 	width: 200px;
 	background-color: #f44336;
@@ -111,16 +125,12 @@ header h1 {
 	user-select: none;
 }
 
-#login-hint.hidden {
-	display: none;
-}
-
-#login-hint p {
+#login-hint div p {
 	font-weight: bold;
 	text-align: center;
 }
 
-#login-hint:after {
+#login-hint div:after {
 	content: '';
 	position: absolute;
 	top: 0;

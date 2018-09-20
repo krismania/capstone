@@ -43,7 +43,7 @@ p {
 /* Sign in button */
 .g-signin2 {
 	float: right;
-	margin: 10px 16px;
+	margin: 10px 16px 10px 0;
 }
 
 header {
@@ -73,6 +73,7 @@ header h1 {
 	align-items: center;
 	float: right;
 	padding: 10px 0;
+	margin: 0 16px;
 	box-sizing: border-box;
 	height: 100%;
 }

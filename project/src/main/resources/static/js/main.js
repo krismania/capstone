@@ -20,7 +20,7 @@ var geoMarker = null;
 var googleUser = null;
 
 function onLogin(user) {
-	// post the client ID to the servera
+	// post the client ID to the server
 	console.log("Token: ", user.getAuthResponse().id_token);
 	var headers = new Headers();
 	headers.append("Content-Type", "application/json");
@@ -36,6 +36,8 @@ function onLogin(user) {
 		googleUser = user;
 	    console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
 	    var id_token = googleUser.getAuthResponse().id_token;
+	    // hide sign-in button
+	    document.getElementsByClassName("g-signin2")[0].style.display = 'none';
 	    // show logout button
 	    document.getElementById("header-links").style.visibility = 'visible';
 	    // fire event
@@ -53,6 +55,8 @@ function signOut() {
 			console.log('User signed out.');
 			// hide logout button
 		    document.getElementById("header-links").style.visibility = 'hidden';
+		    // show sign-in button
+		    document.getElementsByClassName("g-signin2")[0].style.display = 'unset';
 		    // fire event
 		    document.dispatchEvent(new Event("logout"));
 		});

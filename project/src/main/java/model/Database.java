@@ -747,6 +747,25 @@ public class Database implements Closeable {
 	    status = rs.getInt("status");
 	}
 	return status;
-
+    }
+    
+    /**
+     * Checks if the given user has administrator permissions.
+     *
+     * @return {@code true} if the user is an administrator
+     */
+    public boolean isAdmin(String clientId) {
+	logger.info("Checking if user " + clientId + " is an admin");
+	String query = "select 1 from `admins` where `admin_id` = ?";
+	try (PreparedStatement ps = this.conn.prepareStatement(query)) {
+	    ps.setString(1, clientId);
+	    ResultSet rs = ps.executeQuery();
+	    // if the query has any rows, the user is in the admin table
+	    // next() will return false if there are no rows.
+	    return rs.next();
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
     }
 }

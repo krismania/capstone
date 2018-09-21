@@ -20,8 +20,9 @@ var geoMarker = null;
 var googleUser = null;
 
 function onLogin(user) {
+	console.log("Google Client Token");
+	console.log(user.getAuthResponse().id_token);
 	// post the client ID to the server
-	console.log("Token: ", user.getAuthResponse().id_token);
 	var headers = new Headers();
 	headers.append("Content-Type", "application/json");
 	var request = new Request("/login", {

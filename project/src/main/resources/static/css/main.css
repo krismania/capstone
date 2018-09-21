@@ -304,21 +304,6 @@ button.confirm:disabled {
 	text-align: right;
 }
 
-#current-booking > button {
-	margin-top: 16px;
-	background: none;
-	border: 1px solid #ffffffde;
-	color: #ffffffde;
-	font-weight: normal;
-}
-
-#current-booking > button:hover,
-#current-booking > button:focus {
-	color: #262626;
-	background-color: #ffffffde;
-	outline: none;
-}
-
 /* account page current booking */
 
 #cur-booking > div {

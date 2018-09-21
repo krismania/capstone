@@ -41,7 +41,7 @@ function onLogin(user) {
 	    // show logout button
 	    document.getElementById("header-links").style.visibility = 'visible';
 	    // hide login hint if visible
-	    document.getElementById("login-hint").className = "hidden";
+	    hideLoginHint();
 	    // fire event
 	    document.dispatchEvent(new Event("login"));
 	});
@@ -67,6 +67,10 @@ function signOut() {
 
 function showLoginHint() {
     document.getElementById("login-hint").className = "";
+}
+
+function hideLoginHint() {
+	document.getElementById("login-hint").className = "hidden";
 }
 
 function showNearbyButton() {
@@ -337,6 +341,17 @@ sidepane.setOpenCallback(function() {
 sidepane.setCloseCallback(function() {
 	document.getElementById('sidepane').style.width = '0';
 	document.getElementById('map-wrapper').style.left = null;
+});
+
+// add listeners for login hint
+var loginHint = document.getElementById("login-hint");
+loginHint.addEventListener('click', function() {
+	hideLoginHint();
+});
+document.addEventListener('keyup', function(e) {
+	if (e.keyCode == 27 && loginHint.className == '') {
+		hideLoginHint();
+	}
 });
 
 // refresh the map automatically every 60 seconds

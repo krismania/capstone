@@ -139,6 +139,10 @@ header h1 {
 	width: 100%;
 }
 
+.map-info {
+	width: 200px;
+}
+
 #sidepane, #sidepane-content {
 	width: 360px;
 	display: block;

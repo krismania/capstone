@@ -131,8 +131,8 @@ function displayVehicles(vehicles) {
 }
 
 function displayLocation(pos) {
-	p = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-	acc = pos.coords.accuracy
+	var p = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+	var acc = pos.coords.accuracy
 	if (geoMarker) {
 		geoMarker.marker.setPosition(p);
 		geoMarker.circle.setCenter(p);
@@ -143,13 +143,14 @@ function displayLocation(pos) {
 				position: p,
 				map: map,
 				icon: {
-					url: "/img/geo-dot.png",
-					size: new google.maps.Size(14, 14),
-					anchor: new google.maps.Point(7, 7)
+					url: "/img/user-pin.png",
+					size: new google.maps.Size(40, 40),
+					origin: new google.maps.Point(0, 0),
+					anchor: new google.maps.Point(20, 40)
 				}
 			}),
 			circle: new google.maps.Circle({
-				fillColor: "#F44336",
+				fillColor: "#42A5F4",
 				fillOpacity: 0.25,
 				strokeWeight: 0,
 				map: map,

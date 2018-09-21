@@ -95,6 +95,55 @@ header h1 {
 	background: #ffffff11;
 }
 
+/* Login hint */
+
+#login-hint {
+	position: absolute;
+	top: 56px;
+	left: 0;
+	width: 100%;
+	height: calc(100% - 56px);
+	background-color: #00000099;
+	z-index: 1;
+}
+
+#login-hint.hidden {
+	display: none;
+}
+
+#login-hint div {
+	position: absolute;
+	right: 16px;
+	top: 10px;
+	z-index: 1;
+	width: 200px;
+	background-color: #f44336;
+	padding: 16px;
+	border-radius: 4px;
+	box-shadow: 0 1px 10px -2px black;
+	cursor: default;
+	user-select: none;
+}
+
+#login-hint div p {
+	font-weight: bold;
+	text-align: center;
+}
+
+#login-hint div:after {
+	content: '';
+	position: absolute;
+	top: 0;
+	right: 16%;
+	width: 0;
+	height: 0;
+	border: 16px solid #fff2af00;
+	border-bottom-color: #f44336;
+	border-top: 0;
+	margin-left: -16px;
+	margin-top: -16px;
+}
+
 #content-wrapper {
 	max-width: 800px;
 	margin: 16px auto;

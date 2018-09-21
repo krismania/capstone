@@ -40,6 +40,8 @@ function onLogin(user) {
 	    document.getElementsByClassName("g-signin2")[0].style.display = 'none';
 	    // show logout button
 	    document.getElementById("header-links").style.visibility = 'visible';
+	    // hide login hint if visible
+	    hideLoginHint();
 	    // fire event
 	    document.dispatchEvent(new Event("login"));
 	});
@@ -61,6 +63,14 @@ function signOut() {
 		    document.dispatchEvent(new Event("logout"));
 		});
 	});
+}
+
+function showLoginHint() {
+    document.getElementById("login-hint").className = "";
+}
+
+function hideLoginHint() {
+	document.getElementById("login-hint").className = "hidden";
 }
 
 function showNearbyButton() {
@@ -258,7 +268,7 @@ function submitBooking(vehicle) {
 			}
 		});
 	} else {
-		alert("You are not logged in! Please login before making a booking.");
+		showLoginHint();
 	}
 
 }
@@ -336,4 +346,15 @@ sidepane.setOpenCallback(function() {
 sidepane.setCloseCallback(function() {
 	document.getElementById('sidepane').style.width = '0';
 	document.getElementById('map-wrapper').style.left = null;
+});
+
+// add listeners for login hint
+var loginHint = document.getElementById("login-hint");
+loginHint.addEventListener('click', function() {
+	hideLoginHint();
+});
+document.addEventListener('keyup', function(e) {
+	if (e.keyCode == 27 && loginHint.className == '') {
+		hideLoginHint();
+	}
 });

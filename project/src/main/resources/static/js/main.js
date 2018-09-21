@@ -130,6 +130,11 @@ function initMap() {
 	
 	// fetch & display vehicles
 	rebu.getVehicles(displayVehicles);
+
+	// refresh the map automatically every 60 seconds
+	setInterval(function() {
+		rebu.getVehicles(displayVehicles);
+	}, 60000);
 }
 
 function displayVehicles(vehicles) {
@@ -353,8 +358,3 @@ document.addEventListener('keyup', function(e) {
 		hideLoginHint();
 	}
 });
-
-// refresh the map automatically every 60 seconds
-setInterval(function() {
-	rebu.getVehicles(displayVehicles);
-}, 60000);

@@ -352,3 +352,32 @@ button.confirm:disabled {
 #current-booking .booking-info {
 	text-align: right;
 }
+
+/* account page current booking */
+
+#cur-booking > div {
+	display: flex;
+	justify-content: space-between;
+	border: 1px solid rgba(0, 0, 0, 0.6);
+	border-radius: 4px;
+	padding: 16px;
+	position: relative;
+	margin-bottom: 32px;
+}
+
+#cur-booking > div:before {
+	content: "ACTIVE BOOKING";
+	position: absolute;
+	top: -8px;
+	left: 8px;
+	background-color: #fff;
+	padding: 0 8px;
+	font-weight: bold;
+	font-size: 14px;
+	color: #00000099;
+}
+
+#cur-booking .booking-info {
+	text-align: right;
+}
+

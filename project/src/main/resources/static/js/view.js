@@ -236,6 +236,8 @@ var view = (function() {
 				findCallback(booking);
 			});
 			
+			findVehicleButton.className = "confirm";
+			
 			container.appendChild(header);
 			container.appendChild(info);
 			container.appendChild(findVehicleButton)

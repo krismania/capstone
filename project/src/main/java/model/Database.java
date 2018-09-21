@@ -470,18 +470,19 @@ public class Database implements Closeable {
 	}
     }
 
-    public List<Booking> getBookingsOfUser(String email) {
-	logger.info("Get Booking of " + email);
+    public List<Booking> getBookingsOfUser(String clientId) {
+	logger.info("Get Bookings for " + clientId);
 	List<Booking> bookings = new ArrayList<Booking>();
 
 	try {
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
-		    + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration" + " WHERE bk.customer_id = '"
-		    + email + "';");
+	    String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status "
+		    + "FROM bookings as bk LEFT JOIN vehicles as vh ON bk.registration=vh.registration "
+		    + "WHERE bk.customer_id = ? AND date_add(bk.timestamp, interval bk.duration minute) < now()";
+	    PreparedStatement stmt = this.conn.prepareStatement(sql);
+	    stmt.setString(1, clientId);
+	    ResultSet rs = stmt.executeQuery();
 	    while (rs.next()) {
-		int id = rs.getInt("id");
+		int bookingId = rs.getInt("id");
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
 		int duration = rs.getInt("duration");
@@ -499,7 +500,7 @@ public class Database implements Closeable {
 		Position car_curr_pos = getVehicleLastPosition(registration, LocalDateTime.now());
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+		Booking booking = new Booking(bookingId, timestamp, vehicle, customer_id, duration, start);
 
 		bookings.add(booking);
 	    }

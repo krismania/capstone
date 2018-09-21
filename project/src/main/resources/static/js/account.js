@@ -1,4 +1,9 @@
 document.addEventListener("login", function() {
+	//get current booking
+	rebu.getCurrentBooking(function(booking) {
+		var currentDiv = document.getElementById("cur-booking");
+		currentDiv.appendChild(view.currentBooking(booking));
+	})
 	// get past bookings
 	var user = googleUser.getBasicProfile().getEmail()
 	rebu.getBookings(user, function(bookings) {

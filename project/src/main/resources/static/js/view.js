@@ -20,8 +20,13 @@ var view = (function() {
 		return new Date(date.getTime() + minutes*60000);
 	}
 	
-	function diffHours(date1, date2) {
-		return Math.round((date1 - date2) / 3600000);
+	function difference(date1, date2) {
+		var diffHours = (date1 - date2) / 3600000
+		if (diffHours > 1) {
+			return Math.round(diffHours) + " Hours";
+		} else {
+			return Math.round(diffHours * 60) + " Minutes";
+		}
 	}
 	
 	function timeToString(date) {
@@ -62,15 +67,17 @@ var view = (function() {
 			var remaining = document.createElement("h3");
 			var end = document.createElement("p");
 			
+			container.className = "booking-info";
+			
 			var currentDate = new Date();
 			var startDate = jsonToDate(booking.timestamp);
 			var endDate = addMinutes(startDate, booking.duration);
 			
-			var remainingTime = diffHours(endDate, currentDate)
+			var remainingTime = difference(endDate, currentDate)
 			var endTime = timeToString(endDate);
 						
 			container.className = "booking-info";
-			remaining.innerText = "" + remainingTime + " Hours Remaining";
+			remaining.innerText = "" + remainingTime + " Remaining";
 			end.innerText = "Booked until " + endTime;
 			
 			container.appendChild(remaining);
@@ -213,21 +220,26 @@ var view = (function() {
 			return container;
 		},
 		
+		currentBooking: function(booking) {
+			var container = document.createElement("div");
+			var bookingInfo = this.bookingInfo(booking);
+			var vehicleInfo = this.vehicleInfo(booking.vehicle);
+			
+			container.appendChild(vehicleInfo);
+			container.appendChild(bookingInfo);
+			
+			return container;
+		},
+		
 		currentBookingCard: function(booking, findCallback) {
 			var container = document.createElement("div");
 			container.id = "current-booking";
 			
 			var header = document.createElement("h3");
-			var info = document.createElement("div");
-			var bookingInfo = this.bookingInfo(booking);
-			var vehicleInfo = this.vehicleInfo(booking.vehicle);
+			var info = this.currentBooking(booking);
 			var findVehicleButton = document.createElement("button");
 			
-			info.appendChild(vehicleInfo);
-			info.appendChild(bookingInfo);
-			
 			header.innerText = "CURRENT BOOKING";
-			bookingInfo.className = "booking-info";
 			findVehicleButton.innerText = "FIND CAR";
 			findVehicleButton.style = "float: right";
 			
@@ -235,6 +247,8 @@ var view = (function() {
 				e.preventDefault();
 				findCallback(booking);
 			});
+			
+			findVehicleButton.className = "confirm";
 			
 			container.appendChild(header);
 			container.appendChild(info);

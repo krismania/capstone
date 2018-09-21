@@ -37,8 +37,12 @@ function onLogin(user) {
 		googleUser = user;
 	    console.log('Logged in as: ' + googleUser.getBasicProfile().getName());
 	    var id_token = googleUser.getAuthResponse().id_token;
+	    // hide sign-in button
+	    document.getElementsByClassName("g-signin2")[0].style.display = 'none';
 	    // show logout button
 	    document.getElementById("header-links").style.visibility = 'visible';
+	    // hide login hint if visible
+	    hideLoginHint();
 	    // fire event
 	    document.dispatchEvent(new Event("login"));
 	});
@@ -54,10 +58,20 @@ function signOut() {
 			console.log('User signed out.');
 			// hide logout button
 		    document.getElementById("header-links").style.visibility = 'hidden';
+		    // show sign-in button
+		    document.getElementsByClassName("g-signin2")[0].style.display = 'unset';
 		    // fire event
 		    document.dispatchEvent(new Event("logout"));
 		});
 	});
+}
+
+function showLoginHint() {
+    document.getElementById("login-hint").className = "";
+}
+
+function hideLoginHint() {
+	document.getElementById("login-hint").className = "hidden";
 }
 
 function showNearbyButton() {
@@ -117,6 +131,11 @@ function initMap() {
 	
 	// fetch & display vehicles
 	rebu.getVehicles(displayVehicles);
+
+	// refresh the map automatically every 60 seconds
+	setInterval(function() {
+		rebu.getVehicles(displayVehicles);
+	}, 60000);
 }
 
 function displayVehicles(vehicles) {
@@ -132,8 +151,8 @@ function displayVehicles(vehicles) {
 }
 
 function displayLocation(pos) {
-	p = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
-	acc = pos.coords.accuracy
+	var p = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+	var acc = pos.coords.accuracy
 	if (geoMarker) {
 		geoMarker.marker.setPosition(p);
 		geoMarker.circle.setCenter(p);
@@ -144,13 +163,14 @@ function displayLocation(pos) {
 				position: p,
 				map: map,
 				icon: {
-					url: "/img/geo-dot.png",
-					size: new google.maps.Size(14, 14),
-					anchor: new google.maps.Point(7, 7)
+					url: "/img/user-pin.png",
+					size: new google.maps.Size(40, 40),
+					origin: new google.maps.Point(0, 0),
+					anchor: new google.maps.Point(20, 40)
 				}
 			}),
 			circle: new google.maps.Circle({
-				fillColor: "#F44336",
+				fillColor: "#42A5F4",
 				fillOpacity: 0.25,
 				strokeWeight: 0,
 				map: map,
@@ -249,7 +269,7 @@ function submitBooking(vehicle) {
 			}
 		});
 	} else {
-		alert("You are not logged in! Please login before making a booking.");
+		showLoginHint();
 	}
 
 }
@@ -283,6 +303,11 @@ function displayCurrentBooking() {
 		var findCallback = function(booking) {
 			map.panTo(bookedVehicle.marker.getPosition());
 			// map.setZoom(18); // this doesn't work very well
+			// open a google maps link navigating to the vehicle
+			var pos = bookedVehicle.marker.getPosition();
+			var link = "https://maps.google.com/maps?daddr=" + pos.lat() + "," + pos.lng();
+			var win = window.open(link, '_blank');
+			win.focus();
 		}
 		// display the card
 		var currentBookingCard = view.currentBookingCard(booking, findCallback)
@@ -324,7 +349,13 @@ sidepane.setCloseCallback(function() {
 	document.getElementById('map-wrapper').style.left = null;
 });
 
-// refresh the map automatically every 60 seconds
-setInterval(function() {
-	rebu.getVehicles(displayVehicles);
-}, 60000);
+// add listeners for login hint
+var loginHint = document.getElementById("login-hint");
+loginHint.addEventListener('click', function() {
+	hideLoginHint();
+});
+document.addEventListener('keyup', function(e) {
+	if (e.keyCode == 27 && loginHint.className == '') {
+		hideLoginHint();
+	}
+});

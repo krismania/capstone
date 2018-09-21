@@ -20,8 +20,13 @@ var view = (function() {
 		return new Date(date.getTime() + minutes*60000);
 	}
 	
-	function diffHours(date1, date2) {
-		return Math.round((date1 - date2) / 3600000);
+	function difference(date1, date2) {
+		var diffHours = (date1 - date2) / 3600000
+		if (diffHours > 1) {
+			return Math.round(diffHours) + " Hours";
+		} else {
+			return Math.round(diffHours * 60) + " Minutes";
+		}
 	}
 	
 	function timeToString(date) {
@@ -68,11 +73,11 @@ var view = (function() {
 			var startDate = jsonToDate(booking.timestamp);
 			var endDate = addMinutes(startDate, booking.duration);
 			
-			var remainingTime = diffHours(endDate, currentDate)
+			var remainingTime = difference(endDate, currentDate)
 			var endTime = timeToString(endDate);
 						
 			container.className = "booking-info";
-			remaining.innerText = "" + remainingTime + " Hours Remaining";
+			remaining.innerText = "" + remainingTime + " Remaining";
 			end.innerText = "Booked until " + endTime;
 			
 			container.appendChild(remaining);

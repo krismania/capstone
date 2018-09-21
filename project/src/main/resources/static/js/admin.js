@@ -73,19 +73,19 @@ var adminView = (function() {
 			var lng = document.createElement("input");
 			lng.id = "current-lng";
 			lng.placeholder = "Longitude";
-			var available = document.createElement("select");
-			available.id = "active";
+			var active = document.createElement("select");
+			active.id = "active";
 			
 			// add options to availability selector
-			var availableTrue = document.createElement("option");
-			availableTrue.innerText = "Available";
-			availableTrue.value = "true";
-			availableTrue.selected = true;
-			var availableFalse = document.createElement("option");
-			availableFalse.innerText = "Unavailable";
-			availableFalse.value = "false";
-			available.appendChild(availableTrue);
-			available.appendChild(availableFalse);
+			var activeTrue = document.createElement("option");
+			activeTrue.innerText = "Active";
+			activeTrue.value = "true";
+			activeTrue.selected = true;
+			var activeFalse = document.createElement("option");
+			activeFalse.innerText = "Inactive";
+			activeFalse.value = "false";
+			active.appendChild(activeTrue);
+			active.appendChild(activeFalse);
 			
 			var submit = document.createElement("button");
 			submit.addEventListener("click", function(e) {
@@ -104,7 +104,7 @@ var adminView = (function() {
 			
 			status.appendChild(lat);
 			status.appendChild(lng);
-			status.appendChild(available);
+			status.appendChild(active);
 			
 			form.appendChild(details);
 			form.appendChild(status);
@@ -194,7 +194,7 @@ function addVehicle() {
 				lat: parseFloat(document.getElementById("current-lat").value),
 				lng: parseFloat(document.getElementById("current-lng").value)
 			},
-			active: (document.getElementById("active").selectedIndex == 0)
+			status: document.getElementById("active").selectedIndex == 0 ? "active" : "inactive"
 		};
 		console.log("Creating vehicle", vehicle);
 		var headers = new Headers();
@@ -209,6 +209,7 @@ function addVehicle() {
 		.then(res => {
 			if (res.ok) {
 				alert("Vehicle created.");
+				window.location.reload();
 			}
 		});
 	}));

@@ -356,6 +356,8 @@ public class Database implements Closeable {
 
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
+
+			double cost = calculateCost(registration, duration);
 			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation);
 		    }
 		}
@@ -802,7 +804,9 @@ public class Database implements Closeable {
 	rs2.close();
 
 	cost = rate * duration;
+	// for testing purpose
 	System.out.println(cost);
+	logger.info("Cost for car: $" + cost);
 	return cost;
     }
 }

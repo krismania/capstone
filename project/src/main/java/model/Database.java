@@ -80,7 +80,8 @@ public class Database implements Closeable {
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (`registration` VARCHAR(10) NOT NULL, "
 		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, "
 		+ "`year` SMALLINT UNSIGNED NOT NULL, " + "`colour` VARCHAR(50) NOT NULL, "
-		+ "status TINYINT UNSIGNED NOT NULL, " + "PRIMARY KEY (`registration`));";
+		+ "status TINYINT UNSIGNED NOT NULL, " + "`type` VARCHAR(50) NOT NULL, "
+		+ "PRIMARY KEY (`registration`));";
 
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
@@ -122,11 +123,11 @@ public class Database implements Closeable {
     }
 
     public Vehicle insertVehicle(String registration, String make, String model, int year, String colour,
-	    Position position, int status) {
+	    Position position, int status, String type) {
 
 	logger.info("Insert Vehicles");
 	try {
-	    String queryVehTable = "INSERT INTO vehicles (registration, make, model,year,colour,status) VALUES (?,?,?,?,?,?);";
+	    String queryVehTable = "INSERT INTO vehicles (registration, make, model,year,colour,status,type) VALUES (?,?,?,?,?,?,?);";
 	    String queryLocTable = "INSERT INTO locations (registration, timestamp, location) VALUES (?,?,POINT(?,?));";
 	    PreparedStatement pStmntVeh = this.conn.prepareStatement(queryVehTable);
 	    PreparedStatement pStmntLoc = this.conn.prepareStatement(queryLocTable);
@@ -137,6 +138,7 @@ public class Database implements Closeable {
 	    pStmntVeh.setInt(4, year);
 	    pStmntVeh.setString(5, colour);
 	    pStmntVeh.setInt(6, status);
+	    pStmntVeh.setString(7, type);
 
 	    pStmntVeh.executeUpdate();
 	    pStmntVeh.close();
@@ -151,7 +153,7 @@ public class Database implements Closeable {
 	    pStmntLoc.executeUpdate();
 	    pStmntLoc.close();
 
-	    return new Vehicle(registration, make, model, year, colour, position, status);
+	    return new Vehicle(registration, make, model, year, colour, position, status, type);
 	} catch (SQLException e) {
 	    logger.warn("SQL error while inserting vehicle: " + e.getMessage());
 	    return null;
@@ -165,8 +167,8 @@ public class Database implements Closeable {
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt
-		    .executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour`, status FROM `vehicles`");
+	    ResultSet rs = stmt.executeQuery(
+		    "SELECT `registration`, `make`, `model`, `year`, `colour`, status, `type` FROM `vehicles`");
 	    while (rs.next()) {
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
@@ -176,7 +178,8 @@ public class Database implements Closeable {
 		// construct the object
 		Position location = getVehiclePosition(registration);
 		int avaliable = rs.getInt("status");
-		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, avaliable);
+		String type = rs.getString("type");
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, avaliable, type);
 		vehicles.add(vehicle);
 	    }
 	    return vehicles;
@@ -191,7 +194,7 @@ public class Database implements Closeable {
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour` "
+	    ResultSet rs = stmt.executeQuery("SELECT `registration`, `make`, `model`, `year`, `colour`, `type` "
 		    + "FROM `vehicles` WHERE vehicles.registration NOT IN" + "(SELECT registration from bookings"
 		    + " WHERE (timestamp + INTERVAL duration MINUTE) > NOW() ) AND status = 0;");
 	    while (rs.next()) {
@@ -200,9 +203,10 @@ public class Database implements Closeable {
 		String model = rs.getString("model");
 		int year = rs.getInt("year");
 		String colour = rs.getString("colour");
+		String type = rs.getString("type");
 		// construct the object
 		Position location = getVehiclePosition(registration);
-		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, 0);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, location, 0, type);
 		vehicles.add(vehicle);
 	    }
 	    return vehicles;
@@ -230,11 +234,13 @@ public class Database implements Closeable {
 	    String colour = vehicles.get(i).getColour();
 	    Position positionC = vehicles.get(i).getPosition();
 	    int status = vehicles.get(i).getStatus();
+	    String type = vehicles.get(i).getType();
 
 	    double distance = Util.distance(position.getLat(), position.getLng(), positionC.getLat(),
 		    positionC.getLng());
 
-	    NearbyVehicle nV = new NearbyVehicle(registration, make, model, year, colour, positionC, status, distance);
+	    NearbyVehicle nV = new NearbyVehicle(registration, make, model, year, colour, positionC, status, type,
+		    distance);
 	    nearVehicles.add(nV);
 	}
 
@@ -282,8 +288,8 @@ public class Database implements Closeable {
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
-		    + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type"
+		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
 	    while (rs.next()) {
 		int id = rs.getInt("id");
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
@@ -297,10 +303,11 @@ public class Database implements Closeable {
 		String colour = rs.getString("colour");
 		Position car_curr_pos = getVehiclePosition(registration);
 		int status = rs.getInt("status");
+		String type = rs.getString("type");
 
 		Position start = getVehiclePositionByTime(registration, timestamp);
 
-		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
 		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
 
 		bookings.add(booking);
@@ -370,7 +377,7 @@ public class Database implements Closeable {
 	Position position;
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, "
+	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, type"
 		    + "status FROM vehicles WHERE registration LIKE '" + registration + "';");
 
 	    if (rs.next()) {
@@ -380,9 +387,9 @@ public class Database implements Closeable {
 		int year = rs.getInt("year");
 		String colour = rs.getString("colour");
 		int status = rs.getInt("status");
-
+		String type = rs.getString("type");
 		position = getVehiclePosition(rego);
-		v = new Vehicle(rego, make, model, year, colour, position, status);
+		v = new Vehicle(rego, make, model, year, colour, position, status, type);
 
 	    }
 
@@ -479,7 +486,7 @@ public class Database implements Closeable {
 	List<Booking> bookings = new ArrayList<Booking>();
 
 	try {
-	    String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status "
+	    String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type "
 		    + "FROM bookings as bk LEFT JOIN vehicles as vh ON bk.registration=vh.registration "
 		    + "WHERE bk.customer_id = ? AND date_add(bk.timestamp, interval bk.duration minute) < now()";
 	    PreparedStatement stmt = this.conn.prepareStatement(sql);
@@ -499,11 +506,11 @@ public class Database implements Closeable {
 		String colour = rs.getString("colour");
 
 		int status = rs.getInt("status");
-
+		String type = rs.getString("type");
 		Position start = getVehiclePositionByTime(registration, timestamp);
 		Position car_curr_pos = getVehicleLastPosition(registration, LocalDateTime.now());
 
-		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
 		Booking booking = new Booking(bookingId, timestamp, vehicle, customer_id, duration, start);
 
 		bookings.add(booking);
@@ -715,7 +722,7 @@ public class Database implements Closeable {
 
 	Statement stmt = this.conn.createStatement();
 	ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		+ " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status" + " FROM bookings as bk"
+		+ " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type" + " FROM bookings as bk"
 		+ " LEFT JOIN vehicles as vh ON bk.registration=vh.registration WHERE (timestamp + INTERVAL duration MINUTE) > NOW() AND customer_id LIKE '"
 		+ clientId + "';");
 
@@ -732,10 +739,10 @@ public class Database implements Closeable {
 	    String colour = rs.getString("colour");
 	    Position car_curr_pos = getVehiclePosition(registration);
 	    int status = rs.getInt("status");
-
+	    String type = rs.getString("type");
 	    Position start = getVehiclePositionByTime(registration, timestamp);
 
-	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status);
+	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
 	    br = new Booking(id, timestamp, vehicle, customer_id, duration, start);
 	}
 	return br;

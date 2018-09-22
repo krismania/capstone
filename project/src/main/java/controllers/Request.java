@@ -62,7 +62,7 @@ class Request {
 	String status;
     }
 
-    static class EndBookingRequest extends BookingRequest {
+    static class EndBookingRequest {
 	String timestamp;
     }
 

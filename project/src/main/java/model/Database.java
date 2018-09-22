@@ -93,11 +93,15 @@ public class Database implements Closeable {
 	String locationSql = "CREATE TABLE IF NOT EXISTS `locations` (`registration` VARCHAR(10) NOT NULL, "
 		+ "timestamp DATETIME NOT NULL, location POINT NOT NULL);";
 
+	String users = "CREATE TABLE IF NOT EXISTS `users` (`cid` VARCHAR(50) NOT NULL, "
+		+ "`email` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`cid`));";
+
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
 	stmt.execute(bookingsSql);
 	stmt.execute(admin);
 	stmt.execute(locationSql);
+	stmt.execute(users);
 	stmt.close();
     }
 
@@ -767,5 +771,26 @@ public class Database implements Closeable {
 	    logger.error(e.getMessage());
 	    return false;
 	}
+    }
+
+    public void addUser(String cid, String email) throws SQLException {
+
+	boolean exists;
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt.executeQuery("SELECT cid FROM users WHERE cid LIKE '" + cid + "';");
+
+	if (!rs.isBeforeFirst()) {
+	    String query = "INSERT INTO users " + "(cid, email) VALUES " + "(?, ?)";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+	    pStmnt.setString(1, cid);
+	    pStmnt.setString(2, email);
+	    pStmnt.executeUpdate();
+	    pStmnt.close();
+
+	    logger.info("Adding to users database email: " + email);
+	} else {
+	    logger.info("Users table already has email: " + email);
+	}
+
     }
 }

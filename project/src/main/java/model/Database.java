@@ -787,20 +787,26 @@ public class Database implements Closeable {
 		bookingTimeStart = rs.getTimestamp("timestamp").toLocalDateTime();
 
 	    }
-	    // Find the total duration in minutes before booking ended.
-	    int minutes = (int) compareTwoTimeStamps(Timestamp.valueOf(bookingTimeStart), Timestamp.valueOf(currTime));
-	    rs.close();
-	    stmt.close();
 
-	    String query2 = "UPDATE bookings set duration = ? WHERE id = '" + id + "' AND customer_id = '" + clientid
-		    + "';";
-	    PreparedStatement ps = this.conn.prepareStatement(query2);
+	    if (bookingTimeStart.isBefore(currTime) || bookingTimeStart.isEqual(currTime)) {
+		// Find the total duration in minutes before booking ended.
+		int minutes = (int) compareTwoTimeStamps(Timestamp.valueOf(bookingTimeStart),
+			Timestamp.valueOf(currTime));
+		rs.close();
+		stmt.close();
 
-	    ps.setInt(1, minutes);
-	    ps.close();
+		String query2 = "UPDATE bookings set duration = ? WHERE id = '" + id + "' AND customer_id = '"
+			+ clientid + "';";
+		PreparedStatement ps = this.conn.prepareStatement(query2);
 
-	    logger.info("Ended Booking.");
-	    return true;
+		ps.setInt(1, minutes);
+		ps.close();
+
+		logger.info("Ended Booking.");
+		return true;
+	    } else {
+		return false; // Bad Request.
+	    }
 
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());

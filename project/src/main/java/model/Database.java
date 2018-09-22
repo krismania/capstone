@@ -349,6 +349,7 @@ public class Database implements Closeable {
 
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
+			String email = getEmail(customerId);
 			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation);
 		    }
 		}
@@ -792,5 +793,20 @@ public class Database implements Closeable {
 	    logger.info("Users table already has email: " + email);
 	}
 
+    }
+
+    public String getEmail(String cid) throws SQLException {
+
+	String email = null;
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt.executeQuery("SELECT email FROM users WHERE cid LIKE '" + cid + "';");
+
+	if (rs.next()) {
+	    email = rs.getString("email");
+	    System.out.println(email);
+	    logger.info("Email of user: " + email);
+
+	}
+	return email;
     }
 }

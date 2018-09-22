@@ -377,7 +377,7 @@ public class Database implements Closeable {
 	Position position;
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, type"
+	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, type, "
 		    + "status FROM vehicles WHERE registration LIKE '" + registration + "';");
 
 	    if (rs.next()) {
@@ -778,5 +778,31 @@ public class Database implements Closeable {
 	    logger.error(e.getMessage());
 	    return false;
 	}
+    }
+
+    public double calculateCost(String reg, int duration) throws SQLException {
+
+	String type = null;
+	int rate = 0;
+	double cost;
+
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt
+		.executeQuery("SELECT vh.type FROM vehicles as vh WHERE vh.registration LIKE '" + reg + "';");
+
+	while (rs.next()) {
+	    type = rs.getString("type");
+	}
+	rs.close();
+
+	ResultSet rs2 = stmt.executeQuery("SELECT c.rate FROM costs as c WHERE c.type LIKE '" + type + "';");
+	while (rs2.next()) {
+	    rate = rs2.getInt("rate");
+	}
+	rs2.close();
+
+	cost = rate * duration;
+	System.out.println(cost);
+	return cost;
     }
 }

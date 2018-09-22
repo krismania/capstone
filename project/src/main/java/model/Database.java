@@ -789,6 +789,7 @@ public class Database implements Closeable {
 	    // Find the total duration in minutes before booking ended.
 	    int minutes = (int) compareTwoTimeStamps(Timestamp.valueOf(bookingTimeStart), Timestamp.valueOf(currTime));
 	    rs.close();
+	    stmt.close();
 
 	    String query2 = "UPDATE bookings set duration = ? WHERE id = '" + id + "';";
 	    PreparedStatement ps = this.conn.prepareStatement(query2);

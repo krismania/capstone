@@ -42,6 +42,13 @@ values
     ("110833881946064880314"),
     ("112606983151403770748");
     
+    insert ignore into `costs`
+	(`type`, `rate`)
+values   
+    ("luxury", 3),
+    ("average", 2),
+    ("subpar", 1);
+    
 insert ignore into `locations`
 	(`registration`, `timestamp`, `location`)
 values

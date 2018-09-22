@@ -93,8 +93,12 @@ public class Database implements Closeable {
 	String locationSql = "CREATE TABLE IF NOT EXISTS `locations` (`registration` VARCHAR(10) NOT NULL, "
 		+ "timestamp DATETIME NOT NULL, location POINT NOT NULL);";
 
+	String cost = "CREATE TABLE IF NOT EXISTS `costs` (`type` VARCHAR(50) NOT NULL, "
+		+ "`rate` SMALLINT UNSIGNED NOT NULL, " + "PRIMARY KEY (`type`));";
+
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
+	stmt.execute(cost);
 	stmt.execute(bookingsSql);
 	stmt.execute(admin);
 	stmt.execute(locationSql);
@@ -748,7 +752,7 @@ public class Database implements Closeable {
 	}
 	return status;
     }
-    
+
     /**
      * Checks if the given user has administrator permissions.
      *

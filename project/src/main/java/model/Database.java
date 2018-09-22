@@ -774,7 +774,8 @@ public class Database implements Closeable {
 	try {
 
 	    // Gets the latest timestamp of a car booking.
-	    String query1 = "SELECT timestamp FROM bookings WHERE id = '" + id + "';";
+	    String query1 = "SELECT timestamp FROM bookings WHERE id = '" + id + "' AND customer_id = '" + clientid
+		    + "';";
 
 	    // PreparedStatement ps = this.conn.prepareStatement(query);
 	    Statement stmt = this.conn.createStatement();
@@ -791,7 +792,8 @@ public class Database implements Closeable {
 	    rs.close();
 	    stmt.close();
 
-	    String query2 = "UPDATE bookings set duration = ? WHERE id = '" + id + "';";
+	    String query2 = "UPDATE bookings set duration = ? WHERE id = '" + id + "' AND customer_id = '" + clientid
+		    + "';";
 	    PreparedStatement ps = this.conn.prepareStatement(query2);
 
 	    ps.setInt(1, minutes);

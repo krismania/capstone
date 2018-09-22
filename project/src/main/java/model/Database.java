@@ -748,7 +748,7 @@ public class Database implements Closeable {
 	}
 	return status;
     }
-    
+
     /**
      * Checks if the given user has administrator permissions.
      *
@@ -768,4 +768,55 @@ public class Database implements Closeable {
 	    return false;
 	}
     }
+
+    public boolean endBooking(int id, String clientid, LocalDateTime currTime) {
+
+	try {
+
+	    // Gets the latest timestamp of a car booking.
+	    String query1 = "SELECT timestamp FROM bookings WHERE id = '" + id + "';";
+
+	    // PreparedStatement ps = this.conn.prepareStatement(query);
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query1);
+	    LocalDateTime bookingTimeStart = null;
+
+	    if (rs.next()) {
+		// Gets when the car is going to end.
+		bookingTimeStart = rs.getTimestamp("timestamp").toLocalDateTime();
+
+	    }
+	    // Find the total duration in minutes before booking ended.
+	    int minutes = (int) compareTwoTimeStamps(Timestamp.valueOf(bookingTimeStart), Timestamp.valueOf(currTime));
+	    rs.close();
+
+	    String query2 = "UPDATE bookings set duration = ? WHERE id = '" + id + "';";
+	    PreparedStatement ps = this.conn.prepareStatement(query2);
+
+	    ps.setInt(1, minutes);
+	    ps.close();
+
+	    logger.info("Ended Booking.");
+	    return true;
+
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
+
+    }
+
+    public static long compareTwoTimeStamps(java.sql.Timestamp oldTime, java.sql.Timestamp currentTime) {
+	long milliseconds1 = oldTime.getTime();
+	long milliseconds2 = currentTime.getTime();
+
+	long diff = milliseconds2 - milliseconds1;
+	long diffSeconds = diff / 1000;
+	long diffMinutes = diff / (60 * 1000);
+	long diffHours = diff / (60 * 60 * 1000);
+	long diffDays = diff / (24 * 60 * 60 * 1000);
+
+	return diffMinutes;
+    }
+
 }

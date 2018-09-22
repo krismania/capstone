@@ -748,7 +748,7 @@ public class Database implements Closeable {
 	}
 	return status;
     }
-    
+
     /**
      * Checks if the given user has administrator permissions.
      *
@@ -767,5 +767,66 @@ public class Database implements Closeable {
 	    logger.error(e.getMessage());
 	    return false;
 	}
+    }
+
+    // Uses the ID of the booking to edit the booking.
+    public Boolean extendBooking(int id, String customerId, int extendedduration) {
+
+	logger.info("Extending Booking of: " + customerId);
+	try {
+
+	    // Gets the latest timestamp of a car booking.
+	    String query = "UPDATE bookings set duration = ? + " + extendedduration + "WHERE customer_id = "
+		    + customerId + " AND id = " + id + ";";
+
+	    PreparedStatement ps = this.conn.prepareStatement(query);
+
+	    ps.setInt(1, extendedduration);
+
+	    ps.executeUpdate();
+
+	    ps.close();
+	    logger.info("Successfully extended");
+	    return true;
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return false;
+	}
+    }
+
+    public Boolean hasBookingEnded(int id, LocalDateTime currtime) {
+
+	logger.info("Check if booking has ended. ");
+	try {
+
+	    String query = "SELECT timestamp, duration FROM bookings WHERE id = " + id + ";";
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query);
+
+	    if (rs.next()) {
+		// Gets when the car is going to end.
+		LocalDateTime bookingTime = rs.getTimestamp("timestamp").toLocalDateTime();
+		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
+
+		if (currtime.isBefore(endtime)) {
+		    logger.info(" Booking is still in session. ");
+		    rs.close();
+		    stmt.close();
+		    return false; // Booking has not ended.
+		}
+
+	    }
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return true; // error
+	}
+	logger.info(" Booking has ended. ");
+	return true; // Booking ended.
+
     }
 }

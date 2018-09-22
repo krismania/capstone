@@ -15,6 +15,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.BookingRequest;
+import controllers.Request.ExtendBookingRequest;
 import controllers.Request.PositionRequest;
 import controllers.Response.ErrorResponse;
 import model.Booking;
@@ -175,6 +176,64 @@ public class ApiController {
 		res.status(204);
 		return "";
 	    }
+	});
+
+	// extend a booking
+	post("/bookings/extend/:id", (req, res) -> {
+	    res.type("application/json");
+
+	    String clientId = req.session().attribute("clientId");
+	    int id = Integer.parseInt(req.params(":id"));
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    ExtendBookingRequest br;
+	    LocalDateTime dateTime;
+
+	    try {
+		br = new Gson().fromJson(req.body(), ExtendBookingRequest.class);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		dateTime = LocalDateTime.parse(br.timestamp, formatter);
+
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
+	    }
+
+	    logger.info("Extending a booking!");
+	    Database db = new Database();
+	    if (db.bookingExists(id)) {
+
+		if (db.hasBookingEnded(id, dateTime)) { // booking has already ended - cannot extend booking.
+		    db.close();
+		    res.status(400);
+		    return new Gson().toJson(new ErrorResponse("Bad Request"));
+		} else {
+		    // booking has not ended yet - can still extend booking.
+		    if (db.extendBooking(id, clientId, br.extraDuration)) {
+			res.status(200);
+			db.close();
+			return "";
+		    } else {
+			db.close();
+			res.status(400);
+			return new Gson().toJson(new ErrorResponse("Bad Request"));
+		    }
+		}
+
+	    }
+
+	    else {
+		db.close();
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request"));
+	    }
+
 	});
 
     }

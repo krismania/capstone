@@ -316,6 +316,8 @@ function displayCurrentBooking() {
 			rebu.extendCurrentBooking(60, function(success) {
 				if (success) {
 					alert("Booking has been extended");
+					window.location.reload(); // refresh the page
+					// TODO: update the booking card in place
 				} else {
 					alert("Booking was not extended");
 				}

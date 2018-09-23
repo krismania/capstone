@@ -231,28 +231,38 @@ var view = (function() {
 			return container;
 		},
 		
-		currentBookingCard: function(booking, findCallback) {
+		currentBookingCard: function(booking, findCallback, extendCallback) {
 			var container = document.createElement("div");
 			container.id = "current-booking";
 			
 			var header = document.createElement("h3");
 			var info = this.currentBooking(booking);
 			var findVehicleButton = document.createElement("button");
+			var extendBookingButton = document.createElement("button");
 			
 			header.innerText = "CURRENT BOOKING";
 			findVehicleButton.innerText = "FIND CAR";
 			findVehicleButton.style = "float: right";
+			extendBookingButton.innerText = "EXTEND BOOKING";
+			extendBookingButton.style = "float: right; margin-right: 8px; background-color: #4CAF50";
 			
 			findVehicleButton.addEventListener("click", function(e) {
 				e.preventDefault();
 				findCallback(booking);
 			});
 			
+			extendBookingButton.addEventListener("click", function(e) {
+				e.preventDefault();
+				extendCallback(booking);
+			});
+			
 			findVehicleButton.className = "confirm";
+			extendBookingButton.className = "confirm";
 			
 			container.appendChild(header);
 			container.appendChild(info);
-			container.appendChild(findVehicleButton)
+			container.appendChild(findVehicleButton);
+			container.appendChild(extendBookingButton);
 			
 			return container;
 		}

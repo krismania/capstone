@@ -781,12 +781,14 @@ public class Database implements Closeable {
 	    ResultSet rs = stmt.executeQuery(query1);
 	    LocalDateTime bookingTimeStart = null;
 	    int id = 0;
+	    int duration = 0;
 	    boolean bookingEnded = true;
 
 	    if (rs.next()) {
 		// Gets when the car is going to end.
 		bookingTimeStart = rs.getTimestamp("timestamp").toLocalDateTime();
 		id = rs.getInt("id");
+		duration = rs.getInt("duration");
 		bookingEnded = hasBookingEnded(id, currTime); // TRUE if booking ended, False if hasnt.
 	    }
 
@@ -799,7 +801,7 @@ public class Database implements Closeable {
 
 		PreparedStatement ps = this.conn.prepareStatement(query2);
 
-		ps.setInt(1, extendedduration);
+		ps.setInt(1, duration);
 
 		ps.executeUpdate();
 
@@ -836,7 +838,7 @@ public class Database implements Closeable {
 		LocalDateTime endTime = startTime.plusMinutes(duration);
 
 		if (currtime.isAfter(startTime) && currtime.isBefore(endTime)) {
-		    logger.info(" Booking is still in session. " + duration);
+
 		    rs.close();
 		    stmt.close();
 		    return false; // Booking has not ended.

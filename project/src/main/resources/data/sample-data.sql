@@ -1,26 +1,26 @@
 insert ignore into `vehicles`
 	(`registration`, `make`, `model`, `year`, `colour`, `status`, `type`)
 values
-    ("ABC123","Toyota", "Corolla", 2014, "Blue", 0, "subpar"),
-    ("QRB990","BMW", "325i", 2003, "Black", 1, "average"),
-    ("TAA325","Peugeot", "307 SW", 2008, "Grey", 1, "average"),
-    ("UBR666","Ford", "Falcon", 2013, "Orange", 1, "average"),
-    ("FOK356","Holden", "Barina", 2017, "White", 0, "average"),
-    ("JTD955","Holden", "Commadore", 2005, "Grey", 0, "subpar"),
-    ("BLA555","Mazda", "3", 2010, "White", 0, "luxury"),
-    ("QOP299","Kia", "Rio", 2013, "Pink", 0, "subpar"),
-    ("YODUDE","Nissan", "Skyline", 2010, "Black", 0, "luxury"),
-    ("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black", 0, "luxury"),
-    ("OOT564","Ford", "Fiesta Sport", 2015, "Red", 0, "average"),
-    ("YFJ532","BMW", "X1", 2018, "White", 0, "luxury"),
-    ("WGD401","Toyota", "Landcruiser Prado GXL", 2016, "Grey", 0, "subpar"),
-    ("CFM842","Nissan", "X-Trail", 2017, "White", 0, "luxury"),
-    ("IWI955","Skoda", "Octavia", 2017, "White", 0, "luxury"),
-    ("HOLDI","Holden", "Caprice", 2015, "Grey", 0, "luxury"),
-    ("OHYEAH","Lexus", "IS300", 2018, "Black", 0, "luxury"),
-    ("UFJ759","Kia", "Stinger", 2018, "White", 0, "luxury"),
-    ("MERZ","Mercedes-Benz", "SL55 AMG", 2003, "Gold", 0, "luxury"),
-    ("IDA833","Mazda", "BT-50 XTR", 2016, "White", 0, "luxury");
+    ("ABC123","Toyota", "Corolla", 2014, "Blue", 0, "Tier 3"),
+    ("QRB990","BMW", "325i", 2003, "Black", 1, "Tier 2"),
+    ("TAA325","Peugeot", "307 SW", 2008, "Grey", 1, "Tier 2"),
+    ("UBR666","Ford", "Falcon", 2013, "Orange", 1, "Tier 2"),
+    ("FOK356","Holden", "Barina", 2017, "White", 0, "Tier 2"),
+    ("JTD955","Holden", "Commadore", 2005, "Grey", 0, "Tier 3"),
+    ("BLA555","Mazda", "3", 2010, "White", 0, "Tier 1"),
+    ("QOP299","Kia", "Rio", 2013, "Pink", 0, "Tier 3"),
+    ("YODUDE","Nissan", "Skyline", 2010, "Black", 0, "Tier 1"),
+    ("MAGPIES", "Mercedes-Benz", "CLC200 Kompressor", 2009, "Black", 0, "Tier 1"),
+    ("OOT564","Ford", "Fiesta Sport", 2015, "Red", 0, "Tier 2"),
+    ("YFJ532","BMW", "X1", 2018, "White", 0, "Tier 1"),
+    ("WGD401","Toyota", "Landcruiser Prado GXL", 2016, "Grey", 0, "Tier 3"),
+    ("CFM842","Nissan", "X-Trail", 2017, "White", 0, "Tier 1"),
+    ("IWI955","Skoda", "Octavia", 2017, "White", 0, "Tier 1"),
+    ("HOLDI","Holden", "Caprice", 2015, "Grey", 0, "Tier 1"),
+    ("OHYEAH","Lexus", "IS300", 2018, "Black", 0, "Tier 1"),
+    ("UFJ759","Kia", "Stinger", 2018, "White", 0, "Tier 1"),
+    ("MERZ","Mercedes-Benz", "SL55 AMG", 2003, "Gold", 0, "Tier 1"),
+    ("IDA833","Mazda", "BT-50 XTR", 2016, "White", 0, "Tier 1");
 
 insert ignore into `bookings`
 	(`timestamp`, `registration`, `customer_id`, `duration`)
@@ -45,9 +45,9 @@ values
     insert ignore into `costs`
 	(`type`, `rate`)
 values   
-    ("luxury", 3),
-    ("average", 2),
-    ("subpar", 1);
+    ("Tier 1", 3),
+    ("Tier 2", 2),
+    ("Tier 3", 1);
     
 insert ignore into `locations`
 	(`registration`, `timestamp`, `location`)

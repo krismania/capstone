@@ -309,8 +309,19 @@ function displayCurrentBooking() {
 			var win = window.open(link, '_blank');
 			win.focus();
 		}
+		// callback for "extend booking" button
+		var extendCallback = function(booking) {
+			// TODO: ask user for extra duration
+			rebu.extendCurrentBooking(60, function(success) {
+				if (success) {
+					alert("Booking has been extended");
+				} else {
+					alert("Booking was not extended");
+				}
+			});
+		}
 		// display the card
-		var currentBookingCard = view.currentBookingCard(booking, findCallback)
+		var currentBookingCard = view.currentBookingCard(booking, findCallback, extendCallback);
 			
 		// fancy transition
 		currentBookingCard.className = "transition-start";

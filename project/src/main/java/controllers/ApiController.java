@@ -184,6 +184,11 @@ public class ApiController {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
 
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
 	    CreditRequest cr;
 	    CreditCard creditCard;
 
@@ -203,12 +208,23 @@ public class ApiController {
 		logger.error(e.getMessage());
 		return "Error parsing request";
 	    }
-	    return new Gson().toJson(creditCard);
+
+	    if (creditCard != null) {
+		return new Gson().toJson(creditCard);
+	    } else {
+		res.status(400);
+		return "";
+	    }
 	});
 
 	delete("/credit", (req, res) -> {
 	    res.type("application/json");
 	    String clientId = req.session().attribute("clientId");
+
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
 
 	    Database db = new Database();
 	    db.deleteCredit(clientId);
@@ -219,8 +235,12 @@ public class ApiController {
 
 	get("/credit", (req, res) -> {
 	    res.type("application/json");
-
 	    String clientId = req.session().attribute("clientId");
+
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
 
 	    CreditCard cr;
 
@@ -228,7 +248,12 @@ public class ApiController {
 	    cr = db.checkCredit(clientId);
 	    db.close();
 
-	    return new Gson().toJson(cr);
+	    if (cr != null) {
+		return new Gson().toJson(cr);
+	    } else {
+		res.status(404);
+		return "";
+	    }
 	});
     }
 

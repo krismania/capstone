@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.EditBookingRequest;
+import controllers.Request.EditVehicleRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
 import controllers.Response.ErrorResponse;
@@ -207,6 +208,46 @@ public class AdminApiController {
 	    } else {
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Bad Request - Update Booking"));
+	    }
+
+	});
+
+	// update a vehicle
+	put("/vehicles", (req, res) -> {
+	    res.type("application/json");
+
+	    EditVehicleRequest vr;
+	    int status;
+	    try {
+		vr = new Gson().fromJson(req.body(), EditVehicleRequest.class);
+		if (vr.status.equals("active")) {
+		    status = 0;
+		} else if (vr.status.equals("inactive")) {
+		    status = 1;
+		} else if (vr.status.equals("retired")) {
+		    status = 2;
+		} else {
+		    res.status(400);
+		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Editing Error"));
+		}
+	    } catch (JsonParseException | NullPointerException e) {
+		logger.error(e.getMessage());
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
+	    }
+
+	    Database db = new Database();
+
+	    Boolean dbResponse = db.editVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, status);
+
+	    db.close();
+
+	    if (dbResponse) {
+		res.status(200);
+		return "";
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request - Edit Vehicle"));
 	    }
 
 	});

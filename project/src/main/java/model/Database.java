@@ -917,10 +917,40 @@ public class Database implements Closeable {
 	    // Gets the latest timestamp of a car booking.
 
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	    return false;
 	}
+    }
+
+    public Boolean editVehicle(String registration, String make, String model, int year, String colour, int status) {
+	logger.info("Editing  Vehicle with Rego:" + registration);
+	try {
+	    if (checkReg(registration)) {
+		String query = "UPDATE vehicles set make = ?, model = ?, year = ?, colour = ?, status = ? "
+			+ "WHERE registration = ?;";
+
+		PreparedStatement ps = this.conn.prepareStatement(query);
+
+		ps.setString(1, make);
+		ps.setString(2, model);
+		ps.setInt(3, year);
+		ps.setString(4, colour);
+		ps.setInt(5, status);
+		ps.setString(6, registration);
+
+		ps.executeUpdate();
+
+		ps.close();
+		logger.info("Successfully edited");
+		return true;
+	    }
+
+	} catch (SQLException e) {
+	    e.printStackTrace();
+	    return false;
+	}
+
+	return false;
     }
 
 }

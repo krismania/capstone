@@ -871,4 +871,56 @@ public class Database implements Closeable {
 
     }
 
+    // Uses the ID of the booking to edit the booking.
+    public Boolean extendBooking(String customerId, int extendedduration, LocalDateTime currTime) {
+
+	logger.info("Extending Booking of: " + customerId);
+	try {
+	    // finds the id to check if booking has ended.
+	    String query1 = "SELECT * FROM bookings WHERE customer_id = '" + customerId + "' ORDER BY id DESC LIMIT 1;";
+
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query1);
+	    LocalDateTime bookingTimeStart = null;
+	    int id = 0;
+	    int duration = 0;
+	    boolean bookingEnded = true;
+
+	    if (rs.next()) {
+		// Gets when the car is going to end.
+		bookingTimeStart = rs.getTimestamp("timestamp").toLocalDateTime();
+		id = rs.getInt("id");
+		duration = rs.getInt("duration");
+		bookingEnded = hasBookingEnded(id, currTime); // TRUE if booking ended, False if hasnt.
+	    }
+
+	    rs.close();
+	    stmt.close();
+
+	    if (!bookingEnded) {
+		String query2 = "UPDATE bookings set duration = ? + " + extendedduration + " WHERE customer_id = '"
+			+ customerId + "' ORDER BY id DESC LIMIT 1;";
+
+		PreparedStatement ps = this.conn.prepareStatement(query2);
+
+		ps.setInt(1, duration);
+
+		ps.executeUpdate();
+
+		ps.close();
+		logger.info("Successfully extended");
+		return true;
+	    } else {
+		logger.info("Extension Failed");
+		return false; // Bad Request
+	    }
+	    // Gets the latest timestamp of a car booking.
+
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return false;
+	}
+    }
+
 }

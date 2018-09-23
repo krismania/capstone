@@ -16,6 +16,7 @@ import com.google.gson.JsonParseException;
 
 import controllers.Request.BookingRequest;
 import controllers.Request.EndBookingRequest;
+import controllers.Request.ExtendBookingRequest;
 import controllers.Request.PositionRequest;
 import controllers.Response.ErrorResponse;
 import model.Booking;
@@ -213,6 +214,44 @@ public class ApiController {
 	    } else {
 		res.status(400);
 		db.close();
+		return new Gson().toJson(new ErrorResponse("Bad Request"));
+	    }
+
+	});
+
+	// extend a booking
+	post("/bookings/extend", (req, res) -> {
+	    res.type("application/json");
+
+	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    ExtendBookingRequest br;
+
+	    try {
+		br = new Gson().fromJson(req.body(), ExtendBookingRequest.class);
+
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
+	    }
+
+	    logger.info("Extending a booking!");
+	    Database db = new Database();
+
+	    if (db.extendBooking(clientId, br.extraDuration, LocalDateTime.now())) {
+		res.status(200);
+		db.close();
+		return "";
+	    } else {
+		db.close();
+		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Bad Request"));
 	    }
 

@@ -231,27 +231,31 @@ var view = (function() {
 			return container;
 		},
 		
-		currentBookingCard: function(booking, findCallback, endCallBack) {
+		currentBookingCard: function(booking, findCallback, extendCallback, endCallBack) {
 			var container = document.createElement("div");
 			container.id = "current-booking";
 			
 			var header = document.createElement("h3");
 			var info = this.currentBooking(booking);
 			var findVehicleButton = document.createElement("button");
+			var extendBookingButton = document.createElement("button");
 			var endBookingButton = document.createElement("button");
-			
-			
-			
 			
 			header.innerText = "CURRENT BOOKING";
 			findVehicleButton.innerText = "FIND CAR";
-			findVehicleButton.style = "float: right";
+			extendBookingButton.innerText = "EXTEND";
+			extendBookingButton.style = "margin-left: 8px; background-color: #4CAF50";
 			endBookingButton.innerText = "END BOOKING";
-			endBookingButton.style = "float: right; margin-right: 8px; background-color: #F44336";
+			endBookingButton.style = "float: right; background-color: #F44336";
 			
 			findVehicleButton.addEventListener("click", function(e) {
 				e.preventDefault();
 				findCallback(booking);
+			});
+			
+			extendBookingButton.addEventListener("click", function(e) {
+				e.preventDefault();
+				extendCallback(booking);
 			});
 			
 			endBookingButton.addEventListener("click", function(e) {
@@ -260,11 +264,13 @@ var view = (function() {
 			});
 			
 			findVehicleButton.className = "confirm";
+			extendBookingButton.className = "confirm";
 			endBookingButton.className = "confirm";
 			
 			container.appendChild(header);
 			container.appendChild(info);
 			container.appendChild(findVehicleButton);
+			container.appendChild(extendBookingButton);
 			container.appendChild(endBookingButton);
 			
 			return container;

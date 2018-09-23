@@ -66,4 +66,11 @@ class Request {
 	String timestamp;
     }
 
+    /**
+     * Parses extend booking
+     */
+    static class ExtendBookingRequest {
+	int extraDuration;
+    }
+
 }

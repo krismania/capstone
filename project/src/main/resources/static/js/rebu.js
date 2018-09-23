@@ -137,7 +137,7 @@ rebu = (function() {
 		},
 		
 		endCurrentBooking: function(timestamp, callback) {
-			console.log("[api] extending current booking");
+			console.log("[api] ending current booking");
 			
 			var headers = new Headers();
 			headers.append("Content-Type", "application/json");

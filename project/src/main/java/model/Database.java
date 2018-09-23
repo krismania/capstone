@@ -95,7 +95,7 @@ public class Database implements Closeable {
 		+ "timestamp DATETIME NOT NULL, location POINT NOT NULL);";
 
 	String cost = "CREATE TABLE IF NOT EXISTS `costs` (`type` VARCHAR(50) NOT NULL, "
-		+ "`rate` SMALLINT UNSIGNED NOT NULL, " + "PRIMARY KEY (`type`));";
+		+ "`rate` DECIMAL(20, 2) NOT NULL, " + "PRIMARY KEY (`type`));";
 
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);

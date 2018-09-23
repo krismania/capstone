@@ -217,13 +217,13 @@ public class AdminApiController {
 
 	    UserRequest ur = new Gson().fromJson(req.body(), UserRequest.class);
 
-	    String cid = ur.cid;
+	    String email = ur.email;
 	    Database db = new Database();
-	    String email = db.getEmail(cid);
+	    String cid = db.getCid(email);
 	    db.close();
 
-	    logger.info("Found emai: " + email);
-	    return new Gson().toJson(email);
+	    logger.info("Found Client ID: " + cid);
+	    return new Gson().toJson(cid);
 	});
     }
 

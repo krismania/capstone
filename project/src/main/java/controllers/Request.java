@@ -63,6 +63,6 @@ class Request {
     }
 
     static class UserRequest {
-	String cid;
+	String email;
     }
 }

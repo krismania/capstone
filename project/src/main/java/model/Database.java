@@ -349,7 +349,6 @@ public class Database implements Closeable {
 
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
-			String email = getEmail(customerId);
 			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation);
 		    }
 		}
@@ -797,18 +796,18 @@ public class Database implements Closeable {
 
     }
 
-    public String getEmail(String cid) throws SQLException {
+    public String getCid(String email) throws SQLException {
 
-	String email = null;
+	String cid = null;
 	String sql = "SELECT email FROM users WHERE cid LIKE ?;";
 	PreparedStatement stmt = this.conn.prepareStatement(sql);
-	stmt.setString(1, cid);
+	stmt.setString(1, email);
 	ResultSet rs = stmt.executeQuery();
 
 	if (rs.next()) {
-	    email = rs.getString("email");
-	    System.out.println(email);
-	    logger.info("Email of user: " + email);
+	    cid = rs.getString("email");
+	    System.out.println(cid);
+	    logger.info("Client ID of user: " + cid);
 
 	}
 	return email;

@@ -844,4 +844,18 @@ public class Database implements Closeable {
 	    return null;
 	}
     }
+
+    public boolean hasCreditCard(String clientId) throws SQLException {
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt.executeQuery("SELECT user_id FROM creditCard;");
+	while (rs.next()) {
+	    String id = rs.getString("user_id");
+	    if (id.equals(clientId)) {
+		return true;
+	    }
+	}
+
+	return false;
+
+    }
 }

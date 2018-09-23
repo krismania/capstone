@@ -179,7 +179,7 @@ public class ApiController {
 	});
 
 	// extend a booking
-	post("/bookings/extend/", (req, res) -> {
+	post("/bookings/extend", (req, res) -> {
 	    res.type("application/json");
 
 	    String clientId = req.session().attribute("clientId");

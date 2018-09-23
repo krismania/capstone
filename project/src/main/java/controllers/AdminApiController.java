@@ -81,7 +81,7 @@ public class AdminApiController {
 
 	    Database db = new Database();
 	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
-		    status);
+		    status, vr.type);
 	    db.close();
 
 	    if (inserted_vehicle != null) {

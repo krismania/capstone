@@ -794,7 +794,7 @@ public class Database implements Closeable {
 	    stmt.close();
 
 	    if (!bookingEnded) {
-		String query2 = "UPDATE bookings set duration = ? + " + extendedduration + "WHERE customer_id = '"
+		String query2 = "UPDATE bookings set duration = ? + " + extendedduration + " WHERE customer_id = '"
 			+ customerId + "' ORDER BY id DESC LIMIT 1;";
 
 		PreparedStatement ps = this.conn.prepareStatement(query2);
@@ -828,14 +828,15 @@ public class Database implements Closeable {
 
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery(query);
-
+	    int duration = 0;
 	    if (rs.next()) {
 		// Gets when the car is going to end.
-		LocalDateTime bookingTime = rs.getTimestamp("timestamp").toLocalDateTime();
-		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
+		duration = rs.getInt("duration");
+		LocalDateTime startTime = rs.getTimestamp("timestamp").toLocalDateTime();
+		LocalDateTime endTime = startTime.plusMinutes(duration);
 
-		if (currtime.isBefore(endtime)) {
-		    logger.info(" Booking is still in session. ");
+		if (currtime.isAfter(startTime) && currtime.isBefore(endTime)) {
+		    logger.info(" Booking is still in session. " + duration);
 		    rs.close();
 		    stmt.close();
 		    return false; // Booking has not ended.
@@ -846,9 +847,9 @@ public class Database implements Closeable {
 	} catch (SQLException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
-	    return true; // error
+	    return true; // errorz
 	}
-	logger.info(" Booking has ended. ");
+	logger.info(" Booking Timestamp error occured. "); // the timestamps are incorrect.
 	return true; // Booking ended.
 
     }

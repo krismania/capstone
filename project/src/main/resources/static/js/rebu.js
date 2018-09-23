@@ -136,14 +136,15 @@ rebu = (function() {
 			});
 		},
 		
-		extendCurrentBooking: function(extraDuration, callback) {
+		extendCurrentBooking: function(extraDuration, timestamp, callback) {
 			console.log("[api] extending current booking");
 			
 			var headers = new Headers();
 			headers.append("Content-Type", "application/json");
 			
 			var body = {
-					extraDuration: extraDuration
+					extraDuration: extraDuration,
+					timestamp: timestamp
 			};
 			
 			var request = new Request('/api/bookings/extend', {

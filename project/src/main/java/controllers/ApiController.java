@@ -179,7 +179,7 @@ public class ApiController {
 	});
 
 	// end the booking.
-	post("/bookings/end/", (req, res) -> {
+	post("/bookings/end", (req, res) -> {
 	    res.type("application/json");
 
 	    String clientId = req.session().attribute("clientId");

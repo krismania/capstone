@@ -795,6 +795,7 @@ public class Database implements Closeable {
 
 		int minutes = (int) compareTwoTimeStamps(Timestamp.valueOf(bookingTimeStart),
 			Timestamp.valueOf(currTime));
+		logger.info("start " + id + "minutes: " + minutes);
 		rs.close();
 		stmt.close();
 
@@ -803,6 +804,8 @@ public class Database implements Closeable {
 		PreparedStatement ps = this.conn.prepareStatement(query2);
 
 		ps.setInt(1, minutes);
+
+		ps.executeUpdate();
 		ps.close();
 
 		logger.info("Ended Booking.");

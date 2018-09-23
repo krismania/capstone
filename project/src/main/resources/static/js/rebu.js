@@ -134,6 +134,33 @@ rebu = (function() {
 					console.log("No current booking");
 				}
 			});
+		},
+		
+		endCurrentBooking: function(timestamp, callback) {
+			console.log("[api] extending current booking");
+			
+			var headers = new Headers();
+			headers.append("Content-Type", "application/json");
+			
+			var body = {
+					timestamp: timestamp
+			};
+			
+			var request = new Request('/api/bookings/end', {
+				method: 'POST',
+				headers: headers,
+				body: JSON.stringify(body)
+			});
+			
+			fetch(request)
+			.then(res => {
+				if (res.status == 200) {
+					return callback(true);
+				}
+				else {
+					return callback(false);
+				}
+			});
 		}
 	
 	}

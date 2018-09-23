@@ -309,8 +309,22 @@ function displayCurrentBooking() {
 			var win = window.open(link, '_blank');
 			win.focus();
 		}
+		
+		// end booking
+	
+		var endCallback = function(booking) {
+			// TODO: get current time
+			rebu.endCurrentBooking("2018-09-23 14:38:00", function(success) {
+				if (success) {
+					alert("Booking has been ended");
+				} else {
+					alert("Booking has not ended");
+				}
+			});
+		}
+		
 		// display the card
-		var currentBookingCard = view.currentBookingCard(booking, findCallback)
+		var currentBookingCard = view.currentBookingCard(booking, findCallback, endCallback)
 			
 		// fancy transition
 		currentBookingCard.className = "transition-start";

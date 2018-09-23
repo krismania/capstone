@@ -18,7 +18,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.EditBookingRequest;
-import controllers.Request.EditVehicleRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
 import controllers.Response.ErrorResponse;
@@ -216,10 +215,12 @@ public class AdminApiController {
 	put("/vehicles", (req, res) -> {
 	    res.type("application/json");
 
-	    EditVehicleRequest vr;
+	    VehicleRequest vr;
+	    Position pos;
 	    int status;
 	    try {
-		vr = new Gson().fromJson(req.body(), EditVehicleRequest.class);
+		vr = new Gson().fromJson(req.body(), VehicleRequest.class);
+		pos = new Position(vr.position.lat, vr.position.lng);
 		if (vr.status.equals("active")) {
 		    status = 0;
 		} else if (vr.status.equals("inactive")) {
@@ -238,7 +239,7 @@ public class AdminApiController {
 
 	    Database db = new Database();
 
-	    Boolean dbResponse = db.editVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, status);
+	    Boolean dbResponse = db.editVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos, status);
 
 	    db.close();
 

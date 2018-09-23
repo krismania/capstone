@@ -212,7 +212,7 @@ public class AdminApiController {
 
 	});
 
-	get("/user", (req, res) -> {
+	post("/user", (req, res) -> {
 	    res.type("application/json");
 
 	    UserRequest ur = new Gson().fromJson(req.body(), UserRequest.class);

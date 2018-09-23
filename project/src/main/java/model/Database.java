@@ -799,17 +799,17 @@ public class Database implements Closeable {
     public String getCid(String email) throws SQLException {
 
 	String cid = null;
-	String sql = "SELECT email FROM users WHERE cid LIKE ?;";
+	String sql = "SELECT cid FROM users WHERE email LIKE ?;";
 	PreparedStatement stmt = this.conn.prepareStatement(sql);
 	stmt.setString(1, email);
 	ResultSet rs = stmt.executeQuery();
 
 	if (rs.next()) {
-	    cid = rs.getString("email");
+	    cid = rs.getString("cid");
 	    System.out.println(cid);
 	    logger.info("Client ID of user: " + cid);
 
 	}
-	return email;
+	return cid;
     }
 }

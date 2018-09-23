@@ -144,7 +144,7 @@ rebu = (function() {
 			
 			var body = {
 					extraDuration: extraDuration,
-					timestamp: timestamp
+					timestamp: dateToString(new Date())
 			};
 			
 			var request = new Request('/api/bookings/extend', {

@@ -207,7 +207,7 @@ public class ApiController {
 	    logger.info("Extending a booking!");
 	    Database db = new Database();
 
-	    if (db.extendBooking(clientId, br.extraDuration, dateTime)) {
+	    if (db.extendBooking(clientId, br.extraDuration, LocalDateTime.now())) {
 		res.status(200);
 		db.close();
 		return "";

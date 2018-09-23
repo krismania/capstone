@@ -299,6 +299,7 @@ function displayCurrentBooking() {
 		// create vehicle marker
 		bookedVehicle = booking.vehicle;
 		bookedVehicle.marker = createVehicleMarker(bookedVehicle, map, true);
+		
 		// callback for "find car" button
 		var findCallback = function(booking) {
 			map.panTo(bookedVehicle.marker.getPosition());
@@ -309,10 +310,10 @@ function displayCurrentBooking() {
 			var win = window.open(link, '_blank');
 			win.focus();
 		}
+		
 		// callback for "extend booking" button
 		var extendCallback = function(booking) {
 			// TODO: ask user for extra duration
-			// Also sends a timestamp of the current time. to check if booking has ended.
 			rebu.extendCurrentBooking(60, function(success) {
 				if (success) {
 					alert("Booking has been extended");
@@ -323,8 +324,21 @@ function displayCurrentBooking() {
 				}
 			});
 		}
+		
+		// callback for "end booking" button
+		var endCallback = function(booking) {
+			rebu.endCurrentBooking(new Date(), function(success) {
+				if (success) {
+					removeCurrentBooking();
+					rebu.getVehicles(displayVehicles);
+				} else {
+					alert("Booking has not ended");
+				}
+			});
+		}
+		
 		// display the card
-		var currentBookingCard = view.currentBookingCard(booking, findCallback, extendCallback);
+		var currentBookingCard = view.currentBookingCard(booking, findCallback, extendCallback, endCallback);
 			
 		// fancy transition
 		currentBookingCard.className = "transition-start";

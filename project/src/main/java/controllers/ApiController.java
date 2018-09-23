@@ -179,11 +179,10 @@ public class ApiController {
 	});
 
 	// extend a booking
-	post("/bookings/extend/:id", (req, res) -> {
+	post("/bookings/extend/", (req, res) -> {
 	    res.type("application/json");
 
 	    String clientId = req.session().attribute("clientId");
-	    int id = Integer.parseInt(req.params(":id"));
 
 	    // return unauthorized response if user not logged in
 	    if (clientId == null) {
@@ -207,28 +206,12 @@ public class ApiController {
 
 	    logger.info("Extending a booking!");
 	    Database db = new Database();
-	    if (db.bookingExists(id)) {
 
-		if (db.hasBookingEnded(id, dateTime)) { // booking has already ended - cannot extend booking.
-		    db.close();
-		    res.status(400);
-		    return new Gson().toJson(new ErrorResponse("Bad Request"));
-		} else {
-		    // booking has not ended yet - can still extend booking.
-		    if (db.extendBooking(id, clientId, br.extraDuration)) {
-			res.status(200);
-			db.close();
-			return "";
-		    } else {
-			db.close();
-			res.status(400);
-			return new Gson().toJson(new ErrorResponse("Bad Request"));
-		    }
-		}
-
-	    }
-
-	    else {
+	    if (db.extendBooking(clientId, br.extraDuration, dateTime)) {
+		res.status(200);
+		db.close();
+		return "";
+	    } else {
 		db.close();
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Bad Request"));

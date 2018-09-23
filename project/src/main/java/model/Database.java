@@ -769,27 +769,30 @@ public class Database implements Closeable {
 	}
     }
 
-    public boolean endBooking(int id, String clientid, LocalDateTime currTime) {
+    public boolean endBooking(String clientid, LocalDateTime currTime) {
 
 	try {
 
 	    // Gets the latest timestamp of a car booking.
-	    String query1 = "SELECT timestamp FROM bookings WHERE id = '" + id + "' AND customer_id = '" + clientid
-		    + "';";
+	    String query1 = "SELECT * FROM bookings WHERE customer_id = '" + clientid + "' ORDER BY id DESC LIMIT 1;";
 
 	    // PreparedStatement ps = this.conn.prepareStatement(query);
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery(query1);
 	    LocalDateTime bookingTimeStart = null;
+	    boolean bookingEnded = true;
+	    int id = 0; // stores the id of booking for query2
 
 	    if (rs.next()) {
 		// Gets when the car is going to end.
 		bookingTimeStart = rs.getTimestamp("timestamp").toLocalDateTime();
+		id = rs.getInt("id");
+		bookingEnded = hasBookingEnded(id, currTime); // TRUE if ended, False if hasnt.
 
 	    }
+	    // Only do this if booking hasnt ended and checks for current time.
+	    if ((bookingTimeStart.isBefore(currTime) || bookingTimeStart.isEqual(currTime)) && !bookingEnded) {
 
-	    if (bookingTimeStart.isBefore(currTime) || bookingTimeStart.isEqual(currTime)) {
-		// Find the total duration in minutes before booking ended.
 		int minutes = (int) compareTwoTimeStamps(Timestamp.valueOf(bookingTimeStart),
 			Timestamp.valueOf(currTime));
 		rs.close();
@@ -805,6 +808,7 @@ public class Database implements Closeable {
 		logger.info("Ended Booking.");
 		return true;
 	    } else {
+		logger.info("Error.");
 		return false; // Bad Request.
 	    }
 
@@ -826,6 +830,33 @@ public class Database implements Closeable {
 	long diffDays = diff / (24 * 60 * 60 * 1000);
 
 	return diffMinutes;
+    }
+
+    // CHECKS WHETHER CURRENT BOOKING HAS ENDED TRUE IF HAS , FALSE OTHERWISE
+    public Boolean hasBookingEnded(int id, LocalDateTime currtime) {
+	logger.info("Check if booking has ended. ");
+	try {
+	    String query = "SELECT timestamp, duration FROM bookings WHERE id = " + id + ";";
+	    Statement stmt = this.conn.createStatement();
+	    ResultSet rs = stmt.executeQuery(query);
+	    if (rs.next()) {
+		// Gets when the car is going to end.
+		LocalDateTime bookingTime = rs.getTimestamp("timestamp").toLocalDateTime();
+		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
+		if (currtime.isBefore(endtime)) {
+		    logger.info(" Booking is still in session. ");
+		    rs.close();
+		    stmt.close();
+		    return false; // Booking has not ended.
+		}
+	    }
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return true; // error
+	}
+	logger.info(" Booking has ended. ");
+	return true; // Booking ended.
     }
 
 }

@@ -179,11 +179,10 @@ public class ApiController {
 	});
 
 	// end the booking.
-	post("/bookings/end/:id", (req, res) -> {
+	post("/bookings/end/", (req, res) -> {
 	    res.type("application/json");
 
 	    String clientId = req.session().attribute("clientId");
-	    int id = Integer.parseInt(req.params(":id"));
 
 	    // return unauthorized response if user not logged in
 	    if (clientId == null) {
@@ -205,9 +204,9 @@ public class ApiController {
 		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
 
-	    logger.info("Ending booking of id: " + id);
+	    logger.info("Ending current booking of: " + clientId);
 	    Database db = new Database();
-	    if (db.endBooking(id, clientId, dateTime)) {
+	    if (db.endBooking(clientId, dateTime)) {
 		res.status(200);
 		db.close();
 		return "";

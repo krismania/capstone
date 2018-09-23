@@ -247,7 +247,7 @@ var view = (function() {
 			findVehicleButton.innerText = "FIND CAR";
 			findVehicleButton.style = "float: right";
 			endBookingButton.innerText = "END BOOKING";
-			endBookingButton.style = "float: right; margin-right: 8px; background-color: #4CAF50";
+			endBookingButton.style = "float: right; margin-right: 8px; background-color: #F44336";
 			
 			findVehicleButton.addEventListener("click", function(e) {
 				e.preventDefault();

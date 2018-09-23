@@ -777,8 +777,10 @@ public class Database implements Closeable {
     public void addUser(String cid, String email) throws SQLException {
 
 	boolean exists;
-	Statement stmt = this.conn.createStatement();
-	ResultSet rs = stmt.executeQuery("SELECT cid FROM users WHERE cid LIKE '" + cid + "';");
+	String sql = "SELECT cid FROM users WHERE cid LIKE ?;";
+	PreparedStatement stmt = this.conn.prepareStatement(sql);
+	stmt.setString(1, cid);
+	ResultSet rs = stmt.executeQuery();
 
 	if (!rs.isBeforeFirst()) {
 	    String query = "INSERT INTO users " + "(cid, email) VALUES " + "(?, ?)";
@@ -798,8 +800,10 @@ public class Database implements Closeable {
     public String getEmail(String cid) throws SQLException {
 
 	String email = null;
-	Statement stmt = this.conn.createStatement();
-	ResultSet rs = stmt.executeQuery("SELECT email FROM users WHERE cid LIKE '" + cid + "';");
+	String sql = "SELECT email FROM users WHERE cid LIKE ?;";
+	PreparedStatement stmt = this.conn.prepareStatement(sql);
+	stmt.setString(1, cid);
+	ResultSet rs = stmt.executeQuery();
 
 	if (rs.next()) {
 	    email = rs.getString("email");

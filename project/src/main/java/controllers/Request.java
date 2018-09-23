@@ -62,4 +62,7 @@ class Request {
 	String status;
     }
 
+    static class UserRequest {
+	String cid;
+    }
 }

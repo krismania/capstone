@@ -363,7 +363,6 @@ public class Database implements Closeable {
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
 
-			double cost = calculateCost(registration, duration);
 			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation);
 		    }
 		}

@@ -834,29 +834,38 @@ public class Database implements Closeable {
 
     // CHECKS WHETHER CURRENT BOOKING HAS ENDED TRUE IF HAS , FALSE OTHERWISE
     public Boolean hasBookingEnded(int id, LocalDateTime currtime) {
+
 	logger.info("Check if booking has ended. ");
 	try {
+
 	    String query = "SELECT timestamp, duration FROM bookings WHERE id = " + id + ";";
+
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery(query);
+	    int duration = 0;
 	    if (rs.next()) {
 		// Gets when the car is going to end.
-		LocalDateTime bookingTime = rs.getTimestamp("timestamp").toLocalDateTime();
-		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
-		if (currtime.isBefore(endtime)) {
-		    logger.info(" Booking is still in session. ");
+		duration = rs.getInt("duration");
+		LocalDateTime startTime = rs.getTimestamp("timestamp").toLocalDateTime();
+		LocalDateTime endTime = startTime.plusMinutes(duration);
+
+		if (currtime.isAfter(startTime) && currtime.isBefore(endTime)) {
+		    logger.info(" Booking is still in session. " + duration);
 		    rs.close();
 		    stmt.close();
 		    return false; // Booking has not ended.
 		}
+
 	    }
+
 	} catch (SQLException e) {
 	    // TODO Auto-generated catch block
 	    e.printStackTrace();
-	    return true; // error
+	    return true; // errorz
 	}
-	logger.info(" Booking has ended. ");
+	logger.info(" Booking Timestamp error occured. "); // the timestamps are incorrect.
 	return true; // Booking ended.
+
     }
 
 }

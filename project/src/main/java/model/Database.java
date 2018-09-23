@@ -806,7 +806,10 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    int result = stmt.executeUpdate("DELETE FROM creditCard WHERE user_id LIKE '" + clientId + "';");
+	    String query = "DELETE FROM creditCard WHERE user_id LIKE ?;";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+	    pStmnt.setString(1, clientId);
+	    int result = pStmnt.executeUpdate();
 	    logger.info("Credit card with user:" + clientId + " deleted from database");
 	    if (result != 0)
 		return true;
@@ -824,9 +827,11 @@ public class Database implements Closeable {
 
 	try {
 	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(
-		    "SELECT user_id, creditNumber, expDate, backNumber, nameOnCard FROM creditCard WHERE user_id LIKE '"
-			    + clientId + "';");
+	    String query = "SELECT user_id, creditNumber, expDate, backNumber, nameOnCard FROM creditCard WHERE user_id LIKE ?;";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+	    pStmnt.setString(1, clientId);
+
+	    ResultSet rs = pStmnt.executeQuery();
 	    while (rs.next()) {
 		String user_id = rs.getString("user_id");
 		String cName = rs.getString("nameOnCard");

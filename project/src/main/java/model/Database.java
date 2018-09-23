@@ -922,35 +922,25 @@ public class Database implements Closeable {
 	}
     }
 
-    public Boolean editVehicle(String registration, String make, String model, int year, String colour, Position pos,
-	    int status) {
+    public Boolean editVehicle(String registration, String make, String model, int year, String colour, int status) {
 	logger.info("Editing  Vehicle with Rego:" + registration);
 	try {
 	    if (checkReg(registration)) {
-		String queryVehicles = "UPDATE vehicles set make = ?, model = ?, year = ?, colour = ?, status = ? "
+		String query = "UPDATE vehicles set make = ?, model = ?, year = ?, colour = ?, status = ? "
 			+ "WHERE registration = ?;";
-		String queryLocations = "UPDATE locations set location = POINT(?,?) WHERE registration = ? AND MINUTE(timestamp) = 0;";
 
-		PreparedStatement psV = this.conn.prepareStatement(queryVehicles);
-		PreparedStatement psL = this.conn.prepareStatement(queryLocations);
+		PreparedStatement ps = this.conn.prepareStatement(query);
 
-		psV.setString(1, make);
-		psV.setString(2, model);
-		psV.setInt(3, year);
-		psV.setString(4, colour);
-		psV.setInt(5, status);
-		psV.setString(6, registration);
+		ps.setString(1, make);
+		ps.setString(2, model);
+		ps.setInt(3, year);
+		ps.setString(4, colour);
+		ps.setInt(5, status);
+		ps.setString(6, registration);
 
-		psV.executeUpdate();
+		ps.executeUpdate();
 
-		psL.setDouble(1, pos.getLat());
-		psL.setDouble(2, pos.getLng());
-		psL.setString(3, registration);
-
-		psL.executeUpdate();
-
-		psV.close();
-		psL.close();
+		ps.close();
 		logger.info("Successfully edited");
 		return true;
 	    }

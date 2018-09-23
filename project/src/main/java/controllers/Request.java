@@ -62,6 +62,15 @@ class Request {
 	String status;
     }
 
+    static class EditVehicleRequest {
+	String registration;
+	String make;
+	String model;
+	int year;
+	String colour;
+	String status;
+    }
+
     static class EndBookingRequest {
 	String timestamp;
     }

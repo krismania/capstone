@@ -313,7 +313,7 @@ function displayCurrentBooking() {
 		var extendCallback = function(booking) {
 			// TODO: ask user for extra duration
 			// Also sends a timestamp of the current time. to check if booking has ended.
-			rebu.extendCurrentBooking(60, new Date(), function(success) {
+			rebu.extendCurrentBooking(60, function(success) {
 				if (success) {
 					alert("Booking has been extended");
 				} else {

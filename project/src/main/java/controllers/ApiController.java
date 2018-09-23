@@ -191,12 +191,9 @@ public class ApiController {
 	    }
 
 	    ExtendBookingRequest br;
-	    LocalDateTime dateTime;
 
 	    try {
 		br = new Gson().fromJson(req.body(), ExtendBookingRequest.class);
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-		dateTime = LocalDateTime.parse(br.timestamp, formatter);
 
 	    } catch (JsonParseException e) {
 		logger.error(e.getMessage());

@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.EditBookingRequest;
+import controllers.Request.UserRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
 import controllers.Response.ErrorResponse;
@@ -211,6 +212,19 @@ public class AdminApiController {
 
 	});
 
+	post("/user", (req, res) -> {
+	    res.type("application/json");
+
+	    UserRequest ur = new Gson().fromJson(req.body(), UserRequest.class);
+
+	    String email = ur.email;
+	    Database db = new Database();
+	    String cid = db.getCid(email);
+	    db.close();
+
+	    logger.info("Found Client ID: " + cid);
+	    return new Gson().toJson(cid);
+	});
     }
 
 }

@@ -63,6 +63,9 @@ class Request {
 	String type;
     }
 
+    static class UserRequest {
+	String email;
+    }
     static class EndBookingRequest {
 	String timestamp;
     }

@@ -60,6 +60,7 @@ class Request {
 	String colour;
 	PositionRequest position;
 	String status;
+	String type;
     }
 
     static class EndBookingRequest {

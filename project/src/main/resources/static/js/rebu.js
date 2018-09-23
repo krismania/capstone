@@ -134,6 +134,60 @@ rebu = (function() {
 					console.log("No current booking");
 				}
 			});
+		},
+		
+		extendCurrentBooking: function(extraDuration, callback) {
+			console.log("[api] extending current booking");
+			
+			var headers = new Headers();
+			headers.append("Content-Type", "application/json");
+			
+			var body = {
+				extraDuration: extraDuration
+			};
+			
+			var request = new Request('/api/bookings/extend', {
+				method: 'POST',
+				headers: headers,
+				body: JSON.stringify(body)
+			});
+			
+			fetch(request)
+			.then(res => {
+				if (res.status == 200) {
+					return callback(true);
+				}
+				else {
+					return callback(false);
+				}
+			});
+		},
+		
+		endCurrentBooking: function(timestamp, callback) {
+			console.log("[api] ending current booking");
+			
+			var headers = new Headers();
+			headers.append("Content-Type", "application/json");
+			
+			var body = {
+					timestamp: dateToString(new Date())
+			};
+			
+			var request = new Request('/api/bookings/end', {
+				method: 'POST',
+				headers: headers,
+				body: JSON.stringify(body)
+			});
+			
+			fetch(request)
+			.then(res => {
+				if (res.status == 200) {
+					return callback(true);
+				}
+				else {
+					return callback(false);
+				}
+			});
 		}
 	
 	}

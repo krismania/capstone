@@ -15,6 +15,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.BookingRequest;
+import controllers.Request.EndBookingRequest;
+import controllers.Request.ExtendBookingRequest;
 import controllers.Request.PositionRequest;
 import controllers.Response.ErrorResponse;
 import model.Booking;
@@ -175,6 +177,84 @@ public class ApiController {
 		res.status(204);
 		return "";
 	    }
+	});
+
+	// end the booking.
+	post("/bookings/end", (req, res) -> {
+	    res.type("application/json");
+
+	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    EndBookingRequest br;
+	    LocalDateTime dateTime;
+
+	    try {
+		br = new Gson().fromJson(req.body(), EndBookingRequest.class);
+
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		dateTime = LocalDateTime.parse(br.timestamp, formatter);
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
+	    }
+
+	    logger.info("Ending current booking of: " + clientId);
+	    Database db = new Database();
+	    if (db.endBooking(clientId, dateTime)) {
+		res.status(200);
+		db.close();
+		return "";
+	    } else {
+		res.status(400);
+		db.close();
+		return new Gson().toJson(new ErrorResponse("Bad Request"));
+	    }
+
+	});
+
+	// extend a booking
+	post("/bookings/extend", (req, res) -> {
+	    res.type("application/json");
+
+	    String clientId = req.session().attribute("clientId");
+
+	    // return unauthorized response if user not logged in
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    ExtendBookingRequest br;
+
+	    try {
+		br = new Gson().fromJson(req.body(), ExtendBookingRequest.class);
+
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
+	    }
+
+	    logger.info("Extending a booking!");
+	    Database db = new Database();
+
+	    if (db.extendBooking(clientId, br.extraDuration, LocalDateTime.now())) {
+		res.status(200);
+		db.close();
+		return "";
+	    } else {
+		db.close();
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request"));
+	    }
+
 	});
 
     }

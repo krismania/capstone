@@ -94,6 +94,11 @@ public class Database implements Closeable {
 	String locationSql = "CREATE TABLE IF NOT EXISTS `locations` (`registration` VARCHAR(10) NOT NULL, "
 		+ "timestamp DATETIME NOT NULL, location POINT NOT NULL);";
 
+	String creditCard = "CREATE TABLE IF NOT EXISTS `creditcard` (`user_id` VARCHAR(50) NOT NULL, "
+		+ "`creditNumber` VARCHAR(50) NOT NULL," + "`expDate` VARCHAR(50) NOT NULL,"
+		+ "`backNumber` VARCHAR(50) NOT NULL," + "`nameOnCard` VARCHAR(50) NOT NULL, "
+		+ "PRIMARY KEY (`creditNumber`));";
+
 
 	String users = "CREATE TABLE IF NOT EXISTS `users` (`cid` VARCHAR(50) NOT NULL, "
 		+ "`email` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`cid`));";
@@ -108,6 +113,7 @@ public class Database implements Closeable {
 	stmt.execute(bookingsSql);
 	stmt.execute(admin);
 	stmt.execute(locationSql);
+	stmt.execute(creditCard);
 	stmt.execute(users);
 	stmt.close();
     }
@@ -785,6 +791,95 @@ public class Database implements Closeable {
 	    logger.error(e.getMessage());
 	    return false;
 	}
+    }
+
+    public CreditCard insertCredit(String user_id, String cName, String cNumber, String bNumber, String expDate) {
+
+	CreditCard cr = null;
+
+	try {
+	    String query = "INSERT INTO creditCard "
+		    + "(user_id, creditNumber, expDate, backNumber, nameOnCard) VALUES " + "(?, ?, ?, ?, ?)";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+
+	    pStmnt.setString(1, user_id);
+	    pStmnt.setString(2, cNumber);
+	    pStmnt.setString(3, expDate);
+	    pStmnt.setString(4, bNumber);
+	    pStmnt.setString(5, cName);
+
+	    pStmnt.executeUpdate();
+	    pStmnt.close();
+
+	    cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+	    logger.info("Credit card inserted to database");
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
+	return cr;
+    }
+
+    public boolean deleteCredit(String clientId) {
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    String query = "DELETE FROM creditCard WHERE user_id LIKE ?;";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+	    pStmnt.setString(1, clientId);
+	    int result = pStmnt.executeUpdate();
+	    logger.info("Credit card with user:" + clientId + " deleted from database");
+	    if (result != 0)
+		return true;
+	    else
+		return false;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
+	}
+
+    }
+
+    public CreditCard checkCredit(String clientId) {
+	CreditCard cr = null;
+
+	try {
+	    Statement stmt = this.conn.createStatement();
+	    String query = "SELECT user_id, creditNumber, expDate, backNumber, nameOnCard FROM creditCard WHERE user_id LIKE ?;";
+	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
+	    pStmnt.setString(1, clientId);
+
+	    ResultSet rs = pStmnt.executeQuery();
+	    while (rs.next()) {
+		String user_id = rs.getString("user_id");
+		String cName = rs.getString("nameOnCard");
+		String cNumber = rs.getString("creditNumber");
+		String expDate = rs.getString("expDate");
+		String bNumber = rs.getString("backNumber");
+
+		cr = new CreditCard(user_id, cName, cNumber, expDate, bNumber);
+		logger.info("Credit card with user:" + clientId + " being shown");
+	    }
+	    return cr;
+	} catch (SQLException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	    return null;
+	}
+    }
+
+    public boolean hasCreditCard(String clientId) throws SQLException {
+	Statement stmt = this.conn.createStatement();
+	ResultSet rs = stmt.executeQuery("SELECT user_id FROM creditCard;");
+	while (rs.next()) {
+	    String id = rs.getString("user_id");
+	    if (id.equals(clientId)) {
+		return true;
+	    }
+	}
+
+	return false;
+
     }
 
     public void addUser(String cid, String email) throws SQLException {

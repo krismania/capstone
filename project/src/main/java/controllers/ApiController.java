@@ -1,6 +1,7 @@
 package controllers;
 
 import static spark.Spark.before;
+import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -15,11 +16,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.BookingRequest;
+import controllers.Request.CreditRequest;
 import controllers.Request.EndBookingRequest;
 import controllers.Request.ExtendBookingRequest;
 import controllers.Request.PositionRequest;
 import controllers.Response.ErrorResponse;
 import model.Booking;
+import model.CreditCard;
 import model.Database;
 import model.NearbyVehicle;
 import model.Position;
@@ -179,6 +182,81 @@ public class ApiController {
 	    }
 	});
 
+	post("/credit", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.session().attribute("clientId");
+
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    CreditRequest cr;
+	    CreditCard creditCard;
+
+	    try {
+		cr = new Gson().fromJson(req.body(), CreditRequest.class);
+
+		String cNumber = cr.cNumber;
+		String backNumber = cr.backNumber;
+		String expDate = cr.expDate;
+		String cName = cr.cName;
+
+		Database db = new Database();
+		creditCard = db.insertCredit(clientId, cName, cNumber, backNumber, expDate);
+		db.close();
+
+	    } catch (JsonParseException e) {
+		logger.error(e.getMessage());
+		return "Error parsing request";
+	    }
+
+	    if (creditCard != null) {
+		return new Gson().toJson(creditCard);
+	    } else {
+		res.status(400);
+		return "";
+	    }
+	});
+
+	delete("/credit", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.session().attribute("clientId");
+
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    Database db = new Database();
+	    db.deleteCredit(clientId);
+	    db.close();
+
+	    return "";
+	});
+
+	get("/credit", (req, res) -> {
+	    res.type("application/json");
+	    String clientId = req.session().attribute("clientId");
+
+	    if (clientId == null) {
+		res.status(401);
+		return new Gson().toJson(new ErrorResponse("Please log in"));
+	    }
+
+	    CreditCard cr;
+
+	    Database db = new Database();
+	    cr = db.checkCredit(clientId);
+	    db.close();
+
+	    if (cr != null) {
+		return new Gson().toJson(cr);
+	    } else {
+		res.status(404);
+		return "";
+	    }
+	});
 	// end the booking.
 	post("/bookings/end", (req, res) -> {
 	    res.type("application/json");

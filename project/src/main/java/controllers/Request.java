@@ -86,4 +86,12 @@ class Request {
 	int extraDuration;
     }
 
+    static class CreditRequest {
+	// these variables will be changed if needed
+	String cNumber;
+	String expDate;
+	String backNumber;
+	String cName;
+    }
+
 }

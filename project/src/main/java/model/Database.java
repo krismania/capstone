@@ -81,26 +81,24 @@ public class Database implements Closeable {
 		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, "
 		+ "`year` SMALLINT UNSIGNED NOT NULL, " + "`colour` VARCHAR(50) NOT NULL, "
 		+ "status TINYINT UNSIGNED NOT NULL, " + "`type` VARCHAR(50) NOT NULL, "
-		+ "PRIMARY KEY (`registration`));";
+		+ "PRIMARY KEY (`registration`))";
 
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "PRIMARY KEY (`id`), " + "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`));";
+		+ "PRIMARY KEY (`id`), " + "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`))";
 
 	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
-		+ "PRIMARY KEY (`admin_id`));";
+		+ "PRIMARY KEY (`admin_id`))";
 
 	String locationSql = "CREATE TABLE IF NOT EXISTS `locations` (`registration` VARCHAR(10) NOT NULL, "
-		+ "timestamp DATETIME NOT NULL, location POINT NOT NULL);";
-
+		+ "timestamp DATETIME NOT NULL, location POINT NOT NULL)";
 
 	String users = "CREATE TABLE IF NOT EXISTS `users` (`cid` VARCHAR(50) NOT NULL, "
-		+ "`email` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`cid`));";
-      
-	String cost = "CREATE TABLE IF NOT EXISTS `costs` (`type` VARCHAR(50) NOT NULL, "
-		+ "`rate` DECIMAL(20, 2) NOT NULL, " + "PRIMARY KEY (`type`));";
+		+ "`email` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`cid`))";
 
+	String cost = "CREATE TABLE IF NOT EXISTS `costs` (`type` VARCHAR(50) NOT NULL, "
+		+ "`rate` DECIMAL(20, 2) NOT NULL, " + "PRIMARY KEY (`type`))";
 
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
@@ -133,8 +131,8 @@ public class Database implements Closeable {
 
 	logger.info("Insert Vehicles");
 	try {
-	    String queryVehTable = "INSERT INTO vehicles (registration, make, model,year,colour,status,type) VALUES (?,?,?,?,?,?,?);";
-	    String queryLocTable = "INSERT INTO locations (registration, timestamp, location) VALUES (?,?,POINT(?,?));";
+	    String queryVehTable = "INSERT INTO vehicles (registration, make, model,year,colour,status,type) VALUES (?,?,?,?,?,?,?)";
+	    String queryLocTable = "INSERT INTO locations (registration, timestamp, location) VALUES (?,?,POINT(?,?))";
 	    PreparedStatement pStmntVeh = this.conn.prepareStatement(queryVehTable);
 	    PreparedStatement pStmntLoc = this.conn.prepareStatement(queryLocTable);
 
@@ -383,9 +381,13 @@ public class Database implements Closeable {
 	Vehicle v = null;
 	Position position;
 	try {
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery("SELECT registration, make, model, year, colour, type, "
-		    + "status FROM vehicles WHERE registration LIKE '" + registration + "';");
+	    String query = "SELECT registration, make, model, year, colour, type, "
+		    + "status FROM vehicles WHERE registration LIKE ?";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
+
+	    ps.setString(1, registration);
+
+	    ResultSet rs = ps.executeQuery();
 
 	    if (rs.next()) {
 		String rego = rs.getString("registration");
@@ -411,11 +413,12 @@ public class Database implements Closeable {
 	logger.info("Checking if vehicle:" + registration + " is double booked.");
 	try {
 	    // Gets the latest timestamp of a car booking.
-	    String query = "SELECT timestamp,duration FROM bookings " + "WHERE registration = '" + registration + "' "
-		    + "ORDER BY id DESC LIMIT 1;";
+	    String query = "SELECT timestamp,duration FROM bookings WHERE registration = ? ORDER BY id DESC LIMIT 1";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(query);
+	    ps.setString(1, registration);
+
+	    ResultSet rs = ps.executeQuery();
 
 	    if (rs.next()) {
 		// Gets when the car is going to end.
@@ -425,7 +428,7 @@ public class Database implements Closeable {
 		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
 		    logger.info("Error vehicle:" + registration + " is Already Booked");
 		    rs.close();
-		    stmt.close();
+		    ps.close();
 		    return true; // It is double booked.
 		}
 
@@ -444,11 +447,13 @@ public class Database implements Closeable {
 	logger.info("Checking if user:" + customerId + "double booked.");
 	try {
 	    // Gets the latest timestamp of a car booking.
-	    String query = "SELECT timestamp,duration FROM bookings " + "WHERE customer_id = '" + customerId + "' "
-		    + "ORDER BY id DESC LIMIT 1;";
+	    String query = "SELECT timestamp,duration FROM bookings WHERE customer_id = ? "
+		    + "ORDER BY id DESC LIMIT 1";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(query);
+	    ps.setString(1, customerId);
+
+	    ResultSet rs = ps.executeQuery();
 
 	    if (rs.next()) {
 		// Gets when the car is going to end.
@@ -458,7 +463,7 @@ public class Database implements Closeable {
 		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
 		    logger.info("Error " + customerId + " Double Booked.");
 		    rs.close();
-		    stmt.close();
+		    ps.close();
 		    return true; // It is double booked.
 		}
 
@@ -473,7 +478,7 @@ public class Database implements Closeable {
 
     public Boolean changeVehicleStatus(String registration, int status) {
 	try {
-	    String query = "UPDATE vehicles set status = ? WHERE registration = ?;";
+	    String query = "UPDATE vehicles set status = ? WHERE registration = ?";
 	    PreparedStatement ps = this.conn.prepareStatement(query);
 
 	    ps.setInt(1, status);
@@ -534,13 +539,17 @@ public class Database implements Closeable {
 	logger.info("Deleting Booking with id: " + id);
 
 	try {
-	    Statement stmt = this.conn.createStatement();
-	    int result = stmt.executeUpdate("DELETE FROM bookings WHERE id = " + id + ";");
+	    String query = "DELETE FROM bookings WHERE id = ?";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	    if (result != 0)
+	    ps.setInt(1, id);
+	    int rowsAffected = ps.executeUpdate();
+
+	    if (rowsAffected == 1) {
 		return true;
-	    else
+	    } else {
 		return false;
+	    }
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
 	    return false;
@@ -555,15 +564,14 @@ public class Database implements Closeable {
 	    if (bookingExists(id)) {
 		if (checkReg(registration)) {
 		    // Gets the latest timestamp of a car booking.
-		    String query = "UPDATE bookings set timestamp = ?, registration = ?, customer_id = ?, duration = ? WHERE id = "
-			    + id + ";";
-
+		    String query = "UPDATE bookings set timestamp = ?, registration = ?, customer_id = ?, duration = ? WHERE id = ?";
 		    PreparedStatement ps = this.conn.prepareStatement(query);
 
 		    ps.setTimestamp(1, Timestamp.valueOf(timestamp));
 		    ps.setString(2, registration);
 		    ps.setString(3, customerId);
 		    ps.setInt(4, duration);
+		    ps.setInt(5, id);
 
 		    ps.executeUpdate();
 
@@ -589,7 +597,7 @@ public class Database implements Closeable {
 	logger.info("Checking if ID exists");
 	try {
 	    // Gets the latest timestamp of a car booking.
-	    String query = "SELECT * FROM bookings where id=?;";
+	    String query = "SELECT * FROM bookings where id=?";
 	    PreparedStatement ps = this.conn.prepareStatement(query);
 
 	    ps.setInt(1, id);
@@ -620,7 +628,7 @@ public class Database implements Closeable {
 	logger.info("Checking if Vehicle exists");
 	try {
 	    // Gets the latest timestamp of a car booking.
-	    String query = "SELECT * FROM vehicles where registration=?;";
+	    String query = "SELECT * FROM vehicles where registration=?";
 	    PreparedStatement ps = this.conn.prepareStatement(query);
 
 	    ps.setString(1, reg);
@@ -649,29 +657,37 @@ public class Database implements Closeable {
 	LocalDateTime now = LocalDateTime.now();
 	try {
 	    if (isCarBooked(now, registration)) {
-		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
-			+ registration + "' AND MINUTE(NOW()) >= MINUTE(timestamp) "
-			+ "ORDER BY timestamp DESC LIMIT 1;";
 
-		Statement stmt = this.conn.createStatement();
-		ResultSet rs = stmt.executeQuery(query);
+		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = ? "
+			+ "AND MINUTE(NOW()) >= MINUTE(timestamp) ORDER BY timestamp DESC LIMIT 1";
+		PreparedStatement ps = this.conn.prepareStatement(query);
+
+		ps.setString(1, registration);
+
+		ResultSet rs = ps.executeQuery();
 
 		rs.next();
 		double lat = rs.getDouble("lat");
 		double lng = rs.getDouble("lng");
 		Position carLocation = new Position(lat, lng);
+		ps.close();
+		rs.close();
 		return carLocation;
 	    } else {
-		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
-			+ registration + "' AND MINUTE(timestamp) = 0  " + "ORDER BY timestamp DESC LIMIT 1;";
+		String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = ?"
+			+ " AND MINUTE(timestamp) = 0 ORDER BY timestamp DESC LIMIT 1";
+		PreparedStatement ps = this.conn.prepareStatement(query);
 
-		Statement stmt = this.conn.createStatement();
-		ResultSet rs = stmt.executeQuery(query);
+		ps.setString(1, registration);
+
+		ResultSet rs = ps.executeQuery();
 
 		rs.next();
 		double lat = rs.getDouble("lat");
 		double lng = rs.getDouble("lng");
 		Position carLocation = new Position(lat, lng);
+		ps.close();
+		rs.close();
 		return carLocation;
 	    }
 	} catch (SQLException e) {
@@ -683,16 +699,21 @@ public class Database implements Closeable {
 
     public Position getVehiclePositionByTime(String registration, LocalDateTime dateTime) {
 	try {
-	    String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
-		    + registration + "' AND timestamp <= '" + dateTime + "' ORDER BY timestamp DESC LIMIT 1;";
+	    String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = ?"
+		    + " AND timestamp <= ? ORDER BY timestamp DESC LIMIT 1";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(query);
+	    ps.setString(1, registration);
+	    ps.setTimestamp(2, Timestamp.valueOf(dateTime));
+
+	    ResultSet rs = ps.executeQuery();
 
 	    rs.next();
 	    double lat = rs.getDouble("lat");
 	    double lng = rs.getDouble("lng");
 	    Position carLocation = new Position(lat, lng);
+	    ps.close();
+	    rs.close();
 	    return carLocation;
 
 	} catch (SQLException e) {
@@ -704,17 +725,21 @@ public class Database implements Closeable {
 
     public Position getVehicleLastPosition(String registration, LocalDateTime dateTime) {
 	try {
-	    String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = '"
-		    + registration + "' AND MINUTE(timestamp) <= '" + dateTime.getMinute()
-		    + "' ORDER BY timestamp DESC LIMIT 1;";
+	    String query = "SELECT ST_X(location) as lat, ST_Y(location) as lng FROM locations WHERE registration = ?"
+		    + " AND MINUTE(timestamp) <= ? ORDER BY timestamp DESC LIMIT 1";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(query);
+	    ps.setString(1, registration);
+	    ps.setTimestamp(2, Timestamp.valueOf(dateTime));
+
+	    ResultSet rs = ps.executeQuery();
 
 	    rs.next();
 	    double lat = rs.getDouble("lat");
 	    double lng = rs.getDouble("lng");
 	    Position carLocation = new Position(lat, lng);
+	    ps.close();
+	    rs.close();
 	    return carLocation;
 
 	} catch (SQLException e) {
@@ -727,11 +752,15 @@ public class Database implements Closeable {
     public Booking getBookingNow(String clientId) throws SQLException {
 	Booking br = null;
 
-	Statement stmt = this.conn.createStatement();
-	ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		+ " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type" + " FROM bookings as bk"
-		+ " LEFT JOIN vehicles as vh ON bk.registration=vh.registration WHERE (timestamp + INTERVAL duration MINUTE) > NOW() AND customer_id LIKE '"
-		+ clientId + "';");
+	String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+		+ " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type FROM bookings as bk"
+		+ " LEFT JOIN vehicles as vh ON bk.registration=vh.registration WHERE (timestamp + INTERVAL duration MINUTE) > NOW() "
+		+ "AND customer_id LIKE ?";
+	PreparedStatement ps = this.conn.prepareStatement(query);
+
+	ps.setString(1, clientId);
+
+	ResultSet rs = ps.executeQuery();
 
 	while (rs.next()) {
 	    int id = rs.getInt("id");
@@ -752,18 +781,25 @@ public class Database implements Closeable {
 	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
 	    br = new Booking(id, timestamp, vehicle, customer_id, duration, start);
 	}
+	ps.close();
+	rs.close();
 	return br;
     }
 
     public int checkVehicleStatus(String reg) throws SQLException {
 	int status = 1;
-	Statement stmt = this.conn.createStatement();
-	ResultSet rs = stmt
-		.executeQuery("SELECT vh.status FROM vehicles as vh WHERE vh.registration LIKE '" + reg + "';");
+
+	String query = "SELECT vh.status FROM vehicles as vh WHERE vh.registration LIKE ?";
+	PreparedStatement ps = this.conn.prepareStatement(query);
+
+	ps.setString(1, reg);
+	ResultSet rs = ps.executeQuery();
 
 	while (rs.next()) {
 	    status = rs.getInt("status");
 	}
+	ps.close();
+	rs.close();
 	return status;
     }
 
@@ -789,14 +825,13 @@ public class Database implements Closeable {
 
     public void addUser(String cid, String email) throws SQLException {
 
-	boolean exists;
-	String sql = "SELECT cid FROM users WHERE cid LIKE ?;";
+	String sql = "SELECT cid FROM users WHERE cid LIKE ?";
 	PreparedStatement stmt = this.conn.prepareStatement(sql);
 	stmt.setString(1, cid);
 	ResultSet rs = stmt.executeQuery();
 
 	if (!rs.isBeforeFirst()) {
-	    String query = "INSERT INTO users " + "(cid, email) VALUES " + "(?, ?)";
+	    String query = "INSERT INTO users " + "(cid, email) VALUES (?, ?)";
 	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
 	    pStmnt.setString(1, cid);
 	    pStmnt.setString(2, email);
@@ -813,7 +848,7 @@ public class Database implements Closeable {
     public String getCid(String email) throws SQLException {
 
 	String cid = null;
-	String sql = "SELECT cid FROM users WHERE email LIKE ?;";
+	String sql = "SELECT cid FROM users WHERE email LIKE ?";
 	PreparedStatement stmt = this.conn.prepareStatement(sql);
 	stmt.setString(1, email);
 	ResultSet rs = stmt.executeQuery();
@@ -824,19 +859,21 @@ public class Database implements Closeable {
 	    logger.info("Client ID of user: " + cid);
 
 	}
+	stmt.close();
+	rs.close();
 	return cid;
     }
 
     public boolean endBooking(String clientid, LocalDateTime currTime) {
 
 	try {
-
 	    // Gets the latest timestamp of a car booking.
-	    String query1 = "SELECT * FROM bookings WHERE customer_id = '" + clientid + "' ORDER BY id DESC LIMIT 1;";
+	    String query1 = "SELECT * FROM bookings WHERE customer_id = ? ORDER BY id DESC LIMIT 1";
+	    PreparedStatement ps1 = this.conn.prepareStatement(query1);
 
-	    // PreparedStatement ps = this.conn.prepareStatement(query);
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(query1);
+	    ps1.setString(1, clientid);
+	    ResultSet rs = ps1.executeQuery();
+
 	    LocalDateTime bookingTimeStart = null;
 	    boolean bookingEnded = true;
 	    int id = 0; // stores the id of booking for query2
@@ -855,16 +892,17 @@ public class Database implements Closeable {
 			Timestamp.valueOf(currTime));
 		logger.info("start " + id + "minutes: " + minutes);
 		rs.close();
-		stmt.close();
+		ps1.close();
 
-		String query2 = "UPDATE bookings set duration = ? WHERE id = '" + id + "' AND customer_id = '"
-			+ clientid + "';";
-		PreparedStatement ps = this.conn.prepareStatement(query2);
+		String query2 = "UPDATE bookings set duration = ? WHERE id = ? AND customer_id = ?";
+		PreparedStatement ps2 = this.conn.prepareStatement(query2);
 
-		ps.setInt(1, minutes);
+		ps2.setInt(1, minutes);
+		ps2.setInt(2, id);
+		ps2.setString(3, clientid);
 
-		ps.executeUpdate();
-		ps.close();
+		ps2.executeUpdate();
+		ps2.close();
 
 		logger.info("Ended Booking.");
 		return true;
@@ -885,10 +923,7 @@ public class Database implements Closeable {
 	long milliseconds2 = currentTime.getTime();
 
 	long diff = milliseconds2 - milliseconds1;
-	long diffSeconds = diff / 1000;
 	long diffMinutes = diff / (60 * 1000);
-	long diffHours = diff / (60 * 60 * 1000);
-	long diffDays = diff / (24 * 60 * 60 * 1000);
 
 	return diffMinutes;
     }
@@ -899,10 +934,12 @@ public class Database implements Closeable {
 	logger.info("Check if booking has ended. ");
 	try {
 
-	    String query = "SELECT timestamp, duration FROM bookings WHERE id = " + id + ";";
+	    String query = "SELECT timestamp, duration FROM bookings WHERE id = ?";
 
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(query);
+	    PreparedStatement ps = this.conn.prepareStatement(query);
+	    ps.setInt(1, id);
+	    ResultSet rs = ps.executeQuery();
+
 	    int duration = 0;
 	    if (rs.next()) {
 		// Gets when the car is going to end.
@@ -913,7 +950,7 @@ public class Database implements Closeable {
 		if (currtime.isAfter(startTime) && currtime.isBefore(endTime)) {
 		    logger.info(" Booking is still in session. " + duration);
 		    rs.close();
-		    stmt.close();
+		    ps.close();
 		    return false; // Booking has not ended.
 		}
 
@@ -935,37 +972,36 @@ public class Database implements Closeable {
 	logger.info("Extending Booking of: " + customerId);
 	try {
 	    // finds the id to check if booking has ended.
-	    String query1 = "SELECT * FROM bookings WHERE customer_id = '" + customerId + "' ORDER BY id DESC LIMIT 1;";
+	    String query = "SELECT * FROM bookings WHERE customer_id = ? ORDER BY id DESC LIMIT 1";
 
-	    Statement stmt = this.conn.createStatement();
-	    ResultSet rs = stmt.executeQuery(query1);
-	    LocalDateTime bookingTimeStart = null;
+	    PreparedStatement ps = this.conn.prepareStatement(query);
+	    ps.setString(1, customerId);
+	    ResultSet rs = ps.executeQuery();
+
 	    int id = 0;
 	    int duration = 0;
 	    boolean bookingEnded = true;
 
 	    if (rs.next()) {
 		// Gets when the car is going to end.
-		bookingTimeStart = rs.getTimestamp("timestamp").toLocalDateTime();
 		id = rs.getInt("id");
 		duration = rs.getInt("duration");
 		bookingEnded = hasBookingEnded(id, currTime); // TRUE if booking ended, False if hasnt.
 	    }
 
 	    rs.close();
-	    stmt.close();
+	    ps.close();
 
 	    if (!bookingEnded) {
-		String query2 = "UPDATE bookings set duration = ? + " + extendedduration + " WHERE customer_id = '"
-			+ customerId + "' ORDER BY id DESC LIMIT 1;";
+		String query2 = "UPDATE bookings set duration = ? WHERE customer_id = ? ORDER BY id DESC LIMIT 1";
+		PreparedStatement ps2 = this.conn.prepareStatement(query2);
 
-		PreparedStatement ps = this.conn.prepareStatement(query2);
+		ps2.setInt(1, duration);
+		ps2.setString(2, customerId);
 
-		ps.setInt(1, duration);
+		ps2.executeUpdate();
 
-		ps.executeUpdate();
-
-		ps.close();
+		ps2.close();
 		logger.info("Successfully extended");
 		return true;
 	    } else {
@@ -985,7 +1021,7 @@ public class Database implements Closeable {
 	try {
 	    if (checkReg(registration)) {
 		String query = "UPDATE vehicles set make = ?, model = ?, year = ?, colour = ?, status = ? "
-			+ "WHERE registration = ?;";
+			+ "WHERE registration = ?";
 
 		PreparedStatement ps = this.conn.prepareStatement(query);
 
@@ -1000,6 +1036,7 @@ public class Database implements Closeable {
 
 		ps.close();
 		logger.info("Successfully edited");
+		ps.close();
 		return true;
 	    }
 
@@ -1011,14 +1048,13 @@ public class Database implements Closeable {
 	return false;
     }
 
-
     public float calculateCost(String reg, int duration) throws SQLException {
 
 	String type = null;
 	int rate = 0;
 	float cost;
 
-	String sql = "SELECT vh.type FROM vehicles as vh WHERE vh.registration LIKE ?;";
+	String sql = "SELECT vh.type FROM vehicles as vh WHERE vh.registration LIKE ?";
 	PreparedStatement ps = this.conn.prepareStatement(sql);
 	ps.setString(1, reg);
 
@@ -1028,7 +1064,7 @@ public class Database implements Closeable {
 	}
 	rs.close();
 
-	String sql2 = "SELECT c.rate FROM costs as c WHERE c.type LIKE ?;";
+	String sql2 = "SELECT c.rate FROM costs as c WHERE c.type LIKE ?";
 	PreparedStatement ps2 = this.conn.prepareStatement(sql2);
 	ps2.setString(1, type);
 	ResultSet rs2 = ps2.executeQuery();

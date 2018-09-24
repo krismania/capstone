@@ -543,18 +543,13 @@ public class Database implements Closeable {
 	    PreparedStatement ps = this.conn.prepareStatement(query);
 
 	    ps.setInt(1, id);
-	    ResultSet rs = ps.executeQuery();
+	    int rowsAffected = ps.executeUpdate();
 
-	    int rows = 0;
-
-	    if (rs.last()) {
-		rows = rs.getRow();
-	    }
-
-	    if (rows != 0)
+	    if (rowsAffected == 1) {
 		return true;
-	    else
+	    } else {
 		return false;
+	    }
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
 	    return false;

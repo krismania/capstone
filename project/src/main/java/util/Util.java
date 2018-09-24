@@ -1,5 +1,8 @@
 package util;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import spark.ModelAndView;
@@ -35,5 +38,13 @@ public class Util {
     // This function converts radians to decimal degrees
     private static double rad2deg(double rad) {
 	return (rad * 180 / Math.PI);
+    }
+
+    /**
+     * Gets the current time of the server and returns it as Melbourne time
+     */
+    public static LocalDateTime getCurrentTime() {
+	ZonedDateTime aest = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("Australia/Melbourne"));
+	return aest.toLocalDateTime();
     }
 }

@@ -75,9 +75,6 @@ class Request {
     static class UserRequest {
 	String email;
     }
-    static class EndBookingRequest {
-	String timestamp;
-    }
 
     /**
      * Parses extend booking

@@ -127,6 +127,11 @@ public class Database implements Closeable {
 	}
     }
 
+    private LocalDateTime getCurrentTime() {
+	ZonedDateTime aest = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("Australia/Melbourne"));
+	return aest.toLocalDateTime();
+    }
+
     public Vehicle insertVehicle(String registration, String make, String model, int year, String colour,
 	    Position position, int status, String type) {
 

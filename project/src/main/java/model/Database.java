@@ -78,6 +78,12 @@ public class Database implements Closeable {
      */
     private void initDatabase() throws SQLException {
 	logger.info("Initializing the database");
+
+	// set tz
+	try (Statement tzStmt = this.conn.createStatement()) {
+	    tzStmt.execute("set time_zone = 'Australia/Melbourne'");
+	}
+
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (`registration` VARCHAR(10) NOT NULL, "
 		+ "`make` VARCHAR(50) NOT NULL, " + "`model` VARCHAR(50) NOT NULL, "
 		+ "`year` SMALLINT UNSIGNED NOT NULL, " + "`colour` VARCHAR(50) NOT NULL, "
@@ -109,6 +115,15 @@ public class Database implements Closeable {
 	stmt.execute(locationSql);
 	stmt.execute(users);
 	stmt.close();
+
+	try (Statement timeStmt = this.conn.createStatement()) {
+	    ResultSet rs = timeStmt.executeQuery("select now()");
+	    if (rs.next()) {
+		logger.warn("SQL Server time: " + rs.getString(1));
+	    } else {
+		logger.warn("SQL Server time is unknown");
+	    }
+	}
     }
 
     /**
@@ -125,11 +140,6 @@ public class Database implements Closeable {
 	    logger.error("Failed to close DB");
 	    logger.error(e.getMessage());
 	}
-    }
-
-    private LocalDateTime getCurrentTime() {
-	ZonedDateTime aest = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("Australia/Melbourne"));
-	return aest.toLocalDateTime();
     }
 
     public Vehicle insertVehicle(String registration, String make, String model, int year, String colour,
@@ -526,7 +536,7 @@ public class Database implements Closeable {
 		int status = rs.getInt("status");
 		String type = rs.getString("type");
 		Position start = getVehiclePositionByTime(registration, timestamp);
-		Position car_curr_pos = getVehicleLastPosition(registration, LocalDateTime.now());
+		Position car_curr_pos = getVehicleLastPosition(registration, Util.getCurrentTime());
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
 		Booking booking = new Booking(bookingId, timestamp, vehicle, customer_id, duration, start);
@@ -660,7 +670,7 @@ public class Database implements Closeable {
     }
 
     public Position getVehiclePosition(String registration) {
-	LocalDateTime now = LocalDateTime.now();
+	LocalDateTime now = Util.getCurrentTime();
 	try {
 	    if (isCarBooked(now, registration)) {
 
@@ -876,7 +886,7 @@ public class Database implements Closeable {
 	    if (currentBooking != null) {
 		// calculate the number of minutes between the current time & the booking start
 		LocalDateTime start = currentBooking.getTimestamp();
-		LocalDateTime current = LocalDateTime.now();
+		LocalDateTime current = Util.getCurrentTime();
 		int newDuration = (int) Math.ceil(Duration.between(start, current).toMinutes());
 
 		// update the booking record

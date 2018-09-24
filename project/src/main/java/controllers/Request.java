@@ -60,6 +60,30 @@ class Request {
 	String colour;
 	PositionRequest position;
 	String status;
+	String type;
+    }
+
+    static class EditVehicleRequest {
+	String registration;
+	String make;
+	String model;
+	int year;
+	String colour;
+	String status;
+    }
+
+    static class UserRequest {
+	String email;
+    }
+    static class EndBookingRequest {
+	String timestamp;
+    }
+
+    /**
+     * Parses extend booking
+     */
+    static class ExtendBookingRequest {
+	int extraDuration;
     }
 
     static class CreditRequest {

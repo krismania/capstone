@@ -62,6 +62,10 @@ public class UiController {
 			logger.info("Client ID: " + s.attribute("clientId"));
 			logger.info("Client is " + ((boolean) s.attribute("isAdmin") ? "" : "not ") + "an admin");
 
+			String cid = s.attribute("clientId");
+			String email = s.attribute("clientEmail");
+			db.addUser(cid, email);
+
 			res.status(200);
 			db.close();
 			return "";

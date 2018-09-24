@@ -7,12 +7,13 @@ public class Vehicle {
     private final String model;
     private final int year;
     private final String colour;
+    private final String type;
     private final Position position;
     // 0 - active; 1 - inactive; 2 - retired
     private final int status;
 
     protected Vehicle(String registration, String make, String model, int year, String colour, Position position,
-	    int status) {
+	    int status, String type) {
 	this.registration = registration;
 	this.make = make;
 	this.model = model;
@@ -20,6 +21,11 @@ public class Vehicle {
 	this.colour = colour;
 	this.position = position;
 	this.status = status;
+	this.type = type;
+    }
+
+    public String getType() {
+	return this.type;
     }
 
     public int getStatus() {

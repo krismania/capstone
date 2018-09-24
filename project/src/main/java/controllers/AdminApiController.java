@@ -18,6 +18,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import controllers.Request.EditBookingRequest;
+import controllers.Request.EditVehicleRequest;
+import controllers.Request.UserRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
 import controllers.Response.ErrorResponse;
@@ -80,7 +82,7 @@ public class AdminApiController {
 
 	    Database db = new Database();
 	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
-		    status);
+		    status, vr.type);
 	    db.close();
 
 	    if (inserted_vehicle != null) {
@@ -211,6 +213,59 @@ public class AdminApiController {
 
 	});
 
+	// update a vehicle
+	put("/vehicles", (req, res) -> {
+	    res.type("application/json");
+
+	    EditVehicleRequest vr;
+	    int status;
+	    try {
+		vr = new Gson().fromJson(req.body(), EditVehicleRequest.class);
+		if (vr.status.equals("active")) {
+		    status = 0;
+		} else if (vr.status.equals("inactive")) {
+		    status = 1;
+		} else if (vr.status.equals("retired")) {
+		    status = 2;
+		} else {
+		    res.status(400);
+		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Editing Error"));
+		}
+	    } catch (JsonParseException | NullPointerException e) {
+		logger.error(e.getMessage());
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
+	    }
+
+	    Database db = new Database();
+
+	    Boolean dbResponse = db.editVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, status);
+
+	    db.close();
+
+	    if (dbResponse) {
+		res.status(200);
+		return "";
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Bad Request - Edit Vehicle"));
+	    }
+
+	});
+
+	post("/user", (req, res) -> {
+	    res.type("application/json");
+
+	    UserRequest ur = new Gson().fromJson(req.body(), UserRequest.class);
+
+	    String email = ur.email;
+	    Database db = new Database();
+	    String cid = db.getCid(email);
+	    db.close();
+
+	    logger.info("Found Client ID: " + cid);
+	    return new Gson().toJson(cid);
+	});
     }
 
 }

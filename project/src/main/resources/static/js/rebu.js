@@ -173,11 +173,7 @@ rebu = (function() {
 					timestamp: dateToString(new Date())
 			};
 			
-			var request = new Request('/api/bookings/end', {
-				method: 'POST',
-				headers: headers,
-				body: JSON.stringify(body)
-			});
+			var request = new Request('/api/bookings/end');
 			
 			fetch(request)
 			.then(res => {

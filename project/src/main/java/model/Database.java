@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -410,7 +411,7 @@ public class Database implements Closeable {
     }
 
     public boolean isCarBooked(LocalDateTime currtime, String registration) {
-	logger.info("Checking if vehicle:" + registration + " is double booked.");
+	logger.debug("Checking if vehicle:" + registration + " is double booked.");
 	try {
 	    // Gets the latest timestamp of a car booking.
 	    String query = "SELECT timestamp,duration FROM bookings WHERE registration = ? ORDER BY id DESC LIMIT 1";
@@ -750,8 +751,6 @@ public class Database implements Closeable {
     }
 
     public Booking getBookingNow(String clientId) throws SQLException {
-	Booking br = null;
-
 	String query = "select `id`, `timestamp`, `customer_id`, `duration`, `vehicles`.`registration` as `registration`, `make`, `model`, `year`, `colour`, `status`, `type` "
 		+ "from `bookings` left join `vehicles` on `bookings`.`registration` = `vehicles`.`registration` "
 		+ "where customer_id like ? and date_add(`timestamp`, interval `duration` minute) > now() limit 1";
@@ -761,7 +760,7 @@ public class Database implements Closeable {
 
 	ResultSet rs = ps.executeQuery();
 
-	while (rs.next()) {
+	if (rs.next()) {
 	    int id = rs.getInt("id");
 	    LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 	    String customer_id = rs.getString("customer_id");
@@ -777,12 +776,14 @@ public class Database implements Closeable {
 	    String type = rs.getString("type");
 	    Position start = getVehiclePositionByTime(registration, timestamp);
 
+	    ps.close();
+	    rs.close();
+
 	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-	    br = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+	    return new Booking(id, timestamp, vehicle, customer_id, duration, start);
+	} else {
+	    return null;
 	}
-	ps.close();
-	rs.close();
-	return br;
     }
 
     public int checkVehicleStatus(String reg) throws SQLException {
@@ -863,58 +864,35 @@ public class Database implements Closeable {
 	return cid;
     }
 
-    public boolean endBooking(String clientid, LocalDateTime currTime) {
-
+    public boolean endBooking(String clientId) {
 	try {
-	    // Gets the latest timestamp of a car booking.
-	    String query1 = "SELECT * FROM bookings WHERE customer_id = ? ORDER BY id DESC LIMIT 1";
-	    PreparedStatement ps1 = this.conn.prepareStatement(query1);
+	    Booking currentBooking = getBookingNow(clientId);
 
-	    ps1.setString(1, clientid);
-	    ResultSet rs = ps1.executeQuery();
+	    if (currentBooking != null) {
+		// calculate the number of minutes between the current time & the booking start
+		LocalDateTime start = currentBooking.getTimestamp();
+		LocalDateTime current = LocalDateTime.now();
+		int newDuration = (int) Math.ceil(Duration.between(start, current).toMinutes());
 
-	    LocalDateTime bookingTimeStart = null;
-	    boolean bookingEnded = true;
-	    int id = 0; // stores the id of booking for query2
+		// update the booking record
+		String update = "update `bookings` set `duration` = ? where `id` = ?";
+		PreparedStatement ps = this.conn.prepareStatement(update);
 
-	    if (rs.next()) {
-		// Gets when the car is going to end.
-		bookingTimeStart = rs.getTimestamp("timestamp").toLocalDateTime();
-		id = rs.getInt("id");
-		bookingEnded = hasBookingEnded(id, currTime); // TRUE if ended, False if hasnt.
+		logger.info("Setting duration of booking " + currentBooking.getId() + " to " + newDuration);
 
+		ps.setInt(1, newDuration);
+		ps.setInt(2, currentBooking.getId());
+
+		int affectedRows = ps.executeUpdate();
+		if (affectedRows == 1) {
+		    return true;
+		}
 	    }
-	    // Only do this if booking hasnt ended and checks for current time.
-	    if ((bookingTimeStart.isBefore(currTime) || bookingTimeStart.isEqual(currTime)) && !bookingEnded) {
-
-		int minutes = (int) compareTwoTimeStamps(Timestamp.valueOf(bookingTimeStart),
-			Timestamp.valueOf(currTime));
-		logger.info("start " + id + "minutes: " + minutes);
-		rs.close();
-		ps1.close();
-
-		String query2 = "UPDATE bookings set duration = ? WHERE id = ? AND customer_id = ?";
-		PreparedStatement ps2 = this.conn.prepareStatement(query2);
-
-		ps2.setInt(1, minutes);
-		ps2.setInt(2, id);
-		ps2.setString(3, clientid);
-
-		ps2.executeUpdate();
-		ps2.close();
-
-		logger.info("Ended Booking.");
-		return true;
-	    } else {
-		logger.info("Error.");
-		return false; // Bad Request.
-	    }
-
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    return false;
+	    e.printStackTrace();
 	}
-
+	return false;
     }
 
     public static long compareTwoTimeStamps(java.sql.Timestamp oldTime, java.sql.Timestamp currentTime) {
@@ -966,53 +944,28 @@ public class Database implements Closeable {
     }
 
     // Uses the ID of the booking to edit the booking.
-    public Boolean extendBooking(String customerId, int extendedduration, LocalDateTime currTime) {
-
-	logger.info("Extending Booking of: " + customerId);
+    public Boolean extendBooking(String clientId, int extraDuration) {
+	logger.info("Extending Booking of: " + clientId);
 	try {
-	    // finds the id to check if booking has ended.
-	    String query = "SELECT * FROM bookings WHERE customer_id = ? ORDER BY id DESC LIMIT 1";
+	    Booking currentBooking = getBookingNow(clientId);
+	    if (currentBooking != null) {
+		String update = "update `bookings` set `duration` = `duration` + ? where id = ?";
+		PreparedStatement ps = this.conn.prepareStatement(update);
+		ps.setInt(1, extraDuration);
+		ps.setInt(2, currentBooking.getId());
 
-	    PreparedStatement ps = this.conn.prepareStatement(query);
-	    ps.setString(1, customerId);
-	    ResultSet rs = ps.executeQuery();
+		int affectedRows = ps.executeUpdate();
 
-	    int id = 0;
-	    int duration = 0;
-	    boolean bookingEnded = true;
-
-	    if (rs.next()) {
-		// Gets when the car is going to end.
-		id = rs.getInt("id");
-		duration = rs.getInt("duration");
-		bookingEnded = hasBookingEnded(id, currTime); // TRUE if booking ended, False if hasnt.
+		if (affectedRows == 1) {
+		    return true;
+		}
 	    }
-
-	    rs.close();
-	    ps.close();
-
-	    if (!bookingEnded) {
-		String query2 = "UPDATE bookings set duration = ? WHERE customer_id = ? ORDER BY id DESC LIMIT 1";
-		PreparedStatement ps2 = this.conn.prepareStatement(query2);
-
-		ps2.setInt(1, duration);
-		ps2.setString(2, customerId);
-
-		ps2.executeUpdate();
-
-		ps2.close();
-		logger.info("Successfully extended");
-		return true;
-	    } else {
-		logger.info("Extension Failed");
-		return false; // Bad Request
-	    }
-	    // Gets the latest timestamp of a car booking.
-
 	} catch (SQLException e) {
+	    logger.error(e.getMessage());
 	    e.printStackTrace();
-	    return false;
 	}
+
+	return false;
     }
 
     public Boolean editVehicle(String registration, String make, String model, int year, String colour, int status) {

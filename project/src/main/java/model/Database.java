@@ -752,10 +752,9 @@ public class Database implements Closeable {
     public Booking getBookingNow(String clientId) throws SQLException {
 	Booking br = null;
 
-	String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		+ " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type FROM bookings as bk"
-		+ " LEFT JOIN vehicles as vh ON bk.registration=vh.registration WHERE (timestamp + INTERVAL duration MINUTE) > NOW() "
-		+ "AND customer_id LIKE ?";
+	String query = "select `id`, `timestamp`, `customer_id`, `duration`, `vehicles`.`registration` as `registration`, `make`, `model`, `year`, `colour`, `status`, `type` "
+		+ "from `bookings` left join `vehicles` on `bookings`.`registration` = `vehicles`.`registration` "
+		+ "where customer_id like ? and date_add(`timestamp`, interval `duration` minute) > now() limit 1";
 	PreparedStatement ps = this.conn.prepareStatement(query);
 
 	ps.setString(1, clientId);

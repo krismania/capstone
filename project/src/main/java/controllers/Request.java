@@ -60,6 +60,7 @@ class Request {
 	String colour;
 	PositionRequest position;
 	String status;
+	String type;
     }
 
     static class EditVehicleRequest {
@@ -71,6 +72,9 @@ class Request {
 	String status;
     }
 
+    static class UserRequest {
+	String email;
+    }
     static class EndBookingRequest {
 	String timestamp;
     }

@@ -19,6 +19,7 @@ import com.google.gson.JsonParseException;
 
 import controllers.Request.EditBookingRequest;
 import controllers.Request.EditVehicleRequest;
+import controllers.Request.UserRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
 import controllers.Response.ErrorResponse;
@@ -81,7 +82,7 @@ public class AdminApiController {
 
 	    Database db = new Database();
 	    Vehicle inserted_vehicle = db.insertVehicle(vr.registration, vr.make, vr.model, vr.year, vr.colour, pos,
-		    status);
+		    status, vr.type);
 	    db.close();
 
 	    if (inserted_vehicle != null) {
@@ -252,6 +253,19 @@ public class AdminApiController {
 
 	});
 
+	post("/user", (req, res) -> {
+	    res.type("application/json");
+
+	    UserRequest ur = new Gson().fromJson(req.body(), UserRequest.class);
+
+	    String email = ur.email;
+	    Database db = new Database();
+	    String cid = db.getCid(email);
+	    db.close();
+
+	    logger.info("Found Client ID: " + cid);
+	    return new Gson().toJson(cid);
+	});
     }
 
 }

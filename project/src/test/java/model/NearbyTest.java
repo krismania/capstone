@@ -11,7 +11,8 @@ public class NearbyTest {
 
     @BeforeEach
     void setUp() throws Exception {
-	this.nearby = new NearbyVehicle("ABC123", "SomeMake", "Some Model", 2010, "Yellow", new Position(1, 1), 1, 100);
+	this.nearby = new NearbyVehicle("ABC123", "SomeMake", "Some Model", 2010, "Yellow", new Position(1, 1), 1,
+		"average", 100);
     }
 
     // test to make sure vehicle is added properly

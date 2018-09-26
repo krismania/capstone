@@ -79,9 +79,11 @@ public class Database implements Closeable {
     private void initDatabase() throws SQLException {
 	logger.info("Initializing the database");
 
-	// set tz
-	try (Statement tzStmt = this.conn.createStatement()) {
-	    tzStmt.execute("set time_zone = 'Australia/Melbourne'");
+	// set tz on production db
+	if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Production) {
+	    try (Statement tzStmt = this.conn.createStatement()) {
+		tzStmt.execute("set time_zone = 'Australia/Melbourne'");
+	    }
 	}
 
 	String vehiclesSql = "CREATE TABLE IF NOT EXISTS `vehicles` (`registration` VARCHAR(10) NOT NULL, "

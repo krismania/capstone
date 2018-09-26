@@ -79,7 +79,7 @@ public class AdminApiController {
 		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Creation Error"));
 		}
 	    } catch (JsonParseException | NullPointerException e) {
-		logger.error(e.getMessage());
+		logger.error("Error inserting vehicle", e);
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
@@ -251,7 +251,7 @@ public class AdminApiController {
 		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Editing Error"));
 		}
 	    } catch (JsonParseException | NullPointerException e) {
-		logger.error(e.getMessage());
+		logger.error("Error updating vehicle", e);
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }

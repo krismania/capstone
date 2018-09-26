@@ -440,6 +440,10 @@ function manageUser() {
 					manageUser();
 				});
 				sidepane.append(adminView.bookingList(bookings, displayRoute));
+				var hint = document.createElement("p");
+				hint.className = "hint";
+				hint.innerText = "Tip: Click on a booking to view it's route";
+				sidepane.append(hint);
 			});
 		});
 	}));

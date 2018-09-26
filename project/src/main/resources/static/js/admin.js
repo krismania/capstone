@@ -257,17 +257,38 @@ function editVehicle(vehicle) {
 	document.getElementById("colour").value = vehicle.colour;
 }
 
+function clientIdFromEmail(email) {
+	return new Promise(resolve => {
+		var headers = new Headers();
+		headers.append("Content-Type", "application/json");
+		var request = new Request("/admin/api/user", {
+			method: "POST",
+			headers: headers,
+			body: JSON.stringify({
+				email: email
+			})
+		});
+		fetch(request)
+		.then(res => res.json())
+		.then(json => {
+			resolve(json.clientId);
+		});
+	});
+}
+
 function manageUser() {
 	sidepane.clear();
 	sidepane.appendHeader("MANAGE USER", function() {
 		mainMenu();
 	});
 	sidepane.append(adminView.manageUserForm(function() {
-		var email = document.getElementById("email").value;
-		var request = new Request("/admin/api/bookings/" + email) // TODO: currently takes user ID, not email
-		fetch(request)
-		.then(res => res.json())
-		.then(bookings => sidepane.append(adminView.bookingList(bookings)));
+		clientIdFromEmail(document.getElementById("email").value)
+		.then(clientId => {
+			var request = new Request("/admin/api/bookings/" + clientId);
+			fetch(request)
+			.then(res => res.json())
+			.then(bookings => sidepane.append(adminView.bookingList(bookings)));
+		});
 	}));
 }
 

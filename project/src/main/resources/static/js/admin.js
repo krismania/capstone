@@ -370,8 +370,23 @@ function editRates() {
 	.then(rates => {
 		// create the rates form
 		sidepane.append(adminView.editRatesForm(rates, function(newRates) {
-			console.log(newRates);
-			mainMenu();
+			console.log("Setting rates to", newRates);
+			var headers = new Headers();
+			headers.append("Content-Type", "application/json");
+			var request = new Request("/admin/api/rates", {
+				method: "POST",
+				headers: headers,
+				body: JSON.stringify(newRates)
+			});
+			fetch(request)
+			.then(res => {
+				if (res.status == 200) {
+					alert("Vehicle rates have been set");
+					mainMenu();
+				} else {
+					alert("Couldn't set vehicle rates");
+				}
+			});
 		}));
 	});
 }

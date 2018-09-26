@@ -15,10 +15,11 @@ var adminView = (function() {
 			return menu;
 		},
 		
-		console: function(addVehicleCallback, manageUserCallback) {
+		console: function(addVehicleCallback, manageUserCallback, editRatesCallback) {
 			var container = document.createElement("div");
 			var addVehicleBtn = document.createElement("button");
 			var manageUserBtn = document.createElement("button");
+			var editRatesBtn = document.createElement("button");
 			var hint = document.createElement("p");
 			
 			hint.innerText = "Tip: Click on a vehicle to view details about it";
@@ -28,8 +29,10 @@ var adminView = (function() {
 			addVehicleBtn.addEventListener('click', addVehicleCallback);
 			manageUserBtn.innerText = "Manage User";
 			manageUserBtn.addEventListener('click', manageUserCallback);
+			editRatesBtn.innerText = "Edit Rates";
+			editRatesBtn.addEventListener('click', editRatesCallback);
 			
-			var adminMenu = this.menu([addVehicleBtn, manageUserBtn]);
+			var adminMenu = this.menu([addVehicleBtn, manageUserBtn, editRatesBtn]);
 			
 			container.appendChild(adminMenu);
 			container.appendChild(hint);
@@ -166,6 +169,69 @@ var adminView = (function() {
 				heading.innerText = "Past Bookings";
 				return menu;
 			}
+		},
+		
+		editRatesForm: function(rates, callback) {
+			var form = document.createElement("form");
+			var submit = document.createElement("button");
+			
+			console.log(rates);
+			
+			var hint = document.createElement("p");
+			hint.className = "hint";
+			hint.innerText = "Update the per-minute rate of each vehicle tier";
+			
+			// create rate fields
+			var ratesTable = document.createElement("div")
+			ratesTable.className = "ratesTable";
+			
+			// keep track of rate inputs
+			var rateInputs = new Map();
+			
+			for (var rate in rates) {
+				if (rates.hasOwnProperty(rate)) {
+					// create single row
+					var row = document.createElement("div");
+					var label = document.createElement("label");
+					label.innerText = rate + " ($/min)";
+					var input = document.createElement("input");
+					input.type = "number";
+					input.required = true;
+					input.name = rate;
+					input.min = 0;
+					input.step = 0.01;
+					
+					// set value
+					input.value = rates[rate];
+					
+					row.appendChild(label);
+					row.appendChild(input);
+					
+					ratesTable.appendChild(row);
+					
+					// add this input to the inputs map
+					rateInputs.set(rate, input);
+				}
+			}
+			
+			submit.type = "submit";
+			submit.className = "confirm";
+			submit.innerText = "Update";
+			submit.addEventListener('click', function(e) {
+				e.preventDefault();
+				// get rates from inputs
+				var newRates = {};
+				for (var [tier, rateInput] of rateInputs) {
+					newRates[tier] = parseFloat(rateInput.value);
+				}
+				callback(newRates);
+			});
+			
+			form.appendChild(hint);
+			form.appendChild(ratesTable);
+			form.appendChild(submit);
+			
+			return form;
 		}
 		
 	}
@@ -175,7 +241,7 @@ var adminView = (function() {
 function mainMenu() {
 	sidepane.clear();
 	sidepane.appendHeader("ADMIN CONSOLE");
-	sidepane.append(adminView.console(addVehicle, manageUser))
+	sidepane.append(adminView.console(addVehicle, manageUser, editRates))
 }
 
 function addVehicle() {
@@ -290,6 +356,24 @@ function manageUser() {
 			.then(bookings => sidepane.append(adminView.bookingList(bookings)));
 		});
 	}));
+}
+
+function editRates() {
+	sidepane.clear();
+	sidepane.appendHeader("EDIT RATES", function() {
+		mainMenu();
+	});
+	// get current rates
+	var request = new Request("/admin/api/rates");
+	fetch(request)
+	.then(res => res.json())
+	.then(rates => {
+		// create the rates form
+		sidepane.append(adminView.editRatesForm(rates, function(newRates) {
+			console.log(newRates);
+			mainMenu();
+		}));
+	});
 }
 
 // set admin status

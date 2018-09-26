@@ -432,3 +432,26 @@ form.searchbox button:focus {
 	text-align: right;
 }
 
+
+/* admin rate editing form */
+
+div.ratesTable {
+	margin-top: 32px;
+}
+
+div.ratesTable > div {
+	display: flex;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+div.ratesTable > div > label {
+	flex-shrink: 0;
+	margin-right: 16px;
+	font-weight: bold;
+}
+
+div.ratesTable > div > input {
+	margin: 0;
+}
+

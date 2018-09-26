@@ -381,7 +381,7 @@ function addVehicle() {
 		adminRequests.createVehicle(vehicle, function(success) {
 			if (success) {
 				alert("Vehicle created.");
-				window.location.reload();
+				rebu.getVehicles(displayVehicles);
 			} else {
 				alert("Vehicle was not created");
 			}
@@ -399,7 +399,7 @@ function editVehicle(vehicle) {
 		adminRequests.updateVehicle(vehicle, function(success) {
 			if (success) {
 				alert("Vehicle updated.");
-				window.location.reload();
+				rebu.getVehicles(displayVehicles);
 			} else {
 				alert("Vehicle was not updated.");
 			}

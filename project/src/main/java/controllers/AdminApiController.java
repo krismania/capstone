@@ -169,6 +169,8 @@ public class AdminApiController {
 	    db.close();
 
 	    logger.info("Found " + bookings.size() + " bookings for " + id);
+
+	    res.type("application/json");
 	    return new Gson().toJson(bookings);
 	});
 

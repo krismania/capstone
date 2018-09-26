@@ -277,9 +277,12 @@ var view = (function() {
 			
 			// todo: find button doesn't work without the map, so remove it
 			buttons.shift();
+			// add margin to the extend button to push it right
+			// TODO: do this better
+			buttons[0].style.marginLeft = "calc(100% - 228px)";
 			
 			container.appendChild(info);
-			for (var i = 0; i < buttons.length; i++) {
+			for (var i = buttons.length - 1; i >= 0; i--) {
 				container.appendChild(buttons[i]);
 			}
 			

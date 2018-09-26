@@ -1,3 +1,100 @@
+var adminRequests = (function() {
+	
+	var endpoint = "/admin/api";
+	
+	// Creates a fetch promise for a get request at the given route
+	function get(route) {
+		var request = new Request(endpoint + route);
+		return fetch(request);
+	}
+	
+	// create a fetch promise for a post request at the given route
+	// with the provided body
+	function post(route, body) {
+		var headers = new Headers();
+		headers.append("Content-Type", "application/json");
+		var request = new Request(endpoint + route, {
+			method: "POST",
+			headers: headers,
+			body: JSON.stringify(body)
+		});
+		return fetch(request);
+	}
+	
+	// create a fetch promise for a put request at the given route
+	// with the provided body
+	function put(route, body) {
+		var headers = new Headers();
+		headers.append("Content-Type", "application/json");
+		var request = new Request(endpoint + route, {
+			method: "PUT",
+			headers: headers,
+			body: JSON.stringify(body)
+		});
+		return fetch(request);
+	}
+	
+	return {
+		
+		getClientIdFromEmail: function(email, callback) {
+			post("/user", { email: email })
+			.then(res => res.json())
+			.then(json => {
+				callback(json.clientId);
+			});
+		},
+		
+		getBookingsForUser: function(clientId, callback) {
+			get("/bookings/" + clientId)
+			.then(res => res.json())
+			.then(bookings => callback(bookings));
+		},
+		
+		createVehicle: function(vehicle, callback) {
+			post("/vehicles", vehicle)
+			.then(res => {
+				if (res.ok) {
+					callback(true);
+				} else {
+					callback(false);
+				}
+			});
+		},
+		
+		updateVehicle: function(vehicle, callback) {
+			put("/vehicles", vehicle)
+			.then(res => {
+				if (res.ok) {
+					callback(true);
+				} else {
+					callback(false);
+				}
+			});
+		},
+		
+		getRates: function(callback) {
+			get("/rates")
+			.then(res => res.json())
+			.then(rates => callback(rates));
+		},
+		
+		setRates: function(newRates, callback) {
+			console.log("Setting rates to", newRates);
+			post("/rates", newRates)
+			.then(res => {
+				if (res.ok) {
+					callback(true);
+				} else {
+					callback(false);
+				}
+			});
+		}
+		
+	}
+	
+})();
+
+
 var adminView = (function() {
 	
 	return {
@@ -238,6 +335,7 @@ var adminView = (function() {
 	
 })();
 
+
 function mainMenu() {
 	sidepane.clear();
 	sidepane.appendHeader("ADMIN CONSOLE");
@@ -263,19 +361,12 @@ function addVehicle() {
 			status: document.getElementById("active").selectedIndex == 0 ? "active" : "inactive"
 		};
 		console.log("Creating vehicle", vehicle);
-		var headers = new Headers();
-		headers.append("Content-Type", "application/json");
-		var request = new Request("/admin/api/vehicles", {
-			method: "POST",
-			headers: headers,
-			body: JSON.stringify(vehicle)
-		});
-		
-		fetch(request)
-		.then(res => {
-			if (res.ok) {
+		adminRequests.createVehicle(vehicle, function(success) {
+			if (success) {
 				alert("Vehicle created.");
 				window.location.reload();
+			} else {
+				alert("Vehicle was not created");
 			}
 		});
 	}));
@@ -299,19 +390,13 @@ function editVehicle(vehicle) {
 			},
 			active: (document.getElementById("active").selectedIndex == 0)
 		};
-		console.log("Creating vehicle", vehicle);
-		var headers = new Headers();
-		headers.append("Content-Type", "application/json");
-		var request = new Request("/admin/api/vehicles", {
-			method: "POST",
-			headers: headers,
-			body: JSON.stringify(vehicle)
-		});
-		
-		fetch(request)
-		.then(res => {
-			if (res.ok) {
-				alert("Vehicle created.");
+		console.log("Updating vehicle", vehicle);
+		adminRequests.updateVehicle(vehicle, function(success) {
+			if (success) {
+				alert("Vehicle updated.");
+				window.location.reload();
+			} else {
+				alert("Vehicle was not updated.");
 			}
 		});
 	}));
@@ -325,19 +410,8 @@ function editVehicle(vehicle) {
 
 function clientIdFromEmail(email) {
 	return new Promise(resolve => {
-		var headers = new Headers();
-		headers.append("Content-Type", "application/json");
-		var request = new Request("/admin/api/user", {
-			method: "POST",
-			headers: headers,
-			body: JSON.stringify({
-				email: email
-			})
-		});
-		fetch(request)
-		.then(res => res.json())
-		.then(json => {
-			resolve(json.clientId);
+		adminRequests.getClientIdFromEmail(email, function(clientId) {
+			resolve(clientId);
 		});
 	});
 }
@@ -350,10 +424,9 @@ function manageUser() {
 	sidepane.append(adminView.manageUserForm(function() {
 		clientIdFromEmail(document.getElementById("email").value)
 		.then(clientId => {
-			var request = new Request("/admin/api/bookings/" + clientId);
-			fetch(request)
-			.then(res => res.json())
-			.then(bookings => sidepane.append(adminView.bookingList(bookings)));
+			adminRequests.getBookingsForUser(clientId, function(bookings) {
+				sidepane.append(adminView.bookingList(bookings));
+			});
 		});
 	}));
 }
@@ -364,23 +437,12 @@ function editRates() {
 		mainMenu();
 	});
 	// get current rates
-	var request = new Request("/admin/api/rates");
-	fetch(request)
-	.then(res => res.json())
-	.then(rates => {
+	adminRequests.getRates(function(rates) {
 		// create the rates form
 		sidepane.append(adminView.editRatesForm(rates, function(newRates) {
-			console.log("Setting rates to", newRates);
-			var headers = new Headers();
-			headers.append("Content-Type", "application/json");
-			var request = new Request("/admin/api/rates", {
-				method: "POST",
-				headers: headers,
-				body: JSON.stringify(newRates)
-			});
-			fetch(request)
-			.then(res => {
-				if (res.status == 200) {
+			// callback on rates set by user
+			adminRequests.setRates(newRates, function(success) {
+				if (success) {
 					alert("Vehicle rates have been set");
 					mainMenu();
 				} else {

@@ -456,12 +456,24 @@ function displayRoute(booking) {
 		hideRoute()
 		// draw the route
 		if (route.length > 0) {
-			currentRoute = new google.maps.Polyline({
+			currentRoute = {};
+			currentRoute.line = new google.maps.Polyline({
 				path: route,
-				geodesic: true
+				geodesic: true,
+				map: map
 			});
 			
-			currentRoute.setMap(map);
+			// start / end markers
+			currentRoute.start = new google.maps.InfoWindow({
+				position: route[0],
+				content: "Start",
+				map: map
+			});
+			currentRoute.end = new google.maps.InfoWindow({
+				position: route[route.length - 1],
+				content: "End",
+				map: map
+			});
 			
 			// pan to the route
 			var bounds = new google.maps.LatLngBounds();
@@ -477,7 +489,9 @@ function displayRoute(booking) {
 
 function hideRoute() {
 	if (currentRoute != null) {
-		currentRoute.setMap(null);
+		currentRoute.line.setMap(null);
+		currentRoute.start.setMap(null);
+		currentRoute.end.setMap(null);
 		currentRoute = null;
 	}
 }

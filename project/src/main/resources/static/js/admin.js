@@ -137,7 +137,7 @@ var adminView = (function() {
 			return container;
 		},
 		
-		vehicleForm: function(createCallback) {
+		vehicleForm: function(vehicle, saveCallback) {
 			var form = document.createElement("form");
 			form.id = "vehicle-form";
 			
@@ -149,52 +149,20 @@ var adminView = (function() {
 			// vehicle status fieldset
 			var status = document.createElement("fieldset");
 			var statusLegend = document.createElement("legend");
-			statusLegend.innerText = "Current Location & Status";
+			statusLegend.innerText = "Current Status";
 			status.appendChild(statusLegend);
 			
 			var rego = document.createElement("input");
 			rego.id = "registration";
 			rego.placeholder = "Registration";
 			var year = document.createElement("input");
-			year.id = "year";
 			year.placeholder = "Year";
 			var make = document.createElement("input");
-			make.id = "make";
 			make.placeholder = "Make";
 			var model = document.createElement("input");
-			model.id = "model";
 			model.placeholder = "Model";
 			var colour = document.createElement("input");
-			colour.id = "colour";
 			colour.placeholder = "Colour";
-			var lat = document.createElement("input");
-			lat.id = "current-lat";
-			lat.placeholder = "Latitude";
-			var lng = document.createElement("input");
-			lng.id = "current-lng";
-			lng.placeholder = "Longitude";
-			var active = document.createElement("select");
-			active.id = "active";
-			
-			// add options to availability selector
-			var activeTrue = document.createElement("option");
-			activeTrue.innerText = "Active";
-			activeTrue.value = "true";
-			activeTrue.selected = true;
-			var activeFalse = document.createElement("option");
-			activeFalse.innerText = "Inactive";
-			activeFalse.value = "false";
-			active.appendChild(activeTrue);
-			active.appendChild(activeFalse);
-			
-			var submit = document.createElement("button");
-			submit.addEventListener("click", function(e) {
-				e.preventDefault();
-				createCallback();
-			});
-			submit.innerText = "SAVE VEHICLE";
-			submit.className = "confirm";
-			submit.type = "submit";
 			
 			details.appendChild(rego);
 			details.appendChild(year);
@@ -202,13 +170,74 @@ var adminView = (function() {
 			details.appendChild(model);
 			details.appendChild(colour);
 			
-			status.appendChild(lat);
-			status.appendChild(lng);
-			status.appendChild(active);
+			// only show current location fields for new vehicle
+			if (vehicle == null) {
+				var lat = document.createElement("input");
+				lat.placeholder = "Latitude";
+				var lng = document.createElement("input");
+				lng.placeholder = "Longitude";
+				
+				status.appendChild(lat);
+				status.appendChild(lng);
+			}
+			var statusSelect = document.createElement("select");
+			status.appendChild(statusSelect);
+			
+			// add options to availability selector
+			var options = ["Active", "Inactive", "Retired"];
+			for (var i = 0; i < options.length; i++) {
+				var option = document.createElement("option");
+				option.innerText = options[i];
+				option.value = options[i].toLowerCase();
+				// select first option by default
+				if (i == 0) options.selected = true;
+				statusSelect.appendChild(option);
+			}
+			
+			var submit = document.createElement("button");
+			submit.innerText = "SAVE VEHICLE";
+			submit.className = "confirm";
+			submit.type = "submit";
 			
 			form.appendChild(details);
 			form.appendChild(status);
 			form.appendChild(submit);
+			
+			// submission listener
+			// creates the vehicle object from the form fields
+			submit.addEventListener("click", function(e) {
+				e.preventDefault();
+				
+				var formVehicle = {
+					registration: rego.value,
+					make: make.value,
+					model: model.value,
+					year: parseInt(year.value),
+					colour: colour.value,
+					status: statusSelect.value,
+					type: "tier 1"
+				}
+				
+				// only read position fields of new vehicle
+				if (vehicle == null) {
+					formVehicle["position"] = {
+						lat: parseFloat(lat.value),
+						lng: parseFloat(lng.value)
+					}
+				}
+				
+				saveCallback(formVehicle);
+			});
+			
+			// populate fields if vehicle was given
+			if (vehicle != null) {
+				rego.value = vehicle.registration;
+				make.value = vehicle.make;
+				model.value = vehicle.model;
+				year.value = vehicle.year;
+				colour.value = vehicle.colour;
+				statusSelect.selectedIndex = vehicle.status;
+			}
 			
 			return form;
 		},
@@ -347,19 +376,7 @@ function addVehicle() {
 	sidepane.appendHeader("ADD VEHICLE", function() {
 		mainMenu();
 	});
-	sidepane.append(adminView.vehicleForm(function() {
-		var vehicle = {
-			registration: document.getElementById("registration").value,
-			year: parseInt(document.getElementById("year").value),
-			make: document.getElementById("make").value,
-			model: document.getElementById("model").value,
-			colour: document.getElementById("colour").value,
-			position: {
-				lat: parseFloat(document.getElementById("current-lat").value),
-				lng: parseFloat(document.getElementById("current-lng").value)
-			},
-			status: document.getElementById("active").selectedIndex == 0 ? "active" : "inactive"
-		};
+	sidepane.append(adminView.vehicleForm(null, function(vehicle) {
 		console.log("Creating vehicle", vehicle);
 		adminRequests.createVehicle(vehicle, function(success) {
 			if (success) {
@@ -377,19 +394,7 @@ function editVehicle(vehicle) {
 	sidepane.appendHeader("EDIT VEHICLE", function() {
 		mainMenu();
 	});
-	sidepane.append(adminView.vehicleForm(function() {
-		var vehicle = {
-			registration: document.getElementById("registration").value,
-			year: parseInt(document.getElementById("year").value),
-			make: document.getElementById("make").value,
-			model: document.getElementById("model").value,
-			colour: document.getElementById("colour").value,
-			position: {
-				lat: parseFloat(document.getElementById("current-lat").value),
-				lng: parseFloat(document.getElementById("current-lng").value)
-			},
-			active: (document.getElementById("active").selectedIndex == 0)
-		};
+	sidepane.append(adminView.vehicleForm(vehicle, function(vehicle) {
 		console.log("Updating vehicle", vehicle);
 		adminRequests.updateVehicle(vehicle, function(success) {
 			if (success) {
@@ -400,12 +405,6 @@ function editVehicle(vehicle) {
 			}
 		});
 	}));
-	// populate the fields
-	document.getElementById("registration").value = vehicle.registration;
-	document.getElementById("year").value = vehicle.year;
-	document.getElementById("make").value = vehicle.make;
-	document.getElementById("model").value = vehicle.model;
-	document.getElementById("colour").value = vehicle.colour;
 }
 
 function clientIdFromEmail(email) {

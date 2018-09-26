@@ -13,4 +13,12 @@ class Response {
 	}
     }
 
+    static class ClientIdResponse {
+	String clientId;
+
+	public ClientIdResponse(String clientId) {
+	    this.clientId = clientId;
+	}
+    }
+
 }

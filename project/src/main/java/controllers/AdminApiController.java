@@ -22,6 +22,7 @@ import controllers.Request.EditVehicleRequest;
 import controllers.Request.UserRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
+import controllers.Response.ClientIdResponse;
 import controllers.Response.ErrorResponse;
 import model.Booking;
 import model.Database;
@@ -276,7 +277,7 @@ public class AdminApiController {
 	    db.close();
 
 	    logger.info("Found Client ID: " + cid);
-	    return new Gson().toJson(cid);
+	    return new Gson().toJson(new ClientIdResponse(cid));
 	});
     }
 

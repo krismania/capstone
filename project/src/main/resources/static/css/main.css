@@ -200,11 +200,23 @@ header h1 {
 
 #sidepane {
     position: fixed;
-    height: 100%;
+    height: calc(100% - 56px);
     background-color: #fefefe;
     box-shadow: 0 0 10px -5px black;
-    overflow: hidden;
+    overflow: hidden scroll;
     transition: width 0.4s;
+}
+
+/* scrollbar styling for webkit browsers */
+#sidepane::-webkit-scrollbar {
+	width: 16px;
+}
+
+#sidepane::-webkit-scrollbar-thumb {
+  background-color: #00000033;
+  border: 6px solid white;
+  border-radius: 8px;
+  background-clip: padding-box;
 }
 
 #sidepane-content {

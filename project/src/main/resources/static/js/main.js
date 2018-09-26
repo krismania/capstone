@@ -201,6 +201,10 @@ function createVehicleMarker(vehicle, map, booked = false) {
 			console.log("Editing", vehicle);
 			editVehicle(vehicle);
 		});
+		// set retired markers transparent
+		if (vehicle.status == 2) {
+			marker.setOptions({'opacity': 0.6});
+		}
 	} else {
 		if (!booked) {
 			marker.addListener('click', function() {

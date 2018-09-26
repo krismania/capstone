@@ -428,13 +428,17 @@ function clientIdFromEmail(email) {
 function manageUser() {
 	sidepane.clear();
 	sidepane.appendHeader("MANAGE USER", function() {
-		hideRoute();
 		mainMenu();
 	});
 	sidepane.append(adminView.manageUserForm(function() {
 		clientIdFromEmail(document.getElementById("email").value)
 		.then(clientId => {
 			adminRequests.getBookingsForUser(clientId, function(bookings) {
+				sidepane.clear();
+				sidepane.appendHeader("MANAGE USER", function() {
+					hideRoute();
+					manageUser();
+				});
 				sidepane.append(adminView.bookingList(bookings, displayRoute));
 			});
 		});

@@ -28,6 +28,7 @@ import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
 import controllers.Response.ClientIdResponse;
 import controllers.Response.ErrorResponse;
+import controllers.Response.RouteResponse;
 import model.Booking;
 import model.Database;
 import model.Position;
@@ -230,6 +231,18 @@ public class AdminApiController {
 		return new Gson().toJson(new ErrorResponse("Bad Request - Update Booking"));
 	    }
 
+	});
+
+	// get the route of a booking
+	get("/bookings/:id/route", (req, res) -> {
+	    int bookingId = Integer.parseInt(req.params(":id"));
+	    try (Database db = new Database()) {
+		Booking booking = db.getBooking(bookingId);
+		List<Position> route = db.getRouteOfVehicle(booking);
+
+		res.type("application/json");
+		return new Gson().toJson(new RouteResponse(route));
+	    }
 	});
 
 	// update a vehicle

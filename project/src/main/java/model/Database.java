@@ -301,6 +301,81 @@ public class Database implements Closeable {
     }
 
     /**
+     * Gets the list of locations which the given booking traveled through.
+     * Currently configured to return from sample data.
+     */
+    public List<Position> getRouteOfVehicle(Booking booking) {
+	logger.info("Getting route for booking with ID " + booking.getId());
+	List<Position> route = new ArrayList<>();
+
+	String sql = "select st_x(`location`) as `lat`, st_y(`location`) as `lng` FROM `locations` "
+		+ "where `registration` like ? " + "and minute(`timestamp`) > minute(?) order by `timestamp` asc";
+
+	try (PreparedStatement ps = this.conn.prepareStatement(sql)) {
+	    ps.setString(1, booking.getVehicle().getRegistration());
+	    ps.setTimestamp(2, Timestamp.valueOf(booking.getTimestamp()));
+
+	    logger.info("Executing query " + ps.toString());
+
+	    ResultSet rs = ps.executeQuery();
+	    while (rs.next()) {
+		double lat = rs.getDouble("lat");
+		double lng = rs.getDouble("lng");
+		route.add(new Position(lat, lng));
+	    }
+	    rs.close();
+	} catch (SQLException e) {
+	    logger.error("Couldn't get route information for booking with ID " + booking.getId(), e);
+	}
+
+	return route;
+    }
+
+    /**
+     * Gets a booking from the database based on it's ID
+     *
+     * @throws SQLException
+     */
+    public Booking getBooking(int id) throws SQLException {
+	logger.info("Getting booking with ID " + id);
+
+	String sql = "SELECT `timestamp`, `customer_id`, `duration`, `vehicles`.`registration`, `make`, `model`, `year`, `colour`, `status`, `type`"
+		+ "FROM `bookings` LEFT JOIN `vehicles` ON `bookings`.`registration` = `vehicles`.`registration`"
+		+ "WHERE `id` = ?";
+
+	try (PreparedStatement ps = this.conn.prepareStatement(sql)) {
+	    ps.setInt(1, id);
+	    ResultSet rs = ps.executeQuery();
+	    if (rs.next()) {
+		// construct vehicle & booking
+		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+		String customer_id = rs.getString("customer_id");
+		int duration = rs.getInt("duration");
+
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		Position car_curr_pos = getVehiclePosition(registration);
+		int status = rs.getInt("status");
+		String type = rs.getString("type");
+		Position start = getVehiclePositionByTime(registration, timestamp);
+
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+
+		return booking;
+	    } else {
+		logger.warn("No booking with ID " + id);
+	    }
+	} catch (SQLException e) {
+	    logger.error("Failed to get booking with ID " + id, e);
+	}
+	return null;
+    }
+
+    /**
      * Returns a list of bookings
      *
      * @throws SQLException

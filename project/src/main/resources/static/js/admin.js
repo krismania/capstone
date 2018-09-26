@@ -50,6 +50,12 @@ var adminRequests = (function() {
 			.then(bookings => callback(bookings));
 		},
 		
+		getBookingRoute: function(bookingId, callback) {
+			get("/bookings/" + bookingId + "/route")
+			.then(res => res.json())
+			.then(json => callback(json.route));
+		},
+		
 		createVehicle: function(vehicle, callback) {
 			post("/vehicles", vehicle)
 			.then(res => {
@@ -270,7 +276,7 @@ var adminView = (function() {
 			return form;
 		},
 		
-		bookingList: function(bookings) {
+		bookingList: function(bookings, viewCallback) {
 			console.log(bookings);
 			if (bookings.length == 0) {
 				var p = document.createElement("p");
@@ -285,7 +291,7 @@ var adminView = (function() {
 						var booking = bookings[i]
 						bookingBtns[i] = document.createElement("button");
 						bookingBtns[i].addEventListener("click", function() {
-							console.log(booking);
+							viewCallback(booking);
 						});
 						bookingBtns[i].innerText = view.jsonDateToString(booking.timestamp) + " (" + booking.vehicle.registration + ")";
 					})();
@@ -365,6 +371,10 @@ var adminView = (function() {
 })();
 
 
+// keeps track of the path currently drawn on the map
+var currentRoute = null;
+
+
 function mainMenu() {
 	sidepane.clear();
 	sidepane.appendHeader("ADMIN CONSOLE");
@@ -418,16 +428,50 @@ function clientIdFromEmail(email) {
 function manageUser() {
 	sidepane.clear();
 	sidepane.appendHeader("MANAGE USER", function() {
+		hideRoute();
 		mainMenu();
 	});
 	sidepane.append(adminView.manageUserForm(function() {
 		clientIdFromEmail(document.getElementById("email").value)
 		.then(clientId => {
 			adminRequests.getBookingsForUser(clientId, function(bookings) {
-				sidepane.append(adminView.bookingList(bookings));
+				sidepane.append(adminView.bookingList(bookings, displayRoute));
 			});
 		});
 	}));
+}
+
+function displayRoute(booking) {
+	console.log(booking);
+	adminRequests.getBookingRoute(booking.id, function(route) {
+		// remove old route if present
+		hideRoute()
+		// draw the route
+		if (route.length > 0) {
+			currentRoute = new google.maps.Polyline({
+				path: route,
+				geodesic: true
+			});
+			
+			currentRoute.setMap(map);
+			
+			// pan to the route
+			var bounds = new google.maps.LatLngBounds();
+			for (var i = 0; i < route.length; i++) {
+				bounds.extend(route[i]);
+			}
+			map.fitBounds(bounds);
+		} else {
+			console.log("No route information for this booking");
+		}
+	});
+}
+
+function hideRoute() {
+	if (currentRoute != null) {
+		currentRoute.setMap(null);
+		currentRoute = null;
+	}
 }
 
 function editRates() {

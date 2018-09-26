@@ -1069,4 +1069,28 @@ public class Database implements Closeable {
 
 	return rates;
     }
+
+    /**
+     * Sets the rates in the database according to the passed in map. This method
+     * doesn't support adding/removing rates.
+     *
+     * @return {@code true} on success
+     */
+    public boolean setRates(Map<String, Double> rates) {
+	String ratesSql = "update `costs` set `rate` = ? where `type` = ?";
+	try (PreparedStatement ps = this.conn.prepareStatement(ratesSql)) {
+	    for (Map.Entry<String, Double> entry : rates.entrySet()) {
+		String tier = entry.getKey();
+		Double rate = entry.getValue();
+		// execute update
+		ps.setDouble(1, rate);
+		ps.setString(2, tier);
+		ps.executeUpdate();
+	    }
+	    return true;
+	} catch (SQLException e) {
+	    logger.error("Couldn't set rates in db", e);
+	}
+	return false;
+    }
 }

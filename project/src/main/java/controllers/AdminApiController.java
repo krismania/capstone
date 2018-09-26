@@ -8,6 +8,7 @@ import static spark.Spark.path;
 import static spark.Spark.post;
 import static spark.Spark.put;
 
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
@@ -292,6 +294,23 @@ public class AdminApiController {
 		    Map<String, Double> rates = db.getRates();
 		    res.type("application/json");
 		    return new Gson().toJson(rates);
+		}
+	    });
+
+	    post("", (req, res) -> {
+		/* @formatter:off */
+		// ref: https://stackoverflow.com/a/15943171/2393133
+		Type type = new TypeToken<Map<String, Double>>(){}.getType();
+		Map<String, Double> rates = new Gson().fromJson(req.body(), type);
+		/* @formatter:on */
+		try (Database db = new Database()) {
+		    if (db.setRates(rates)) {
+			return "";
+		    } else {
+			res.status(400);
+			res.type("application/json");
+			return new Gson().toJson(new ErrorResponse("Couldn't set rates"));
+		    }
 		}
 	    });
 

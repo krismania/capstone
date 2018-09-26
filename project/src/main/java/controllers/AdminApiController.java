@@ -4,12 +4,14 @@ import static spark.Spark.before;
 import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.halt;
+import static spark.Spark.path;
 import static spark.Spark.post;
 import static spark.Spark.put;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -280,6 +282,19 @@ public class AdminApiController {
 
 	    logger.info("Found Client ID: " + cid);
 	    return new Gson().toJson(new ClientIdResponse(cid));
+	});
+
+	// rate routes
+	path("/rates", () -> {
+
+	    get("", (req, res) -> {
+		try (Database db = new Database()) {
+		    Map<String, Double> rates = db.getRates();
+		    res.type("application/json");
+		    return new Gson().toJson(rates);
+		}
+	    });
+
 	});
     }
 

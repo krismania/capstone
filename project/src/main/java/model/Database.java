@@ -12,7 +12,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1047,5 +1049,24 @@ public class Database implements Closeable {
 	System.out.println(cost);
 	logger.info("Cost for car: $" + cost);
 	return cost;
+    }
+
+    /**
+     * Creates a map from the vehicle tier rates stored in the database
+     */
+    public Map<String, Double> getRates() {
+	Map<String, Double> rates = new LinkedHashMap<>();
+
+	String ratesSql = "select `type`, `rate` from `costs`";
+	try (PreparedStatement ps = this.conn.prepareStatement(ratesSql)) {
+	    ResultSet rs = ps.executeQuery();
+	    while (rs.next()) {
+		rates.put(rs.getString("type"), rs.getDouble("rate"));
+	    }
+	} catch (SQLException e) {
+	    logger.error("Couldn't get rates from db", e);
+	}
+
+	return rates;
     }
 }

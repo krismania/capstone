@@ -60,8 +60,8 @@ function signOut() {
 		    document.getElementById("header-links").style.visibility = 'hidden';
 		    // show sign-in button
 		    document.getElementsByClassName("g-signin2")[0].style.display = 'unset';
-		    // fire event
-		    document.dispatchEvent(new Event("logout"));
+		    // go home
+		    window.location.href = "/";
 		});
 	});
 }

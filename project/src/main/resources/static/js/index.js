@@ -3,10 +3,5 @@ document.addEventListener("login", function() {
     displayCurrentBooking()
 });
 
-document.addEventListener("logout", function() {
-    // hide current booking if it was displayed
-    removeCurrentBooking();
-});
-
 // Display the geolocate button initially
 showGeoButton();

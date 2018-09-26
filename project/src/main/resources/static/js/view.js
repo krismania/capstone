@@ -57,7 +57,7 @@ var view = (function() {
 		
 		jsonDateToString: function(d) {
 			return d.date.day + '/' +  d.date.month + '/' + d.date.year + " " +
-				d.time.hour + ":" + d.time.minute
+				d.time.hour + ":" + zeroPad(d.time.minute)
 		},
 		
 		vehicleInfo: function(vehicle) {

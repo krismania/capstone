@@ -230,6 +230,7 @@ header h1 {
 
 #sidepane-content button.confirm {
 	float: right;
+	margin-bottom: 32px;
 }
 
 #sidepane-content > .vehicle-info {

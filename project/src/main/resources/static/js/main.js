@@ -1,4 +1,4 @@
-var map;
+var map = null;
 
 // list of vehicles currently being displayed on the map
 // map markers are stored in vehicles[i].marker
@@ -293,6 +293,45 @@ function nearbyCars(pos) {
 	});
 }
 
+function findBookedVehicle(booking) {
+	if (map != null) {
+		map.panTo(bookedVehicle.marker.getPosition());
+	}
+	// open a google maps link navigating to the vehicle
+	var pos = bookedVehicle.marker.getPosition();
+	var link = "https://maps.google.com/maps?daddr=" + pos.lat() + "," + pos.lng();
+	var win = window.open(link, '_blank');
+	win.focus();
+}
+
+function extendBooking(booking) {
+	// TODO: ask user for extra duration
+	rebu.extendCurrentBooking(60, function(success) {
+		if (success) {
+			alert("Booking has been extended");
+			window.location.reload(); // refresh the page
+			// TODO: update the booking card in place
+		} else {
+			alert("Booking was not extended");
+		}
+	});
+}
+
+function endBooking(booking) {
+	rebu.endCurrentBooking(new Date(), function(success) {
+		if (success) {
+			if (map != null) {
+				removeCurrentBooking();
+				rebu.getVehicles(displayVehicles);
+			} else {
+				window.location.reload();
+			}
+		} else {
+			alert("Booking has not ended");
+		}
+	});
+}
+
 // Queries for the user's current booking & displays it as a card
 function displayCurrentBooking() {
 	rebu.getCurrentBooking(function(booking) {
@@ -300,45 +339,8 @@ function displayCurrentBooking() {
 		bookedVehicle = booking.vehicle;
 		bookedVehicle.marker = createVehicleMarker(bookedVehicle, map, true);
 		
-		// callback for "find car" button
-		var findCallback = function(booking) {
-			map.panTo(bookedVehicle.marker.getPosition());
-			// map.setZoom(18); // this doesn't work very well
-			// open a google maps link navigating to the vehicle
-			var pos = bookedVehicle.marker.getPosition();
-			var link = "https://maps.google.com/maps?daddr=" + pos.lat() + "," + pos.lng();
-			var win = window.open(link, '_blank');
-			win.focus();
-		}
-		
-		// callback for "extend booking" button
-		var extendCallback = function(booking) {
-			// TODO: ask user for extra duration
-			rebu.extendCurrentBooking(60, function(success) {
-				if (success) {
-					alert("Booking has been extended");
-					window.location.reload(); // refresh the page
-					// TODO: update the booking card in place
-				} else {
-					alert("Booking was not extended");
-				}
-			});
-		}
-		
-		// callback for "end booking" button
-		var endCallback = function(booking) {
-			rebu.endCurrentBooking(new Date(), function(success) {
-				if (success) {
-					removeCurrentBooking();
-					rebu.getVehicles(displayVehicles);
-				} else {
-					alert("Booking has not ended");
-				}
-			});
-		}
-		
 		// display the card
-		var currentBookingCard = view.currentBookingCard(booking, findCallback, extendCallback, endCallback);
+		var currentBookingCard = view.currentBookingCard(booking, findBookedVehicle, extendBooking, endBooking);
 			
 		// fancy transition
 		currentBookingCard.className = "transition-start";

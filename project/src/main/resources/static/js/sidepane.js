@@ -70,7 +70,7 @@ sidepane = (function() {
 				var close = document.createElement("button");
 				close.className = "exit";
 				close.addEventListener("click", this.close);
-				close.innerText = "╳";
+				close.innerHTML = '<i class="material-icons">close</i>';
 				sp.appendChild(close);
 			}
 		}

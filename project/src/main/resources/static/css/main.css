@@ -431,8 +431,6 @@ form.searchbox button:focus {
 /* account page current booking */
 
 #cur-booking > div {
-	display: flex;
-	justify-content: space-between;
 	border: 1px solid rgba(0, 0, 0, 0.6);
 	border-radius: 4px;
 	padding: 16px;
@@ -452,10 +450,26 @@ form.searchbox button:focus {
 	color: #00000099;
 }
 
+#cur-booking > div > div {
+	display: flex;
+	justify-content: space-between;
+}
+
 #cur-booking .booking-info {
 	text-align: right;
 }
 
+@media only screen and (max-width: 432px) {
+	
+	#current-booking {
+		bottom: 0;
+		left: 0;
+		border-radius: 0;
+		width: 100%;
+		box-sizing: border-box;
+	}
+	
+}
 
 /* admin rate editing form */
 
@@ -478,4 +492,3 @@ div.ratesTable > div > label {
 div.ratesTable > div > input {
 	margin: 0;
 }
-

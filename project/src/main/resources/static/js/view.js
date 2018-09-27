@@ -236,7 +236,7 @@ var view = (function() {
 			return container;
 		},
 		
-		currentBooking: function(booking) {
+		currentBookingInfo: function(booking) {
 			var container = document.createElement("div");
 			var bookingInfo = this.bookingInfo(booking);
 			var vehicleInfo = this.vehicleInfo(booking.vehicle);
@@ -247,47 +247,80 @@ var view = (function() {
 			return container;
 		},
 		
-		currentBookingCard: function(booking, findCallback, extendCallback, endCallBack) {
-			var container = document.createElement("div");
-			container.id = "current-booking";
+		currentBookingButtons: function(booking, findCallback, extendCallback, endCallback) {
+			var buttons = new Array();
 			
-			var header = document.createElement("h3");
-			var info = this.currentBooking(booking);
 			var findVehicleButton = document.createElement("button");
 			var extendBookingButton = document.createElement("button");
 			var endBookingButton = document.createElement("button");
-			
-			header.innerText = "CURRENT BOOKING";
-			findVehicleButton.innerText = "FIND CAR";
-			extendBookingButton.innerText = "EXTEND";
-			extendBookingButton.style = "margin-left: 8px; background-color: #4CAF50";
-			endBookingButton.innerText = "END BOOKING";
-			endBookingButton.style = "float: right; background-color: #F44336";
 			
 			findVehicleButton.addEventListener("click", function(e) {
 				e.preventDefault();
 				findCallback(booking);
 			});
-			
 			extendBookingButton.addEventListener("click", function(e) {
 				e.preventDefault();
 				extendCallback(booking);
 			});
-			
 			endBookingButton.addEventListener("click", function(e) {
 				e.preventDefault();
-				endCallBack(booking);
+				endCallback(booking);
 			});
 			
 			findVehicleButton.className = "confirm";
 			extendBookingButton.className = "confirm";
 			endBookingButton.className = "confirm";
 			
+			findVehicleButton.innerText = "FIND CAR";
+			findVehicleButton.style = "margin-right: 8px"
+			extendBookingButton.innerText = "EXTEND";
+			extendBookingButton.style = "background-color: #4CAF50";
+			endBookingButton.innerText = "END BOOKING";
+			endBookingButton.style = "float: right; background-color: #F44336";
+			
+			buttons.push(findVehicleButton);
+			buttons.push(extendBookingButton);
+			buttons.push(endBookingButton);
+			
+			return buttons;
+		},
+		
+		currentBooking: function(booking, findCallback, extendCallback, endCallBack) {
+			var container = document.createElement("div");
+			
+			var info = this.currentBookingInfo(booking);
+			var buttons = this.currentBookingButtons(booking, findCallback, extendCallback, endCallBack);
+			
+			// todo: find button doesn't work without the map, so remove it
+			buttons.shift();
+			// add margin to the extend button to push it right
+			// TODO: do this better
+			buttons[0].style.marginLeft = "calc(100% - 228px)";
+			
+			container.appendChild(info);
+			for (var i = buttons.length - 1; i >= 0; i--) {
+				container.appendChild(buttons[i]);
+			}
+			
+			return container;
+		},
+		
+		currentBookingCard: function(booking, findCallback, extendCallback, endCallBack) {
+			var container = document.createElement("div");
+			container.id = "current-booking";
+			
+			var header = document.createElement("h3");
+			var info = this.currentBookingInfo(booking);
+			var buttons = this.currentBookingButtons(booking, findCallback, extendCallback, endCallBack);
+			
+			header.innerText = "CURRENT BOOKING";
+			
 			container.appendChild(header);
 			container.appendChild(info);
-			container.appendChild(findVehicleButton);
-			container.appendChild(extendBookingButton);
-			container.appendChild(endBookingButton);
+			
+			for (var i = 0; i < buttons.length; i++) {
+				container.appendChild(buttons[i]);
+			}
 			
 			return container;
 		}

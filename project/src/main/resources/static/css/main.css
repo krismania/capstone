@@ -200,11 +200,23 @@ header h1 {
 
 #sidepane {
     position: fixed;
-    height: 100%;
+    height: calc(100% - 56px);
     background-color: #fefefe;
     box-shadow: 0 0 10px -5px black;
-    overflow: hidden;
+    overflow: hidden scroll;
     transition: width 0.4s;
+}
+
+/* scrollbar styling for webkit browsers */
+#sidepane::-webkit-scrollbar {
+	width: 16px;
+}
+
+#sidepane::-webkit-scrollbar-thumb {
+  background-color: #00000033;
+  border: 6px solid white;
+  border-radius: 8px;
+  background-clip: padding-box;
 }
 
 #sidepane-content {
@@ -289,11 +301,22 @@ button {
 
 button.exit {
 	position: absolute;
-	right: 16px;
+	right: 0;
 	top: 32px;
-	width: 20px;
-	height: 20px;
+	width: 24px;
+	height: 24px;
 	background: none;
+	padding: 0;
+	outline: none;
+	border-radius: 12px;
+	color: #00000099;
+}
+
+button.exit:hover,
+button.exit:focus,
+button.exit:active {
+	background-color: #00000099;
+	color: #ffffff;
 }
 
 button.confirm {

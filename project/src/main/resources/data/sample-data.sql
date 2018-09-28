@@ -43,11 +43,11 @@ values
     ("112606983151403770748");
     
     insert ignore into `costs`
-	(`type`, `rate`)
+	(`type`, `rate`, `base`)
 values   
-    ("Tier 1", 3),
-    ("Tier 2", 2),
-    ("Tier 3", 1);
+    ("Tier 1", 3, 30),
+    ("Tier 2", 2, 20),
+    ("Tier 3", 1, 10);
     
 insert ignore into `locations`
 	(`registration`, `timestamp`, `location`)

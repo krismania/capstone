@@ -41,8 +41,14 @@ values
     ("117051605584473461533"),
     ("110833881946064880314"),
     ("112606983151403770748");
+
+insert ignore into `users`
+	(`cid`, `email`)
+values
+	("112606983151403770748", "s3543819@student.rmit.edu.au"),
+    ("110833881946064880314", "s3489609@student.rmit.edu.au");
     
-    insert ignore into `costs`
+insert ignore into `costs`
 	(`type`, `rate`)
 values   
     ("Tier 1", 3),
@@ -402,4 +408,3 @@ values
     ("UFJ759", "2000-01-01 00:00:00", POINT(-37.800482, 144.941963)),
     ("MERZ", "2000-01-01 00:00:00", POINT(-37.826453, 144.954995)),
     ("IDA833", "2000-01-01 00:00:00", POINT(-37.824094, 144.977051));
-

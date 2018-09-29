@@ -44,6 +44,22 @@ var view = (function() {
 	
 	return {
 		
+		dateToString: function(d) {
+			var year = d.getFullYear();
+			var month = zeroPad(d.getMonth() + 1);
+			var day = zeroPad(d.getDate());
+			var hours = zeroPad(d.getHours());
+			var minutes = zeroPad(d.getMinutes());
+			var seconds = zeroPad(d.getSeconds());
+			return year + "-" + month + "-" + day + " "
+				+ hours + ":" + minutes + ":" + seconds;
+		},
+		
+		jsonDateToString: function(d) {
+			return d.date.day + '/' +  d.date.month + '/' + d.date.year + " " +
+				d.time.hour + ":" + zeroPad(d.time.minute)
+		},
+		
 		vehicleInfo: function(vehicle) {
 			var container = document.createElement("div");
 			var desc = document.createElement("h3");
@@ -191,7 +207,7 @@ var view = (function() {
 			
 			bookBtn.className = "confirm";
 			// disable button if car unavailable
-			if (vehicle.available) {
+			if (vehicle.status == 0) {
 				bookBtn.innerText = "BOOK NOW";
 				bookBtn.addEventListener("click", callback);
 			} else {
@@ -211,8 +227,8 @@ var view = (function() {
 			var date = document.createElement("p");
 			
 			// create date string
-			var dateString = booking.timestamp.date.day + '/' +  booking.timestamp.date.month + '/' + booking.timestamp.date.year
-			date.innerText = dateString;
+			
+			date.innerText = this.jsonDateToString(booking.timestamp);
 			
 			container.appendChild(vehicleInfo);
 			container.appendChild(date);

@@ -10,7 +10,7 @@ document.addEventListener("login", function() {
 		console.log(bookings);
 		var bookingsDiv = document.getElementById("prev-bookings");
 		// TODO: set the ordering on the server side rather than here
-		for (var i = 0; i < bookings.length ; i++) {
+		for (var i = bookings.length-1; i >= 0 ; i--) {
 			// TODO: server may need to send this as a seperate field
 			bookings[i].vehicle.description = bookings[i].vehicle.make + " "
 				+ bookings[i].vehicle.model

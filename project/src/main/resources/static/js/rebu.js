@@ -162,7 +162,7 @@ rebu = (function() {
 			headers.append("Content-Type", "application/json");
 			
 			var body = {
-					timestamp: dateToString(new Date())
+					timestamp: timestamp
 			};
 			
 			var request = new Request('/api/bookings/end');

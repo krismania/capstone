@@ -966,6 +966,15 @@ public class Database implements Closeable {
 		// calculate the number of minutes between the current time & the booking start
 		LocalDateTime start = currentBooking.getTimestamp();
 		LocalDateTime current = Util.getCurrentTime();
+
+		// does not allow for cancelation if below 30mins
+		LocalDateTime lock = start.plusMinutes(30);
+
+		if (current.isBefore(lock)) {
+		    logger.info("You cannot end before 30minutes of booking.");
+		    return false;
+		}
+
 		int newDuration = (int) Math.ceil(Duration.between(start, current).toMinutes());
 
 		// update the booking record

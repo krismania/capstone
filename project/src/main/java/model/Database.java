@@ -339,9 +339,9 @@ public class Database implements Closeable {
     public Booking getBooking(int id) throws SQLException {
 	logger.info("Getting booking with ID " + id);
 
-	String sql = "SELECT `timestamp`, `customer_id`, `duration`, `vehicles`.`registration`, `make`, `model`, `year`, `colour`, `status`, `type`"
-		+ "FROM `bookings` LEFT JOIN `vehicles` ON `bookings`.`registration` = `vehicles`.`registration`"
-		+ "WHERE `id` = ?";
+	String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.rate, costs.base "
+		+ "FROM bookings as bk LEFT JOIN vehicles as vh ON bk.registration=vh.registration, costs "
+		+ "WHERE bk.id = ? ;";
 
 	try (PreparedStatement ps = this.conn.prepareStatement(sql)) {
 	    ps.setInt(1, id);
@@ -350,7 +350,12 @@ public class Database implements Closeable {
 		// construct vehicle & booking
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
+
+		// COST CALCULATION
 		int duration = rs.getInt("duration");
+		int rate = rs.getInt("rate");
+		int base = rs.getInt("base");
+		double price = calculateCost(rate, base, duration);
 
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
@@ -363,7 +368,7 @@ public class Database implements Closeable {
 		Position start = getVehiclePositionByTime(registration, timestamp);
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, price);
 
 		return booking;
 	    } else {
@@ -1191,15 +1196,14 @@ public class Database implements Closeable {
 	return cost;
     }
 
-
     public double calculateCost(int rate, int base, int duration) {
 	double overtime = (double) duration / 30;
 	double totalprice = base + rate * Math.ceil(overtime); // always rounds up, so we charge an extra 30min if
 							       // overtime 30 min intervals.
 	logger.info("Costs : " + totalprice);
 	return totalprice;
-  
-  }
+
+    }
 
     /**
      * Creates a map from the vehicle tier rates stored in the database

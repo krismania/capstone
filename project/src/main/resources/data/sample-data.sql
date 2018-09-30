@@ -48,12 +48,13 @@ values
 	("112606983151403770748", "s3543819@student.rmit.edu.au"),
     ("110833881946064880314", "s3489609@student.rmit.edu.au");
     
-insert ignore into `costs`
-	(`type`, `rate`)
+    insert ignore into `costs`
+	(`type`, `rate`, `base`)
+
 values   
-    ("Tier 1", 3),
-    ("Tier 2", 2),
-    ("Tier 3", 1);
+    ("Tier 1", 3, 30),
+    ("Tier 2", 2, 20),
+    ("Tier 3", 1, 10);
     
 insert ignore into `locations`
 	(`registration`, `timestamp`, `location`)

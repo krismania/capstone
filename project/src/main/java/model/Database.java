@@ -754,57 +754,69 @@ public class Database implements Closeable {
     }
 
     public Booking getBookingNow(String clientId) throws SQLException {
-	Booking br = null;
+	try {
+	    Booking br = null;
 
-	String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		+ " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type FROM bookings as bk"
-		+ " LEFT JOIN vehicles as vh ON bk.registration=vh.registration WHERE (timestamp + INTERVAL duration MINUTE) > NOW() "
-		+ "AND customer_id LIKE ?";
-	PreparedStatement ps = this.conn.prepareStatement(query);
+	    String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type FROM bookings as bk"
+		    + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration WHERE (timestamp + INTERVAL duration MINUTE) > NOW() "
+		    + "AND customer_id LIKE ?";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	ps.setString(1, clientId);
+	    ps.setString(1, clientId);
 
-	ResultSet rs = ps.executeQuery();
+	    ResultSet rs = ps.executeQuery();
 
-	while (rs.next()) {
-	    int id = rs.getInt("id");
-	    LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
-	    String customer_id = rs.getString("customer_id");
-	    int duration = rs.getInt("duration");
+	    while (rs.next()) {
+		int id = rs.getInt("id");
+		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+		String customer_id = rs.getString("customer_id");
+		int duration = rs.getInt("duration");
 
-	    String registration = rs.getString("registration");
-	    String make = rs.getString("make");
-	    String model = rs.getString("model");
-	    int year = rs.getInt("year");
-	    String colour = rs.getString("colour");
-	    Position car_curr_pos = getVehiclePosition(registration);
-	    int status = rs.getInt("status");
-	    String type = rs.getString("type");
-	    Position start = getVehiclePositionByTime(registration, timestamp);
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		Position car_curr_pos = getVehiclePosition(registration);
+		int status = rs.getInt("status");
+		String type = rs.getString("type");
+		Position start = getVehiclePositionByTime(registration, timestamp);
 
-	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-	    br = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
+		br = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+	    }
+	    ps.close();
+	    rs.close();
+	    return br;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return null in case of an error
+	    return null;
 	}
-	ps.close();
-	rs.close();
-	return br;
     }
 
     public int checkVehicleStatus(String reg) throws SQLException {
-	int status = 1;
+	try {
+	    int status = 1;
 
-	String query = "SELECT vh.status FROM vehicles as vh WHERE vh.registration LIKE ?";
-	PreparedStatement ps = this.conn.prepareStatement(query);
+	    String query = "SELECT vh.status FROM vehicles as vh WHERE vh.registration LIKE ?";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	ps.setString(1, reg);
-	ResultSet rs = ps.executeQuery();
+	    ps.setString(1, reg);
+	    ResultSet rs = ps.executeQuery();
 
-	while (rs.next()) {
-	    status = rs.getInt("status");
+	    while (rs.next()) {
+		status = rs.getInt("status");
+	    }
+	    ps.close();
+	    rs.close();
+	    return status;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return null in case of an error
+	    return -1;
 	}
-	ps.close();
-	rs.close();
-	return status;
     }
 
     /**
@@ -827,45 +839,55 @@ public class Database implements Closeable {
 	}
     }
 
-    public void addUser(String cid, String email) throws SQLException {
+    public Boolean addUser(String cid, String email) throws SQLException {
+	try {
+	    String sql = "SELECT cid FROM users WHERE cid LIKE ?";
+	    PreparedStatement stmt = this.conn.prepareStatement(sql);
+	    stmt.setString(1, cid);
+	    ResultSet rs = stmt.executeQuery();
 
-	String sql = "SELECT cid FROM users WHERE cid LIKE ?";
-	PreparedStatement stmt = this.conn.prepareStatement(sql);
-	stmt.setString(1, cid);
-	ResultSet rs = stmt.executeQuery();
+	    if (!rs.isBeforeFirst()) {
+		String query = "INSERT INTO users " + "(cid, email) VALUES (?, ?)";
+		PreparedStatement pStmnt = this.conn.prepareStatement(query);
+		pStmnt.setString(1, cid);
+		pStmnt.setString(2, email);
+		pStmnt.executeUpdate();
+		pStmnt.close();
 
-	if (!rs.isBeforeFirst()) {
-	    String query = "INSERT INTO users " + "(cid, email) VALUES (?, ?)";
-	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
-	    pStmnt.setString(1, cid);
-	    pStmnt.setString(2, email);
-	    pStmnt.executeUpdate();
-	    pStmnt.close();
-
-	    logger.info("Adding to users database email: " + email);
-	} else {
-	    logger.info("Users table already has email: " + email);
+		logger.info("Adding to users database email: " + email);
+		return true;
+	    } else {
+		logger.info("Users table already has email: " + email);
+		return true;
+	    }
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
 	}
 
     }
 
     public String getCid(String email) throws SQLException {
+	try {
+	    String cid = null;
+	    String sql = "SELECT cid FROM users WHERE email LIKE ?";
+	    PreparedStatement stmt = this.conn.prepareStatement(sql);
+	    stmt.setString(1, email);
+	    ResultSet rs = stmt.executeQuery();
 
-	String cid = null;
-	String sql = "SELECT cid FROM users WHERE email LIKE ?";
-	PreparedStatement stmt = this.conn.prepareStatement(sql);
-	stmt.setString(1, email);
-	ResultSet rs = stmt.executeQuery();
+	    if (rs.next()) {
+		cid = rs.getString("cid");
+		System.out.println(cid);
+		logger.info("Client ID of user: " + cid);
 
-	if (rs.next()) {
-	    cid = rs.getString("cid");
-	    System.out.println(cid);
-	    logger.info("Client ID of user: " + cid);
-
+	    }
+	    stmt.close();
+	    rs.close();
+	    return cid;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return null;
 	}
-	stmt.close();
-	rs.close();
-	return cid;
     }
 
     public boolean endBooking(String clientid, LocalDateTime currTime) {
@@ -1053,34 +1075,38 @@ public class Database implements Closeable {
     }
 
     public float calculateCost(String reg, int duration) throws SQLException {
+	try {
+	    String type = null;
+	    int rate = 0;
+	    float cost;
 
-	String type = null;
-	int rate = 0;
-	float cost;
+	    String sql = "SELECT vh.type FROM vehicles as vh WHERE vh.registration LIKE ?";
+	    PreparedStatement ps = this.conn.prepareStatement(sql);
+	    ps.setString(1, reg);
 
-	String sql = "SELECT vh.type FROM vehicles as vh WHERE vh.registration LIKE ?";
-	PreparedStatement ps = this.conn.prepareStatement(sql);
-	ps.setString(1, reg);
+	    ResultSet rs = ps.executeQuery();
+	    while (rs.next()) {
+		type = rs.getString("type");
+	    }
+	    rs.close();
 
-	ResultSet rs = ps.executeQuery();
-	while (rs.next()) {
-	    type = rs.getString("type");
+	    String sql2 = "SELECT c.rate FROM costs as c WHERE c.type LIKE ?";
+	    PreparedStatement ps2 = this.conn.prepareStatement(sql2);
+	    ps2.setString(1, type);
+	    ResultSet rs2 = ps2.executeQuery();
+	    while (rs2.next()) {
+		rate = rs2.getInt("rate");
+	    }
+	    rs2.close();
+
+	    cost = rate * duration;
+	    // for testing purpose
+	    System.out.println(cost);
+	    logger.info("Cost for car: $" + cost);
+	    return cost;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return -1;
 	}
-	rs.close();
-
-	String sql2 = "SELECT c.rate FROM costs as c WHERE c.type LIKE ?";
-	PreparedStatement ps2 = this.conn.prepareStatement(sql2);
-	ps2.setString(1, type);
-	ResultSet rs2 = ps2.executeQuery();
-	while (rs2.next()) {
-	    rate = rs2.getInt("rate");
-	}
-	rs2.close();
-
-	cost = rate * duration;
-	// for testing purpose
-	System.out.println(cost);
-	logger.info("Cost for car: $" + cost);
-	return cost;
     }
 }

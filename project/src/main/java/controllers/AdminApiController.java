@@ -276,6 +276,10 @@ public class AdminApiController {
 	    Database db = new Database();
 	    String cid = db.getCid(email);
 	    db.close();
+	    if (cid == null) {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting CID"));
+	    }
 
 	    logger.info("Found Client ID: " + cid);
 	    return new Gson().toJson(cid);

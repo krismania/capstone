@@ -1195,11 +1195,20 @@ public class Database implements Closeable {
 	return cost;
     }
 
+    /**
+     * Calculate costs of vehicle for the user
+     */
+
     public double calculateCost(int rate, int base, int duration) {
+	if (duration < 30) {
+	    duration = 30;
+	}
+
 	double overtime = (double) duration / 30;
 	double totalprice = base + rate * Math.ceil(overtime); // always rounds up, so we charge an extra 30min if
 							       // overtime 30 min intervals.
 	logger.info("Costs : " + totalprice);
+
 	return totalprice;
 
     }

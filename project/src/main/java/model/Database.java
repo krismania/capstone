@@ -595,7 +595,8 @@ public class Database implements Closeable {
 	try {
 	    String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type "
 		    + "FROM bookings as bk LEFT JOIN vehicles as vh ON bk.registration=vh.registration "
-		    + "WHERE bk.customer_id = ? AND date_add(bk.timestamp, interval bk.duration minute) < now()";
+		    + "WHERE bk.customer_id = ? AND date_add(bk.timestamp, interval bk.duration minute) < now() "
+		    + "ORDER by timestamp DESC";
 	    PreparedStatement stmt = this.conn.prepareStatement(sql);
 	    stmt.setString(1, clientId);
 	    ResultSet rs = stmt.executeQuery();

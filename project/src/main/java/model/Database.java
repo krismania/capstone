@@ -1163,38 +1163,6 @@ public class Database implements Closeable {
 	return false;
     }
 
-    public float calculateCost(String reg, int duration) throws SQLException {
-
-	String type = null;
-	int rate = 0;
-	float cost;
-
-	String sql = "SELECT vh.type FROM vehicles as vh WHERE vh.registration LIKE ?";
-	PreparedStatement ps = this.conn.prepareStatement(sql);
-	ps.setString(1, reg);
-
-	ResultSet rs = ps.executeQuery();
-	while (rs.next()) {
-	    type = rs.getString("type");
-	}
-	rs.close();
-
-	String sql2 = "SELECT c.rate FROM costs as c WHERE c.type LIKE ?";
-	PreparedStatement ps2 = this.conn.prepareStatement(sql2);
-	ps2.setString(1, type);
-	ResultSet rs2 = ps2.executeQuery();
-	while (rs2.next()) {
-	    rate = rs2.getInt("rate");
-	}
-	rs2.close();
-
-	cost = rate * duration;
-	// for testing purpose
-	System.out.println(cost);
-	logger.info("Cost for car: $" + cost);
-	return cost;
-    }
-
     /**
      * Calculate costs of vehicle for the user
      */

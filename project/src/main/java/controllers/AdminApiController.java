@@ -143,8 +143,15 @@ public class AdminApiController {
 	    List<Vehicle> vehicles = db.getVehicles();
 	    db.close();
 
-	    logger.info("Found " + vehicles.size() + " vehicles");
-	    return new Gson().toJson(vehicles);
+	    if (vehicles != null) {
+		res.status(200);
+		logger.info("Found " + vehicles.size() + " vehicles");
+		return new Gson().toJson(vehicles);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting vehicles"));
+	    }
+
 	});
 
 	// returns a list of all bookings
@@ -155,8 +162,15 @@ public class AdminApiController {
 	    List<Booking> bookings = db.getBookings();
 	    db.close();
 
-	    logger.info("Found " + bookings.size() + " bookings");
-	    return new Gson().toJson(bookings);
+	    if (bookings != null) {
+		res.status(200);
+		logger.info("Found " + bookings.size() + " bookings");
+		return new Gson().toJson(bookings);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting bookings"));
+	    }
+
 	});
 
 	// delete a booking

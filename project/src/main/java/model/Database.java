@@ -189,8 +189,8 @@ public class Database implements Closeable {
 	    return vehicles;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Vehicle>();
+	    // return null in case of an error
+	    return null;
 	}
     }
 
@@ -216,8 +216,8 @@ public class Database implements Closeable {
 	    return vehicles;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Vehicle>();
+	    // return null in case of an error
+	    return null;
 	}
     }
 
@@ -229,6 +229,10 @@ public class Database implements Closeable {
 	List<NearbyVehicle> sortedNearestVehicles = new ArrayList<NearbyVehicle>();
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
 	vehicles = getAvailableVehicles();
+
+	if (vehicles == null) {
+	    return null;
+	}
 
 	for (int i = 0; i < vehicles.size(); i++) {
 	    String registration = vehicles.get(i).getRegistration();
@@ -319,8 +323,8 @@ public class Database implements Closeable {
 	    return bookings;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Booking>();
+	    // return null in case of an error
+	    return null;
 	}
     }
 
@@ -359,6 +363,9 @@ public class Database implements Closeable {
 			pStmnt.close();
 
 			Vehicle vehicle = getVehicleByReg(registration);
+			if (vehicle == null) {
+			    return null;
+			}
 			logger.info("Successfully inserted booking");
 
 			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation);
@@ -368,11 +375,9 @@ public class Database implements Closeable {
 	    }
 
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
+	    return null;
 	}
-
-	// TODO: throw a custom exception on failure?
 	return null;
     }
 
@@ -403,8 +408,8 @@ public class Database implements Closeable {
 	    }
 
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
+	    return null;
 	}
 	return v;
     }
@@ -530,8 +535,8 @@ public class Database implements Closeable {
 	    return bookings;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Booking>();
+	    // return null in case of an error
+	    return null;
 	}
     }
 
@@ -691,7 +696,6 @@ public class Database implements Closeable {
 		return carLocation;
 	    }
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	    return null;
 	}

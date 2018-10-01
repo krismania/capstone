@@ -42,8 +42,14 @@ public class ApiController {
 	    List<Vehicle> vehicles = db.getAvailableVehicles();
 	    db.close();
 
-	    logger.info("Found " + vehicles.size() + " vehicles");
-	    return new Gson().toJson(vehicles);
+	    if (vehicles != null) {
+		res.status(200);
+		logger.info("Found " + vehicles.size() + " vehicles");
+		return new Gson().toJson(vehicles);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting vehicles"));
+	    }
 	});
 
 	// returns a list of nearby vehicles, giving their distance to the client
@@ -65,8 +71,14 @@ public class ApiController {
 	    List<NearbyVehicle> nearby = db.getNearbyVehicles(pos);
 	    db.close();
 
-	    logger.info("Found " + nearby.size() + " nearby vehicles");
-	    return new Gson().toJson(nearby);
+	    if (nearby != null) {
+		res.status(200);
+		logger.info("Found " + nearby.size() + " nearby vehicles");
+		return new Gson().toJson(nearby);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting nerby vehicles"));
+	    }
 	});
 
 	// create a booking
@@ -141,6 +153,11 @@ public class ApiController {
 	    Database db = new Database();
 	    List<Booking> bookings = db.getBookingsOfUser(clientId);
 	    db.close();
+
+	    if (bookings == null) {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting bookings of the user"));
+	    }
 
 	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
 

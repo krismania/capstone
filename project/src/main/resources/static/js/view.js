@@ -21,12 +21,20 @@ var view = (function() {
 	}
 	
 	function difference(date1, date2) {
-		var diffHours = (date1 - date2) / 3600000
-		if (diffHours > 1) {
-			return Math.round(diffHours) + " Hours";
+		var diff = Math.ceil((date1 - date2) / (60 * 1000));
+		var unit;
+		if (diff >= 60) {
+			// if >= 60 mins, convert to hours
+			diff = Math.ceil(diff / 60);
+			unit = "Hour";
 		} else {
-			return Math.round(diffHours * 60) + " Minutes";
+			unit = "Minute";
 		}
+		// pluralize the unit
+		if (diff != 1) {
+			unit = unit + "s";
+		}
+		return "" + diff + " " + unit;
 	}
 	
 	function timeToString(date) {

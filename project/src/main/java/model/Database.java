@@ -1222,6 +1222,48 @@ public class Database implements Closeable {
 	    logger.error("Couldn't set rates in db", e);
 	}
 	return false;
+    }
 
+    /**
+     * Creates a map containing the base price of each vehicle tier
+     */
+    public Map<String, Double> getBasePrices() {
+	Map<String, Double> basePrices = new LinkedHashMap<>();
+
+	String basePricesSQL = "select `type`, `base` from `costs`";
+	try (PreparedStatement ps = this.conn.prepareStatement(basePricesSQL)) {
+	    ResultSet rs = ps.executeQuery();
+	    while (rs.next()) {
+		basePrices.put(rs.getString("type"), rs.getDouble("base"));
+	    }
+	} catch (SQLException e) {
+	    logger.error("Couldn't get base prices from db", e);
+	}
+
+	return basePrices;
+    }
+
+    /**
+     * Sets the base prices in the database according to the passed in map. This
+     * method doesn't support adding/removing tiers.
+     *
+     * @return {@code true} on success
+     */
+    public boolean setBasePrices(Map<String, Double> basePrices) {
+	String ratesSql = "update `costs` set `base` = ? where `type` = ?";
+	try (PreparedStatement ps = this.conn.prepareStatement(ratesSql)) {
+	    for (Map.Entry<String, Double> entry : basePrices.entrySet()) {
+		String tier = entry.getKey();
+		Double basePrice = entry.getValue();
+		// execute update
+		ps.setDouble(1, basePrice);
+		ps.setString(2, tier);
+		ps.executeUpdate();
+	    }
+	    return true;
+	} catch (SQLException e) {
+	    logger.error("Couldn't set rates in db", e);
+	}
+	return false;
     }
 }

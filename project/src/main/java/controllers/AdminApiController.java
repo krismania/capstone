@@ -311,12 +311,8 @@ public class AdminApiController {
 	    });
 
 	    post("", (req, res) -> {
-		/* @formatter:off */
-		// ref: https://stackoverflow.com/a/15943171/2393133
-		Type type = new TypeToken<Map<String, Double>>(){}.getType();
-		Map<String, Double> rates = new Gson().fromJson(req.body(), type);
-		/* @formatter:on */
 		try (Database db = new Database()) {
+		    Map<String, Double> rates = jsonToMap(req.body());
 		    if (db.setRates(rates)) {
 			return "";
 		    } else {
@@ -327,7 +323,37 @@ public class AdminApiController {
 		}
 	    });
 
+	    get("/base", (req, res) -> {
+		try (Database db = new Database()) {
+		    Map<String, Double> basePrices = db.getBasePrices();
+		    res.type("application/json");
+		    return new Gson().toJson(basePrices);
+		}
+	    });
+
+	    post("/base", (req, res) -> {
+		try (Database db = new Database()) {
+		    Map<String, Double> basePrices = jsonToMap(req.body());
+		    if (db.setBasePrices(basePrices)) {
+			return "";
+		    } else {
+			res.status(400);
+			res.type("application/json");
+			return new Gson().toJson(new ErrorResponse("Couldn't set base prices"));
+		    }
+		}
+	    });
+
 	});
+    }
+
+    private Map<String, Double> jsonToMap(String json) {
+	// ref: https://stackoverflow.com/a/15943171/2393133
+	/* @formatter:off */
+	Type type = new TypeToken<Map<String, Double>>(){}.getType();
+	Map<String, Double> map = new Gson().fromJson(json, type);
+	/* @formatter:on */
+	return map;
     }
 
 }

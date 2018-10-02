@@ -94,6 +94,24 @@ var adminRequests = (function() {
 					callback(false);
 				}
 			});
+		},
+		
+		getBasePrices: function(callback) {
+			get("/rates/base")
+			.then(res => res.json())
+			.then(basePrices => callback(basePrices));
+		},
+		
+		setBasePrices: function(newBasePrices, callback) {
+			console.log("Setting base prices to", newBasePrices);
+			post("/rates/base", newBasePrices)
+			.then(res => {
+				if (res.ok) {
+					callback(true);
+				} else {
+					callback(false);
+				}
+			});
 		}
 		
 	}
@@ -118,11 +136,12 @@ var adminView = (function() {
 			return menu;
 		},
 		
-		console: function(addVehicleCallback, manageUserCallback, editRatesCallback) {
+		console: function(addVehicleCallback, manageUserCallback, editRatesCallback, editBasePricesCallback) {
 			var container = document.createElement("div");
 			var addVehicleBtn = document.createElement("button");
 			var manageUserBtn = document.createElement("button");
 			var editRatesBtn = document.createElement("button");
+			var editBasePricesBtn = document.createElement("button");
 			var hint = document.createElement("p");
 			
 			hint.innerText = "Tip: Click on a vehicle to view details about it";
@@ -134,8 +153,10 @@ var adminView = (function() {
 			manageUserBtn.addEventListener('click', manageUserCallback);
 			editRatesBtn.innerText = "Edit Rates";
 			editRatesBtn.addEventListener('click', editRatesCallback);
+			editBasePricesBtn.innerText = "Edit Base Prices";
+			editBasePricesBtn.addEventListener('click', editBasePricesCallback);
 			
-			var adminMenu = this.menu([addVehicleBtn, manageUserBtn, editRatesBtn]);
+			var adminMenu = this.menu([addVehicleBtn, manageUserBtn, editRatesBtn, editBasePricesBtn]);
 			
 			container.appendChild(adminMenu);
 			container.appendChild(hint);
@@ -364,6 +385,69 @@ var adminView = (function() {
 			form.appendChild(submit);
 			
 			return form;
+		},
+		
+		editBasePricesForm: function(basePrices, callback) {
+			var form = document.createElement("form");
+			var submit = document.createElement("button");
+			
+			console.log(basePrices);
+			
+			var hint = document.createElement("p");
+			hint.className = "hint";
+			hint.innerText = "Update the base cost of each vehicle tier";
+			
+			// create rate fields
+			var basePricesTable = document.createElement("div")
+			basePricesTable.className = "ratesTable"; // this tables shares CSS with the rates table
+			
+			// keep track of rate inputs
+			var basePricesInputs = new Map();
+			
+			for (var tier in basePrices) {
+				if (basePrices.hasOwnProperty(tier)) {
+					// create single row
+					var row = document.createElement("div");
+					var label = document.createElement("label");
+					label.innerText = tier + " Base ($)";
+					var input = document.createElement("input");
+					input.type = "number";
+					input.required = true;
+					input.name = tier;
+					input.min = 0;
+					input.step = 0.01;
+					
+					// set value
+					input.value = basePrices[tier];
+					
+					row.appendChild(label);
+					row.appendChild(input);
+					
+					basePricesTable.appendChild(row);
+					
+					// add this input to the inputs map
+					basePricesInputs.set(tier, input);
+				}
+			}
+			
+			submit.type = "submit";
+			submit.className = "confirm";
+			submit.innerText = "Update";
+			submit.addEventListener('click', function(e) {
+				e.preventDefault();
+				// get rates from inputs
+				var newBasePrices = {};
+				for (var [tier, basePricesInput] of basePricesInputs) {
+					newBasePrices[tier] = parseFloat(basePricesInput.value);
+				}
+				callback(newBasePrices);
+			});
+			
+			form.appendChild(hint);
+			form.appendChild(basePricesTable);
+			form.appendChild(submit);
+			
+			return form;
 		}
 		
 	}
@@ -378,7 +462,7 @@ var currentRoute = null;
 function mainMenu() {
 	sidepane.clear();
 	sidepane.appendHeader("ADMIN CONSOLE");
-	sidepane.append(adminView.console(addVehicle, manageUser, editRates))
+	sidepane.append(adminView.console(addVehicle, manageUser, editRates, editBasePrices))
 }
 
 function addVehicle() {
@@ -512,6 +596,25 @@ function editRates() {
 					mainMenu();
 				} else {
 					alert("Couldn't set vehicle rates");
+				}
+			});
+		}));
+	});
+}
+
+function editBasePrices() {
+	sidepane.clear();
+	sidepane.appendHeader("EDIT BASE PRICES", function() {
+		mainMenu();
+	});
+	adminRequests.getBasePrices(function(basePrices) {
+		sidepane.append(adminView.editBasePricesForm(basePrices, function(newBasePrices) {
+			adminRequests.setBasePrices(newBasePrices, function(success) {
+				if (success) {
+					alert("Vehicle base prices have been set");
+					mainMenu();
+				} else {
+					alert("Couldn't set vehicle base prices");
 				}
 			});
 		}));

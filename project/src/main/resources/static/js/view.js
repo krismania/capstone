@@ -225,13 +225,17 @@ var view = (function() {
 			var container = document.createElement("div");
 			var vehicleInfo = this.vehicleInfo(booking.vehicle);
 			var date = document.createElement("p");
+			var cost = document.createElement("p");
 			
 			// create date string
 			
 			date.innerText = this.jsonDateToString(booking.timestamp);
+			cost.innerText = "$" + booking.cost.toFixed(2);
+			cost.className = "cost";
 			
 			container.appendChild(vehicleInfo);
 			container.appendChild(date);
+			container.appendChild(cost);
 			
 			return container;
 		},

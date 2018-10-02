@@ -1,4 +1,4 @@
-var map;
+var map = null;
 
 // list of vehicles currently being displayed on the map
 // map markers are stored in vehicles[i].marker
@@ -60,8 +60,8 @@ function signOut() {
 		    document.getElementById("header-links").style.visibility = 'hidden';
 		    // show sign-in button
 		    document.getElementsByClassName("g-signin2")[0].style.display = 'unset';
-		    // fire event
-		    document.dispatchEvent(new Event("logout"));
+		    // go home
+		    window.location.href = "/";
 		});
 	});
 }
@@ -121,7 +121,9 @@ function initMap() {
 	
 	// listener which resets the 'geolocate' button on pan
 	map.addListener('center_changed', () => {
-		showGeoButton();
+		if (document.getElementById("geo-button")) {
+			showGeoButton();
+		}
 	});
 	
 	// draw user's location
@@ -194,23 +196,34 @@ function createVehicleMarker(vehicle, map, booked = false) {
 		title: vehicle.registration
 	});
 	
-	if (!booked) {
+	if (rebu.isAdmin()) {
 		marker.addListener('click', function() {
-			console.log("Clicked on marker for", vehicle)
-			// close the currently opened window
-			if (currentInfoWindow) currentInfoWindow.close();
-			
-			// create info window & open it
-			var content = view.infoWindow(vehicle, function(e) {
-				e.preventDefault();
-				bookingForm(vehicle);
-			});
-			var info = new google.maps.InfoWindow({content: content});
-			info.open(map, marker);
-			
-			// update the current window var
-			currentInfoWindow = info;
+			console.log("Editing", vehicle);
+			editVehicle(vehicle);
 		});
+		// set retired markers transparent
+		if (vehicle.status == 2) {
+			marker.setOptions({'opacity': 0.6});
+		}
+	} else {
+		if (!booked) {
+			marker.addListener('click', function() {
+				console.log("Clicked on marker for", vehicle)
+				// close the currently opened window
+				if (currentInfoWindow) currentInfoWindow.close();
+				
+				// create info window & open it
+				var content = view.infoWindow(vehicle, function(e) {
+					e.preventDefault();
+					bookingForm(vehicle);
+				});
+				var info = new google.maps.InfoWindow({content: content});
+				info.open(map, marker);
+				
+				// update the current window var
+				currentInfoWindow = info;
+			});
+		}
 	}
 	
 	return marker;
@@ -293,6 +306,45 @@ function nearbyCars(pos) {
 	});
 }
 
+function findBookedVehicle(booking) {
+	if (map != null) {
+		map.panTo(bookedVehicle.marker.getPosition());
+	}
+	// open a google maps link navigating to the vehicle
+	var pos = bookedVehicle.marker.getPosition();
+	var link = "https://maps.google.com/maps?daddr=" + pos.lat() + "," + pos.lng();
+	var win = window.open(link, '_blank');
+	win.focus();
+}
+
+function extendBooking(booking) {
+	// TODO: ask user for extra duration
+	rebu.extendCurrentBooking(60, function(success) {
+		if (success) {
+			alert("Booking has been extended");
+			window.location.reload(); // refresh the page
+			// TODO: update the booking card in place
+		} else {
+			alert("Booking was not extended");
+		}
+	});
+}
+
+function endBooking(booking) {
+	rebu.endCurrentBooking(function(success) {
+		if (success) {
+			if (map != null) {
+				removeCurrentBooking();
+				rebu.getVehicles(displayVehicles);
+			} else {
+				window.location.reload();
+			}
+		} else {
+			alert("Booking has not ended");
+		}
+	});
+}
+
 // Queries for the user's current booking & displays it as a card
 function displayCurrentBooking() {
 	rebu.getCurrentBooking(function(booking) {
@@ -300,45 +352,8 @@ function displayCurrentBooking() {
 		bookedVehicle = booking.vehicle;
 		bookedVehicle.marker = createVehicleMarker(bookedVehicle, map, true);
 		
-		// callback for "find car" button
-		var findCallback = function(booking) {
-			map.panTo(bookedVehicle.marker.getPosition());
-			// map.setZoom(18); // this doesn't work very well
-			// open a google maps link navigating to the vehicle
-			var pos = bookedVehicle.marker.getPosition();
-			var link = "https://maps.google.com/maps?daddr=" + pos.lat() + "," + pos.lng();
-			var win = window.open(link, '_blank');
-			win.focus();
-		}
-		
-		// callback for "extend booking" button
-		var extendCallback = function(booking) {
-			// TODO: ask user for extra duration
-			rebu.extendCurrentBooking(60, function(success) {
-				if (success) {
-					alert("Booking has been extended");
-					window.location.reload(); // refresh the page
-					// TODO: update the booking card in place
-				} else {
-					alert("Booking was not extended");
-				}
-			});
-		}
-		
-		// callback for "end booking" button
-		var endCallback = function(booking) {
-			rebu.endCurrentBooking(new Date(), function(success) {
-				if (success) {
-					removeCurrentBooking();
-					rebu.getVehicles(displayVehicles);
-				} else {
-					alert("Booking has not ended");
-				}
-			});
-		}
-		
 		// display the card
-		var currentBookingCard = view.currentBookingCard(booking, findCallback, extendCallback, endCallback);
+		var currentBookingCard = view.currentBookingCard(booking, findBookedVehicle, extendBooking, endBooking);
 			
 		// fancy transition
 		currentBookingCard.className = "transition-start";
@@ -376,6 +391,9 @@ sidepane.setCloseCallback(function() {
 	document.getElementById('sidepane').style.width = '0';
 	document.getElementById('map-wrapper').style.left = null;
 });
+if (document.getElementById('sidepane').classList.contains('static')) {
+	sidepane.setStatic(true);
+}
 
 // add listeners for login hint
 var loginHint = document.getElementById("login-hint");

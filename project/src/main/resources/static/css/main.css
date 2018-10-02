@@ -344,7 +344,24 @@ button.confirm:disabled {
 #prev-bookings > div {
 	display: flex;
 	justify-content: space-between;
-	margin: 16px 0;
+	align-items: center;
+	margin: 0 -16px;
+	padding: 8px 16px;
+	transition: background-color 0.2s ease;
+}
+
+#prev-bookings > div:nth-child(even) {
+	background-color: #00000008;
+}
+
+#prev-bookings .vehicle-info {
+	flex-grow: 1;
+}
+
+#prev-bookings .cost {
+	font-weight: bolder;
+	color: #000000de;
+	margin-left: 32px;
 }
 
 #current-booking {
@@ -435,7 +452,7 @@ form.searchbox button:focus {
 	border-radius: 4px;
 	padding: 16px;
 	position: relative;
-	margin-bottom: 32px;
+	margin-bottom: 8px;
 }
 
 #cur-booking > div:before {

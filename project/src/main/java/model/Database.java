@@ -109,7 +109,7 @@ public class Database implements Closeable {
 		+ "`email` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`cid`))";
 
 	String cost = "CREATE TABLE IF NOT EXISTS `costs` (`type` VARCHAR(50) NOT NULL, "
-		+ "`rate` DECIMAL(20, 2) NOT NULL, " + "PRIMARY KEY (`type`))";
+		+ "`rate` DECIMAL(20, 2) NOT NULL, " + "`base` INT NOT NULL, " + "PRIMARY KEY (`type`))";
 
 	Statement stmt = this.conn.createStatement();
 	stmt.execute(vehiclesSql);
@@ -339,9 +339,9 @@ public class Database implements Closeable {
     public Booking getBooking(int id) throws SQLException {
 	logger.info("Getting booking with ID " + id);
 
-	String sql = "SELECT `timestamp`, `customer_id`, `duration`, `vehicles`.`registration`, `make`, `model`, `year`, `colour`, `status`, `type`"
-		+ "FROM `bookings` LEFT JOIN `vehicles` ON `bookings`.`registration` = `vehicles`.`registration`"
-		+ "WHERE `id` = ?";
+	String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.rate, costs.base "
+		+ "FROM bookings as bk LEFT JOIN vehicles as vh ON bk.registration=vh.registration, costs "
+		+ "WHERE bk.id = ? ;";
 
 	try (PreparedStatement ps = this.conn.prepareStatement(sql)) {
 	    ps.setInt(1, id);
@@ -350,7 +350,12 @@ public class Database implements Closeable {
 		// construct vehicle & booking
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
+
+		// COST CALCULATION
 		int duration = rs.getInt("duration");
+		int rate = rs.getInt("rate");
+		int base = rs.getInt("base");
+		double price = calculateCost(rate, base, duration);
 
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
@@ -363,7 +368,7 @@ public class Database implements Closeable {
 		Position start = getVehiclePositionByTime(registration, timestamp);
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, price);
 
 		return booking;
 	    } else {
@@ -387,13 +392,19 @@ public class Database implements Closeable {
 	try {
 	    Statement stmt = this.conn.createStatement();
 	    ResultSet rs = stmt.executeQuery("SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration,"
-		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type"
-		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration;");
+		    + " vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.rate, costs.base"
+		    + " FROM bookings as bk" + " LEFT JOIN vehicles as vh ON bk.registration=vh.registration, costs "
+		    + "WHERE vh.type = costs.type;");
 	    while (rs.next()) {
 		int id = rs.getInt("id");
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
+
+		// COST CALCULATION
 		int duration = rs.getInt("duration");
+		int rate = rs.getInt("rate");
+		int base = rs.getInt("base");
+		double price = calculateCost(rate, base, duration);
 
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
@@ -407,7 +418,7 @@ public class Database implements Closeable {
 		Position start = getVehiclePositionByTime(registration, timestamp);
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start);
+		Booking booking = new Booking(id, timestamp, vehicle, customer_id, duration, start, price);
 
 		bookings.add(booking);
 	    }
@@ -456,7 +467,9 @@ public class Database implements Closeable {
 			Vehicle vehicle = getVehicleByReg(registration);
 			logger.info("Successfully inserted booking");
 
-			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation);
+			// initial cost always 0. - Only when booking ends does the cost gets
+			// calculated.
+			return new Booking(id, timestamp, vehicle, customerId, duration, startLocation, 0);
 		    }
 		}
 
@@ -593,9 +606,9 @@ public class Database implements Closeable {
 	List<Booking> bookings = new ArrayList<Booking>();
 
 	try {
-	    String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type "
-		    + "FROM bookings as bk LEFT JOIN vehicles as vh ON bk.registration=vh.registration "
-		    + "WHERE bk.customer_id = ? AND date_add(bk.timestamp, interval bk.duration minute) < now() "
+	    String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.rate, costs.base "
+		    + "FROM bookings as bk LEFT JOIN vehicles as vh ON bk.registration=vh.registration, costs "
+		    + "WHERE bk.customer_id = ? AND date_add(bk.timestamp, interval bk.duration minute) < now() AND vh.type = costs.type "
 		    + "ORDER by timestamp DESC";
 	    PreparedStatement stmt = this.conn.prepareStatement(sql);
 	    stmt.setString(1, clientId);
@@ -604,8 +617,12 @@ public class Database implements Closeable {
 		int bookingId = rs.getInt("id");
 		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 		String customer_id = rs.getString("customer_id");
+
+		// COST CALCULATION
 		int duration = rs.getInt("duration");
-		;
+		int rate = rs.getInt("rate");
+		int base = rs.getInt("base");
+		double price = calculateCost(rate, base, duration);
 
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
@@ -619,7 +636,7 @@ public class Database implements Closeable {
 		Position car_curr_pos = getVehicleLastPosition(registration, Util.getCurrentTime());
 
 		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-		Booking booking = new Booking(bookingId, timestamp, vehicle, customer_id, duration, start);
+		Booking booking = new Booking(bookingId, timestamp, vehicle, customer_id, duration, start, price);
 
 		bookings.add(booking);
 	    }
@@ -846,9 +863,10 @@ public class Database implements Closeable {
     }
 
     public Booking getBookingNow(String clientId) throws SQLException {
-	String query = "select `id`, `timestamp`, `customer_id`, `duration`, `vehicles`.`registration` as `registration`, `make`, `model`, `year`, `colour`, `status`, `type` "
-		+ "from `bookings` left join `vehicles` on `bookings`.`registration` = `vehicles`.`registration` "
-		+ "where customer_id like ? and date_add(`timestamp`, interval `duration` minute) > now() limit 1";
+	String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.base, costs.rate "
+		+ "FROM bookings as bk left join vehicles as vh on bk.registration = vh.registration , costs "
+		+ "WHERE customer_id like ? and date_add(`timestamp`, interval `duration` minute) > now() AND costs.type = vh.type limit 1;";
+
 	PreparedStatement ps = this.conn.prepareStatement(query);
 
 	ps.setString(1, clientId);
@@ -859,7 +877,10 @@ public class Database implements Closeable {
 	    int id = rs.getInt("id");
 	    LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
 	    String customer_id = rs.getString("customer_id");
+	    // COST CALCULATION
 	    int duration = rs.getInt("duration");
+	    // booking hasnt ended just use the base
+	    int base = rs.getInt("base");
 
 	    String registration = rs.getString("registration");
 	    String make = rs.getString("make");
@@ -875,7 +896,7 @@ public class Database implements Closeable {
 	    rs.close();
 
 	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-	    return new Booking(id, timestamp, vehicle, customer_id, duration, start);
+	    return new Booking(id, timestamp, vehicle, customer_id, duration, start, base);
 	} else {
 	    return null;
 	}
@@ -959,9 +980,10 @@ public class Database implements Closeable {
 	return cid;
     }
 
-    public boolean endBooking(String clientId) {
+    public Booking endBooking(String clientId) {
 	try {
 	    Booking currentBooking = getBookingNow(clientId);
+	    boolean accept = false;
 
 	    if (currentBooking != null) {
 		// calculate the number of minutes between the current time & the booking start
@@ -979,15 +1001,61 @@ public class Database implements Closeable {
 		ps.setInt(2, currentBooking.getId());
 
 		int affectedRows = ps.executeUpdate();
-		if (affectedRows == 1) {
-		    return true;
+		if (affectedRows == 1) { // if something changed, proceed with cost calculation and return.
+		    ps.close();
+
+		    // gets latest booking of customer.
+		    String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.base, costs.rate "
+			    + "FROM bookings as bk left join vehicles as vh on bk.registration = vh.registration , costs "
+			    + "WHERE customer_id like ? AND costs.type = vh.type " + "ORDER BY id DESC limit 1;";
+		    ps = this.conn.prepareStatement(query);
+
+		    ps.setString(1, clientId);
+
+		    ResultSet rs = ps.executeQuery();
+		    logger.info("bug");
+		    if (rs.next()) {
+
+			int bookingId = rs.getInt("id");
+			LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+			String customer_id = rs.getString("customer_id");
+
+			// COST CALCULATION
+			int duration = rs.getInt("duration");
+			int rate = rs.getInt("rate");
+			int base = rs.getInt("base");
+			double price = calculateCost(rate, base, duration);
+
+			String registration = rs.getString("registration");
+			String make = rs.getString("make");
+			String model = rs.getString("model");
+			int year = rs.getInt("year");
+			String colour = rs.getString("colour");
+
+			int status = rs.getInt("status");
+			String type = rs.getString("type");
+			Position startpos = getVehiclePositionByTime(registration, timestamp);
+			Position car_curr_pos = getVehicleLastPosition(registration, Util.getCurrentTime());
+
+			Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status,
+				type);
+			Booking booking = new Booking(bookingId, timestamp, vehicle, customer_id, duration, startpos,
+				price);
+			rs.close();
+			ps.close();
+			return booking;
+		    } else {
+			return null;
+		    }
+
 		}
+
 	    }
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
 	    e.printStackTrace();
 	}
-	return false;
+	return null;
     }
 
     public static long compareTwoTimeStamps(java.sql.Timestamp oldTime, java.sql.Timestamp currentTime) {
@@ -1095,36 +1163,22 @@ public class Database implements Closeable {
 	return false;
     }
 
-    public float calculateCost(String reg, int duration) throws SQLException {
+    /**
+     * Calculate costs of vehicle for the user
+     */
 
-	String type = null;
-	int rate = 0;
-	float cost;
-
-	String sql = "SELECT vh.type FROM vehicles as vh WHERE vh.registration LIKE ?";
-	PreparedStatement ps = this.conn.prepareStatement(sql);
-	ps.setString(1, reg);
-
-	ResultSet rs = ps.executeQuery();
-	while (rs.next()) {
-	    type = rs.getString("type");
+    public double calculateCost(int rate, int base, int duration) {
+	if (duration < 30) {
+	    duration = 30;
 	}
-	rs.close();
 
-	String sql2 = "SELECT c.rate FROM costs as c WHERE c.type LIKE ?";
-	PreparedStatement ps2 = this.conn.prepareStatement(sql2);
-	ps2.setString(1, type);
-	ResultSet rs2 = ps2.executeQuery();
-	while (rs2.next()) {
-	    rate = rs2.getInt("rate");
-	}
-	rs2.close();
+	double overtime = (double) duration / 30;
+	double totalprice = base + rate * Math.ceil(overtime); // always rounds up, so we charge an extra 30min if
+							       // overtime 30 min intervals.
+	logger.info("Costs : " + totalprice);
 
-	cost = rate * duration;
-	// for testing purpose
-	System.out.println(cost);
-	logger.info("Cost for car: $" + cost);
-	return cost;
+	return totalprice;
+
     }
 
     /**
@@ -1168,5 +1222,6 @@ public class Database implements Closeable {
 	    logger.error("Couldn't set rates in db", e);
 	}
 	return false;
+
     }
 }

@@ -606,10 +606,10 @@ public class Database implements Closeable {
 	List<Booking> bookings = new ArrayList<Booking>();
 
 	try {
-
 	    String sql = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.rate, costs.base "
 		    + "FROM bookings as bk LEFT JOIN vehicles as vh ON bk.registration=vh.registration, costs "
-		    + "WHERE bk.customer_id = ? AND date_add(bk.timestamp, interval bk.duration minute) < now() AND vh.type = costs.type;";
+		    + "WHERE bk.customer_id = ? AND date_add(bk.timestamp, interval bk.duration minute) < now() AND vh.type = costs.type "
+		    + "ORDER by timestamp DESC";
 	    PreparedStatement stmt = this.conn.prepareStatement(sql);
 	    stmt.setString(1, clientId);
 	    ResultSet rs = stmt.executeQuery();

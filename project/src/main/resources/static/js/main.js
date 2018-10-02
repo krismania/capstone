@@ -331,7 +331,7 @@ function extendBooking(booking) {
 }
 
 function endBooking(booking) {
-	rebu.endCurrentBooking(new Date(), function(success) {
+	rebu.endCurrentBooking(function(success) {
 		if (success) {
 			if (map != null) {
 				removeCurrentBooking();

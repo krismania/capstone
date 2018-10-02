@@ -155,15 +155,11 @@ rebu = (function() {
 			});
 		},
 		
-		endCurrentBooking: function(timestamp, callback) {
+		endCurrentBooking: function(callback) {
 			console.log("[api] ending current booking");
 			
 			var headers = new Headers();
 			headers.append("Content-Type", "application/json");
-			
-			var body = {
-					timestamp: timestamp
-			};
 			
 			var request = new Request('/api/bookings/end');
 			

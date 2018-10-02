@@ -311,7 +311,7 @@ var adminView = (function() {
 			
 			var hint = document.createElement("p");
 			hint.className = "hint";
-			hint.innerText = "Update the per-minute rate of each vehicle tier";
+			hint.innerText = "Update the half-hourly rate of each vehicle tier";
 			
 			// create rate fields
 			var ratesTable = document.createElement("div")
@@ -325,7 +325,7 @@ var adminView = (function() {
 					// create single row
 					var row = document.createElement("div");
 					var label = document.createElement("label");
-					label.innerText = rate + " ($/min)";
+					label.innerText = rate + " ($ per half hour)";
 					var input = document.createElement("input");
 					input.type = "number";
 					input.required = true;

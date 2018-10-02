@@ -4,14 +4,13 @@
         <title>Rebu - Homepage</title>
     </head>
     <body>
-    	{{> 'header.hbs' this}}
+    	{{> 'header.hbs'}}
         <div id="map-wrapper">
             <div id="map"></div>
-            <button id="geo-button"><i class="material-icons md-18">my_location</i>FIND ME</button>
         </div>
-        {{> 'sidepane.hbs'}}
+        {{> 'sidepane.hbs' static=true }}
         {{> 'scripts.hbs'}}
-        <script src="/js/index.js"></script>
+        <script src="/js/admin.js"></script>
         <script src="https://maps.googleapis.com/maps/api/js?key={{mapsApiKey}}&callback=initMap"></script>
     </body>
 </html>

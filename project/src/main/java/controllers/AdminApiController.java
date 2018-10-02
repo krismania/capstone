@@ -4,16 +4,20 @@ import static spark.Spark.before;
 import static spark.Spark.delete;
 import static spark.Spark.get;
 import static spark.Spark.halt;
+import static spark.Spark.path;
 import static spark.Spark.post;
 import static spark.Spark.put;
 
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
@@ -22,7 +26,9 @@ import controllers.Request.EditVehicleRequest;
 import controllers.Request.UserRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
+import controllers.Response.ClientIdResponse;
 import controllers.Response.ErrorResponse;
+import controllers.Response.RouteResponse;
 import model.Booking;
 import model.Database;
 import model.Position;
@@ -74,7 +80,7 @@ public class AdminApiController {
 		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Creation Error"));
 		}
 	    } catch (JsonParseException | NullPointerException e) {
-		logger.error(e.getMessage());
+		logger.error("Error inserting vehicle", e);
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
@@ -173,6 +179,20 @@ public class AdminApiController {
 
 	});
 
+	// returns a list of bookings for the given user
+	get("/bookings/:id", (req, res) -> {
+	    String id = req.params().get(":id");
+
+	    Database db = new Database();
+	    List<Booking> bookings = db.getBookingsOfUser(id);
+	    db.close();
+
+	    logger.info("Found " + bookings.size() + " bookings for " + id);
+
+	    res.type("application/json");
+	    return new Gson().toJson(bookings);
+	});
+
 	// delete a booking
 	delete("/bookings/:id", (req, res) -> {
 	    int id = Integer.parseInt(req.params(":id"));
@@ -227,6 +247,18 @@ public class AdminApiController {
 
 	});
 
+	// get the route of a booking
+	get("/bookings/:id/route", (req, res) -> {
+	    int bookingId = Integer.parseInt(req.params(":id"));
+	    try (Database db = new Database()) {
+		Booking booking = db.getBooking(bookingId);
+		List<Position> route = db.getRouteOfVehicle(booking);
+
+		res.type("application/json");
+		return new Gson().toJson(new RouteResponse(route));
+	    }
+	});
+
 	// update a vehicle
 	put("/vehicles", (req, res) -> {
 	    res.type("application/json");
@@ -246,7 +278,7 @@ public class AdminApiController {
 		    return new Gson().toJson(new ErrorResponse("Bad Request - Vehicle Editing Error"));
 		}
 	    } catch (JsonParseException | NullPointerException e) {
-		logger.error(e.getMessage());
+		logger.error("Error updating vehicle", e);
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Error parsing request"));
 	    }
@@ -282,7 +314,37 @@ public class AdminApiController {
 	    }
 
 	    logger.info("Found Client ID: " + cid);
-	    return new Gson().toJson(cid);
+	    return new Gson().toJson(new ClientIdResponse(cid));
+	});
+
+	// rate routes
+	path("/rates", () -> {
+
+	    get("", (req, res) -> {
+		try (Database db = new Database()) {
+		    Map<String, Double> rates = db.getRates();
+		    res.type("application/json");
+		    return new Gson().toJson(rates);
+		}
+	    });
+
+	    post("", (req, res) -> {
+		/* @formatter:off */
+		// ref: https://stackoverflow.com/a/15943171/2393133
+		Type type = new TypeToken<Map<String, Double>>(){}.getType();
+		Map<String, Double> rates = new Gson().fromJson(req.body(), type);
+		/* @formatter:on */
+		try (Database db = new Database()) {
+		    if (db.setRates(rates)) {
+			return "";
+		    } else {
+			res.status(400);
+			res.type("application/json");
+			return new Gson().toJson(new ErrorResponse("Couldn't set rates"));
+		    }
+		}
+	    });
+
 	});
     }
 

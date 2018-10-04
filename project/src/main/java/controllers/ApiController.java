@@ -3,6 +3,7 @@ package controllers;
 import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.post;
+import static spark.Spark.put;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -241,6 +242,30 @@ public class ApiController {
 		res.status(400);
 		return new Gson().toJson(new ErrorResponse("Bad Request"));
 	    }
+
+	});
+
+	put("/bookings/pay", (req, res) -> {
+	    res.type("application/json");
+
+	    BookingRequest br;
+	    String clientId = req.session().attribute("clientId");
+
+	    try {
+		br = new Gson().fromJson(req.body(), BookingRequest.class);
+	    } catch (JsonParseException | NullPointerException e) {
+		logger.error("Error updating bookings", e);
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error parsing request"));
+	    }
+
+	    Database db = new Database();
+
+	    db.editToPaid(br.registration, clientId);
+
+	    db.close();
+
+	    return "";
 
 	});
 

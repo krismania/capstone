@@ -1237,4 +1237,18 @@ public class Database implements Closeable {
 	return false;
 
     }
+
+    public void editToPaid(String reg, String clientID) throws SQLException {
+
+	String paid = "yes";
+	String query = "UPDATE bookings set paid = ? " + "WHERE registration = ? AND customer_id = ?";
+
+	PreparedStatement ps = this.conn.prepareStatement(query);
+
+	ps.setString(1, paid);
+	ps.setString(2, reg);
+	ps.setString(3, clientID);
+
+	ps.executeQuery();
+    }
 }

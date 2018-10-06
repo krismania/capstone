@@ -357,7 +357,7 @@ public class Database implements Closeable {
 		int rate = rs.getInt("rate");
 		int base = rs.getInt("base");
 		double price = calculateCost(rate, base, duration);
-		int paid = rs.getInt("paid");
+		boolean paid = rs.getInt("paid") == 1;
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
@@ -406,7 +406,7 @@ public class Database implements Closeable {
 		int rate = rs.getInt("rate");
 		int base = rs.getInt("base");
 		double price = calculateCost(rate, base, duration);
-		int paid = rs.getInt("paid");
+		boolean paid = rs.getInt("paid") == 1;
 
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
@@ -441,7 +441,7 @@ public class Database implements Closeable {
 	logger.info("Create Booking for " + customerId);
 	try {
 
-	    int paid = 0;
+	    boolean paid = false;
 	    // CHECK
 	    // Checks this timestamp to see if its booked already for the same
 	    // car.
@@ -458,7 +458,7 @@ public class Database implements Closeable {
 		    pStmnt.setString(2, registration);
 		    pStmnt.setString(3, customerId);
 		    pStmnt.setInt(4, duration);
-		    pStmnt.setInt(5, paid);
+		    pStmnt.setInt(5, (paid ? 1 : 0));
 
 		    pStmnt.executeUpdate();
 
@@ -630,7 +630,7 @@ public class Database implements Closeable {
 		int rate = rs.getInt("rate");
 		int base = rs.getInt("base");
 		double price = calculateCost(rate, base, duration);
-		int paid = rs.getInt("paid");
+		boolean paid = rs.getInt("paid") == 1;
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
@@ -888,7 +888,7 @@ public class Database implements Closeable {
 	    int duration = rs.getInt("duration");
 	    // booking hasnt ended just use the base
 	    int base = rs.getInt("base");
-	    int paid = rs.getInt("paid");
+	    boolean paid = rs.getInt("paid") == 1;
 	    String registration = rs.getString("registration");
 	    String make = rs.getString("make");
 	    String model = rs.getString("model");
@@ -1033,7 +1033,7 @@ public class Database implements Closeable {
 			int rate = rs.getInt("rate");
 			int base = rs.getInt("base");
 			double price = calculateCost(rate, base, duration);
-			int paid = rs.getInt("paid");
+			boolean paid = rs.getInt("paid") == 1;
 			String registration = rs.getString("registration");
 			String make = rs.getString("make");
 			String model = rs.getString("model");

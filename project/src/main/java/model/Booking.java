@@ -11,10 +11,10 @@ public class Booking {
     private final int duration;
     private final Position startLocation;
     private final double cost;
-    private final int paid;
+    private final boolean paid;
 
     protected Booking(int id, LocalDateTime timestamp, Vehicle vehicle, String customerId, int duration,
-	    Position startLocation, double cost, int paid) {
+	    Position startLocation, double cost, boolean paid) {
 	this.id = id;
 	this.timestamp = timestamp;
 	this.vehicle = vehicle;
@@ -25,7 +25,7 @@ public class Booking {
 	this.paid = paid;
     }
 
-    public int getPaid() {
+    public boolean getPaid() {
 	return this.paid;
     }
 

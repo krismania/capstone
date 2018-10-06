@@ -21,12 +21,20 @@ var view = (function() {
 	}
 	
 	function difference(date1, date2) {
-		var diffHours = (date1 - date2) / 3600000
-		if (diffHours > 1) {
-			return Math.round(diffHours) + " Hours";
+		var diff = Math.ceil((date1 - date2) / (60 * 1000));
+		var unit;
+		if (diff >= 60) {
+			// if >= 60 mins, convert to hours
+			diff = Math.ceil(diff / 60);
+			unit = "Hour";
 		} else {
-			return Math.round(diffHours * 60) + " Minutes";
+			unit = "Minute";
 		}
+		// pluralize the unit
+		if (diff != 1) {
+			unit = unit + "s";
+		}
+		return "" + diff + " " + unit;
 	}
 	
 	function timeToString(date) {
@@ -78,7 +86,7 @@ var view = (function() {
 			return container;
 		},
 		
-		bookingInfo: function(booking) {
+		bookingInfo: function(booking, expireCallback) {
 			var container = document.createElement("div");
 			var remaining = document.createElement("h3");
 			var end = document.createElement("p");
@@ -98,6 +106,25 @@ var view = (function() {
 			
 			container.appendChild(remaining);
 			container.appendChild(end);
+			
+			var intervalId = setInterval(function() {
+				// remove interval if the bookingInfo card isn't visible
+				if (!document.body.contains(remaining)) {
+					clearInterval(intervalId);
+					return;
+				}
+				var newCurrentDate = new Date();
+				// check that there is still time left
+				if ((endDate - newCurrentDate) > 0) {
+					var newRemainingTime = difference(endDate, newCurrentDate)
+					remaining.innerText = "" + newRemainingTime + " Remaining";
+				} else {
+					// if booking has expired, call the callback
+					expireCallback();
+					clearInterval(intervalId);
+					return;
+				}
+			}, 60 * 1000);
 			
 			return container;
 		},
@@ -240,9 +267,9 @@ var view = (function() {
 			return container;
 		},
 		
-		currentBookingInfo: function(booking) {
+		currentBookingInfo: function(booking, expireCallback) {
 			var container = document.createElement("div");
-			var bookingInfo = this.bookingInfo(booking);
+			var bookingInfo = this.bookingInfo(booking, expireCallback);
 			var vehicleInfo = this.vehicleInfo(booking.vehicle);
 			
 			container.appendChild(vehicleInfo);
@@ -289,10 +316,10 @@ var view = (function() {
 			return buttons;
 		},
 		
-		currentBooking: function(booking, findCallback, extendCallback, endCallBack) {
+		currentBooking: function(booking, findCallback, extendCallback, endCallBack, expireCallback) {
 			var container = document.createElement("div");
 			
-			var info = this.currentBookingInfo(booking);
+			var info = this.currentBookingInfo(booking, expireCallback);
 			var buttons = this.currentBookingButtons(booking, findCallback, extendCallback, endCallBack);
 			
 			// todo: find button doesn't work without the map, so remove it
@@ -309,12 +336,12 @@ var view = (function() {
 			return container;
 		},
 		
-		currentBookingCard: function(booking, findCallback, extendCallback, endCallBack) {
+		currentBookingCard: function(booking, findCallback, extendCallback, endCallBack, expireCallback) {
 			var container = document.createElement("div");
 			container.id = "current-booking";
 			
 			var header = document.createElement("h3");
-			var info = this.currentBookingInfo(booking);
+			var info = this.currentBookingInfo(booking, expireCallback);
 			var buttons = this.currentBookingButtons(booking, findCallback, extendCallback, endCallBack);
 			
 			header.innerText = "CURRENT BOOKING";

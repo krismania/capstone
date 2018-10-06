@@ -353,7 +353,7 @@ function displayCurrentBooking() {
 		bookedVehicle.marker = createVehicleMarker(bookedVehicle, map, true);
 		
 		// display the card
-		var currentBookingCard = view.currentBookingCard(booking, findBookedVehicle, extendBooking, endBooking);
+		var currentBookingCard = view.currentBookingCard(booking, findBookedVehicle, extendBooking, endBooking, onBookingExpire);
 			
 		// fancy transition
 		currentBookingCard.className = "transition-start";
@@ -380,6 +380,11 @@ function removeCurrentBooking() {
 			document.body.removeChild(currentBookingCard);
 		}, 200);
 	}
+}
+
+function onBookingExpire() {
+	// refresh the page
+	window.location.reload();
 }
 
 // initialize sidepane

@@ -97,7 +97,7 @@ public class Database implements Closeable {
 	String bookingsSql = "CREATE TABLE IF NOT EXISTS `bookings` (" + "`id` INT NOT NULL AUTO_INCREMENT, "
 		+ "`timestamp` DATETIME NOT NULL, " + "`registration` VARCHAR(10) NOT NULL, "
 		+ "`customer_id` VARCHAR(50) NOT NULL, " + "`duration` SMALLINT UNSIGNED NOT NULL, "
-		+ "`paid` VARCHAR(50) NOT NULL, " + "PRIMARY KEY (`id`), "
+		+ "`paid` TINYINT(1), " + "PRIMARY KEY (`id`), "
 		+ "FOREIGN KEY (`registration`) REFERENCES `vehicles`(`registration`))";
 
 	String admin = "CREATE TABLE IF NOT EXISTS `admins` (" + "`admin_id` VARCHAR(50) NOT NULL, "
@@ -357,7 +357,7 @@ public class Database implements Closeable {
 		int rate = rs.getInt("rate");
 		int base = rs.getInt("base");
 		double price = calculateCost(rate, base, duration);
-		String paid = rs.getString("paid");
+		int paid = rs.getInt("paid");
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
@@ -406,7 +406,7 @@ public class Database implements Closeable {
 		int rate = rs.getInt("rate");
 		int base = rs.getInt("base");
 		double price = calculateCost(rate, base, duration);
-		String paid = rs.getString("paid");
+		int paid = rs.getInt("paid");
 
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
@@ -441,7 +441,7 @@ public class Database implements Closeable {
 	logger.info("Create Booking for " + customerId);
 	try {
 
-	    String paid = "no";
+	    int paid = 0;
 	    // CHECK
 	    // Checks this timestamp to see if its booked already for the same
 	    // car.
@@ -458,7 +458,7 @@ public class Database implements Closeable {
 		    pStmnt.setString(2, registration);
 		    pStmnt.setString(3, customerId);
 		    pStmnt.setInt(4, duration);
-		    pStmnt.setString(5, paid);
+		    pStmnt.setInt(5, paid);
 
 		    pStmnt.executeUpdate();
 
@@ -630,7 +630,7 @@ public class Database implements Closeable {
 		int rate = rs.getInt("rate");
 		int base = rs.getInt("base");
 		double price = calculateCost(rate, base, duration);
-		String paid = rs.getString("paid");
+		int paid = rs.getInt("paid");
 		String registration = rs.getString("registration");
 		String make = rs.getString("make");
 		String model = rs.getString("model");
@@ -888,7 +888,7 @@ public class Database implements Closeable {
 	    int duration = rs.getInt("duration");
 	    // booking hasnt ended just use the base
 	    int base = rs.getInt("base");
-	    String paid = rs.getString("paid");
+	    int paid = rs.getInt("paid");
 	    String registration = rs.getString("registration");
 	    String make = rs.getString("make");
 	    String model = rs.getString("model");
@@ -1033,7 +1033,7 @@ public class Database implements Closeable {
 			int rate = rs.getInt("rate");
 			int base = rs.getInt("base");
 			double price = calculateCost(rate, base, duration);
-			String paid = rs.getString("paid");
+			int paid = rs.getInt("paid");
 			String registration = rs.getString("registration");
 			String make = rs.getString("make");
 			String model = rs.getString("model");
@@ -1240,12 +1240,12 @@ public class Database implements Closeable {
 
     public void editToPaid(String reg, String clientID) throws SQLException {
 
-	String paid = "yes";
+	int paid = 1;
 	String query = "UPDATE bookings set paid = ? " + "WHERE registration = ? AND customer_id = ?";
 
 	PreparedStatement ps = this.conn.prepareStatement(query);
 
-	ps.setString(1, paid);
+	ps.setInt(1, paid);
 	ps.setString(2, reg);
 	ps.setString(3, clientID);
 

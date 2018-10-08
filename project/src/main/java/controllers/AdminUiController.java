@@ -12,12 +12,15 @@ import org.slf4j.LoggerFactory;
 
 public class AdminUiController {
 
-    public AdminUiController(String mapsApiKey, String googleClientId) {
+    public AdminUiController(String mapsApiKey, String googleClientId, String paypalSandboxKey,
+	    String paypalProductionKey) {
 
 	// create model with API keys
 	Map<String, Object> model = new HashMap<>();
 	model.put("mapsApiKey", mapsApiKey);
 	model.put("googleClientId", googleClientId);
+	model.put("paypalSandbox", paypalSandboxKey);
+	model.put("paypalProduction", paypalProductionKey);
 
 	final Logger logger = LoggerFactory.getLogger(AdminUiController.class);
 

@@ -334,6 +334,7 @@ function endBooking(booking) {
 	rebu.endCurrentBooking(function(success) {
 		if (success) {
 			if (map != null) {
+				paypalPrompt(booking);
 				removeCurrentBooking();
 				rebu.getVehicles(displayVehicles);
 			} else {
@@ -382,7 +383,53 @@ function removeCurrentBooking() {
 	}
 }
 
-function onBookingExpire() {
+// prompt the user with the sidepane to pay via paypal
+function paypalPrompt(booking) {
+	sidepane.clear();
+	sidepane.appendHeader("PAYMENT");
+	sidepane.append(view.payment(booking));
+	// render paypal button
+	paypal.Button.render({
+	    env: 'sandbox', // sandbox | production
+	    style: {
+	        label: 'pay',
+	        tagline: false,
+	        size:  'medium',    // small | medium | large | responsive
+	        shape: 'rect',     // pill | rect
+	        color: 'blue'      // gold | blue | silver | black
+	    },
+	    client: {
+	        sandbox: document.head.querySelector("[name~=paypal-sandbox-key][content]").content,
+	        production: document.head.querySelector("[name~=paypal-production-key][content]").content
+	    },
+	    payment: function(data, actions) {
+	        return actions.payment.create({
+	            payment: {
+	                transactions: [
+	                    {
+	                        amount: { total: '0.01', currency: 'AUD' }
+	                    }
+	                ]
+	            }
+	        });
+	    },
+	    onAuthorize: function(data, actions) {
+	        return actions.payment.execute().then(function() {
+		    	sidepane.clear();
+		    	sidepane.appendHeader("PAYMENT");
+		    	sidepane.append(view.paymentConfirmation(true));
+	        });
+	    },
+	    onError: function(err) {
+	    	sidepane.clear();
+	    	sidepane.appendHeader("PAYMENT");
+	    	sidepane.append(view.paymentConfirmation(false));
+	    }
+	}, '#paypal-button-container');
+	sidepane.open();
+}
+
+ function onBookingExpire() {
 	// refresh the page
 	window.location.reload();
 }

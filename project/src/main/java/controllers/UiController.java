@@ -25,12 +25,14 @@ import util.Util;
 
 public class UiController {
 
-    public UiController(String mapsApiKey, String googleClientId) {
+    public UiController(String mapsApiKey, String googleClientId, String paypalSandboxKey, String paypalProductionKey) {
 
 	// create model with API keys
 	Map<String, Object> model = new HashMap<>();
 	model.put("mapsApiKey", mapsApiKey);
 	model.put("googleClientId", googleClientId);
+	model.put("paypalSandbox", paypalSandboxKey);
+	model.put("paypalProduction", paypalProductionKey);
 
 	final Logger logger = LoggerFactory.getLogger(UiController.class);
 

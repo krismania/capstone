@@ -20,17 +20,17 @@ var geoMarker = null;
 var googleUser = null;
 
 function onLogin(user) {
-	console.log("Google Client Token");
-	console.log(user.getAuthResponse().id_token);
 	// post the client ID to the server
 	var headers = new Headers();
+	var body = JSON.stringify({
+		id: user.getAuthResponse().id_token
+	});
+	console.log(body);
 	headers.append("Content-Type", "application/json");
 	var request = new Request("/login", {
 		method: 'post',
 		headers: headers,
-		body: JSON.stringify({
-			id: user.getAuthResponse().id_token
-		})
+		body: body
 	});
 	fetch(request)
 	.then(res => {
@@ -354,7 +354,7 @@ function displayCurrentBooking() {
 		bookedVehicle.marker = createVehicleMarker(bookedVehicle, map, true);
 		
 		// display the card
-		var currentBookingCard = view.currentBookingCard(booking, findBookedVehicle, extendBooking, endBooking);
+		var currentBookingCard = view.currentBookingCard(booking, findBookedVehicle, extendBooking, endBooking, onBookingExpire);
 			
 		// fancy transition
 		currentBookingCard.className = "transition-start";
@@ -427,6 +427,11 @@ function paypalPrompt(booking) {
 	    }
 	}, '#paypal-button-container');
 	sidepane.open();
+}
+
+ function onBookingExpire() {
+	// refresh the page
+	window.location.reload();
 }
 
 // initialize sidepane

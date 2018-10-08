@@ -1,9 +1,7 @@
 package controllers;
 
-import static spark.Spark.before;
 import static spark.Spark.delete;
 import static spark.Spark.get;
-import static spark.Spark.halt;
 import static spark.Spark.path;
 import static spark.Spark.post;
 import static spark.Spark.put;
@@ -43,21 +41,6 @@ public class AdminApiController {
     public AdminApiController() {
 
 	final Logger logger = LoggerFactory.getLogger(AdminApiController.class);
-
-	// authenticate admin users
-	before("/*", (req, res) -> {
-	    logger.info("Admin API Request: " + req.uri());
-	    if (req.session(false) == null) {
-		logger.info("User is not logged in");
-		halt(401);
-	    }
-	    boolean isAdmin = req.session().attribute("isAdmin");
-	    if (!isAdmin) {
-		logger.info("User is NOT an administrator");
-		halt(403);
-	    }
-	    logger.info("User is an administrator");
-	});
 
 	// create a new vehicle
 	post("/vehicles", (req, res) -> {
@@ -311,12 +294,8 @@ public class AdminApiController {
 	    });
 
 	    post("", (req, res) -> {
-		/* @formatter:off */
-		// ref: https://stackoverflow.com/a/15943171/2393133
-		Type type = new TypeToken<Map<String, Double>>(){}.getType();
-		Map<String, Double> rates = new Gson().fromJson(req.body(), type);
-		/* @formatter:on */
 		try (Database db = new Database()) {
+		    Map<String, Double> rates = jsonToMap(req.body());
 		    if (db.setRates(rates)) {
 			return "";
 		    } else {
@@ -327,7 +306,37 @@ public class AdminApiController {
 		}
 	    });
 
+	    get("/base", (req, res) -> {
+		try (Database db = new Database()) {
+		    Map<String, Double> basePrices = db.getBasePrices();
+		    res.type("application/json");
+		    return new Gson().toJson(basePrices);
+		}
+	    });
+
+	    post("/base", (req, res) -> {
+		try (Database db = new Database()) {
+		    Map<String, Double> basePrices = jsonToMap(req.body());
+		    if (db.setBasePrices(basePrices)) {
+			return "";
+		    } else {
+			res.status(400);
+			res.type("application/json");
+			return new Gson().toJson(new ErrorResponse("Couldn't set base prices"));
+		    }
+		}
+	    });
+
 	});
+    }
+
+    private Map<String, Double> jsonToMap(String json) {
+	// ref: https://stackoverflow.com/a/15943171/2393133
+	/* @formatter:off */
+	Type type = new TypeToken<Map<String, Double>>(){}.getType();
+	Map<String, Double> map = new Gson().fromJson(json, type);
+	/* @formatter:on */
+	return map;
     }
 
 }

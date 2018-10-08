@@ -75,6 +75,10 @@ public class UiController {
 			logger.info("Invalid ID token.");
 		    }
 		}
+	    } else {
+		// session is already set, return OK
+		res.status(200);
+		return "";
 	    }
 	    // if anything failed, send 400
 	    res.status(400);

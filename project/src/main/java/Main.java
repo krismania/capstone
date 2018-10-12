@@ -54,6 +54,9 @@ public class Main implements SparkApplication {
 	    logger.error("No Google Client ID. Check your config.");
 	    System.exit(1);
 	}
+	// get paypal keys
+	String paypalSandboxKey = Config.get("paypalSandbox");
+	String paypalProductionKey = Config.get("paypalProduction");
 
 	/* == ROUTES == */
 
@@ -61,10 +64,10 @@ public class Main implements SparkApplication {
 	Spark.staticFiles.location("static");
 
 	// create routes
-	new UiController(mapsApiKey, googleClientId);
+	new UiController(mapsApiKey, googleClientId, paypalSandboxKey, paypalProductionKey);
 	path("/api", () -> new ApiController());
 	path("/admin", () -> {
-	    new AdminUiController(mapsApiKey, googleClientId);
+	    new AdminUiController(mapsApiKey, googleClientId, paypalSandboxKey, paypalProductionKey);
 	    path("/api", () -> new AdminApiController());
 	});
 	// fix for /admin 404

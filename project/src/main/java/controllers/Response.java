@@ -3,6 +3,7 @@ package controllers;
 import java.util.List;
 
 import model.Position;
+import model.Vehicle;
 
 class Response {
 
@@ -30,6 +31,17 @@ class Response {
 
 	public RouteResponse(List<Position> route) {
 	    this.route = route;
+	}
+    }
+
+    static class BookedVehiclesResponse extends Vehicle {
+
+	final boolean booked;
+
+	protected BookedVehiclesResponse(Vehicle vehicle, boolean booked) {
+	    super(vehicle.getRegistration(), vehicle.getMake(), vehicle.getModel(), vehicle.getYear(),
+		    vehicle.getColour(), vehicle.getPosition(), vehicle.getStatus(), vehicle.getType());
+	    this.booked = booked;
 	}
     }
 

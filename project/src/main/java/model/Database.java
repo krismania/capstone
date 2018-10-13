@@ -210,8 +210,8 @@ public class Database implements Closeable {
 	    return vehicles;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Vehicle>();
+	    // return null in case of an error
+	    return null;
 	}
     }
 
@@ -237,8 +237,8 @@ public class Database implements Closeable {
 	    return vehicles;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Vehicle>();
+	    // return null in case of an error
+	    return null;
 	}
     }
 
@@ -250,6 +250,10 @@ public class Database implements Closeable {
 	List<NearbyVehicle> sortedNearestVehicles = new ArrayList<NearbyVehicle>();
 	List<Vehicle> vehicles = new ArrayList<Vehicle>();
 	vehicles = getAvailableVehicles();
+
+	if (vehicles == null) {
+	    return null;
+	}
 
 	for (int i = 0; i < vehicles.size(); i++) {
 	    String registration = vehicles.get(i).getRegistration();
@@ -427,8 +431,8 @@ public class Database implements Closeable {
 	    return bookings;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Booking>();
+	    // return null in case of an error
+	    return null;
 	}
     }
 
@@ -470,6 +474,9 @@ public class Database implements Closeable {
 			pStmnt.close();
 
 			Vehicle vehicle = getVehicleByReg(registration);
+			if (vehicle == null) {
+			    return null;
+			}
 			logger.info("Successfully inserted booking");
 
 			// initial cost always 0. - Only when booking ends does
@@ -482,11 +489,9 @@ public class Database implements Closeable {
 	    }
 
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
+	    return null;
 	}
-
-	// TODO: throw a custom exception on failure?
 	return null;
     }
 
@@ -517,8 +522,8 @@ public class Database implements Closeable {
 	    }
 
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
+	    return null;
 	}
 	return v;
     }
@@ -650,8 +655,8 @@ public class Database implements Closeable {
 	    return bookings;
 	} catch (SQLException e) {
 	    logger.error(e.getMessage());
-	    // return an empty list in case of an error
-	    return new ArrayList<Booking>();
+	    // return null in case of an error
+	    return null;
 	}
     }
 
@@ -811,7 +816,6 @@ public class Database implements Closeable {
 		return carLocation;
 	    }
 	} catch (SQLException e) {
-	    // TODO Auto-generated catch block
 	    e.printStackTrace();
 	    return null;
 	}
@@ -869,61 +873,71 @@ public class Database implements Closeable {
 	}
     }
 
-    public Booking getBookingNow(String clientId) throws SQLException {
-	String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.paid, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.base, costs.rate "
-		+ "FROM bookings as bk left join vehicles as vh on bk.registration = vh.registration , costs "
-		+ "WHERE customer_id like ? and date_add(`timestamp`, interval `duration` minute) > now() AND costs.type = vh.type limit 1;";
+    public Booking getBookingNow(String clientId) {
+	try {
+	    String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.paid, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.base, costs.rate "
+		    + "FROM bookings as bk left join vehicles as vh on bk.registration = vh.registration , costs "
+		    + "WHERE customer_id like ? and date_add(`timestamp`, interval `duration` minute) > now() AND costs.type = vh.type limit 1;";
 
-	PreparedStatement ps = this.conn.prepareStatement(query);
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	ps.setString(1, clientId);
+	    ps.setString(1, clientId);
 
-	ResultSet rs = ps.executeQuery();
+	    ResultSet rs = ps.executeQuery();
+	    if (rs.next()) {
+		int id = rs.getInt("id");
+		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+		String customer_id = rs.getString("customer_id");
+		// COST CALCULATION
+		int duration = rs.getInt("duration");
+		// booking hasnt ended just use the base
+		int base = rs.getInt("base");
+		boolean paid = rs.getInt("paid") == 1;
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		Position car_curr_pos = getVehiclePosition(registration);
+		int status = rs.getInt("status");
+		String type = rs.getString("type");
+		Position start = getVehiclePositionByTime(registration, timestamp);
 
-	if (rs.next()) {
-	    int id = rs.getInt("id");
-	    LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
-	    String customer_id = rs.getString("customer_id");
-	    // COST CALCULATION
-	    int duration = rs.getInt("duration");
-	    // booking hasnt ended just use the base
-	    int base = rs.getInt("base");
-	    boolean paid = rs.getInt("paid") == 1;
-	    String registration = rs.getString("registration");
-	    String make = rs.getString("make");
-	    String model = rs.getString("model");
-	    int year = rs.getInt("year");
-	    String colour = rs.getString("colour");
-	    Position car_curr_pos = getVehiclePosition(registration);
-	    int status = rs.getInt("status");
-	    String type = rs.getString("type");
-	    Position start = getVehiclePositionByTime(registration, timestamp);
+		ps.close();
+		rs.close();
 
-	    ps.close();
-	    rs.close();
-
-	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-	    return new Booking(id, timestamp, vehicle, customer_id, duration, start, base, paid);
-	} else {
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
+		return new Booking(id, timestamp, vehicle, customer_id, duration, start, base, paid);
+	    } else {
+		return null;
+	    }
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
 	    return null;
 	}
     }
 
     public int checkVehicleStatus(String reg) throws SQLException {
-	int status = 1;
+	try {
+	    int status = 1;
 
-	String query = "SELECT vh.status FROM vehicles as vh WHERE vh.registration LIKE ?";
-	PreparedStatement ps = this.conn.prepareStatement(query);
+	    String query = "SELECT vh.status FROM vehicles as vh WHERE vh.registration LIKE ?";
+	    PreparedStatement ps = this.conn.prepareStatement(query);
 
-	ps.setString(1, reg);
-	ResultSet rs = ps.executeQuery();
+	    ps.setString(1, reg);
+	    ResultSet rs = ps.executeQuery();
 
-	while (rs.next()) {
-	    status = rs.getInt("status");
+	    while (rs.next()) {
+		status = rs.getInt("status");
+	    }
+	    ps.close();
+	    rs.close();
+	    return status;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    // return null in case of an error
+	    return -1;
 	}
-	ps.close();
-	rs.close();
-	return status;
     }
 
     /**
@@ -946,45 +960,55 @@ public class Database implements Closeable {
 	}
     }
 
-    public void addUser(String cid, String email) throws SQLException {
+    public Boolean addUser(String cid, String email) throws SQLException {
+	try {
+	    String sql = "SELECT cid FROM users WHERE cid LIKE ?";
+	    PreparedStatement stmt = this.conn.prepareStatement(sql);
+	    stmt.setString(1, cid);
+	    ResultSet rs = stmt.executeQuery();
 
-	String sql = "SELECT cid FROM users WHERE cid LIKE ?";
-	PreparedStatement stmt = this.conn.prepareStatement(sql);
-	stmt.setString(1, cid);
-	ResultSet rs = stmt.executeQuery();
+	    if (!rs.isBeforeFirst()) {
+		String query = "INSERT INTO users " + "(cid, email) VALUES (?, ?)";
+		PreparedStatement pStmnt = this.conn.prepareStatement(query);
+		pStmnt.setString(1, cid);
+		pStmnt.setString(2, email);
+		pStmnt.executeUpdate();
+		pStmnt.close();
 
-	if (!rs.isBeforeFirst()) {
-	    String query = "INSERT INTO users " + "(cid, email) VALUES (?, ?)";
-	    PreparedStatement pStmnt = this.conn.prepareStatement(query);
-	    pStmnt.setString(1, cid);
-	    pStmnt.setString(2, email);
-	    pStmnt.executeUpdate();
-	    pStmnt.close();
-
-	    logger.info("Adding to users database email: " + email);
-	} else {
-	    logger.info("Users table already has email: " + email);
+		logger.info("Adding to users database email: " + email);
+		return true;
+	    } else {
+		logger.info("Users table already has email: " + email);
+		return true;
+	    }
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return false;
 	}
 
     }
 
     public String getCid(String email) throws SQLException {
+	try {
+	    String cid = null;
+	    String sql = "SELECT cid FROM users WHERE email LIKE ?";
+	    PreparedStatement stmt = this.conn.prepareStatement(sql);
+	    stmt.setString(1, email);
+	    ResultSet rs = stmt.executeQuery();
 
-	String cid = null;
-	String sql = "SELECT cid FROM users WHERE email LIKE ?";
-	PreparedStatement stmt = this.conn.prepareStatement(sql);
-	stmt.setString(1, email);
-	ResultSet rs = stmt.executeQuery();
+	    if (rs.next()) {
+		cid = rs.getString("cid");
+		System.out.println(cid);
+		logger.info("Client ID of user: " + cid);
 
-	if (rs.next()) {
-	    cid = rs.getString("cid");
-	    System.out.println(cid);
-	    logger.info("Client ID of user: " + cid);
-
+	    }
+	    stmt.close();
+	    rs.close();
+	    return cid;
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
+	    return null;
 	}
-	stmt.close();
-	rs.close();
-	return cid;
     }
 
     public Booking endBooking(String clientId) {

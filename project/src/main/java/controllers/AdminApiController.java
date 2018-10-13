@@ -132,8 +132,15 @@ public class AdminApiController {
 	    List<Vehicle> vehicles = db.getVehicles();
 	    db.close();
 
-	    logger.info("Found " + vehicles.size() + " vehicles");
-	    return new Gson().toJson(vehicles);
+	    if (vehicles != null) {
+		res.status(200);
+		logger.info("Found " + vehicles.size() + " vehicles");
+		return new Gson().toJson(vehicles);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting vehicles"));
+	    }
+
 	});
 
 	// returns a list of all bookings
@@ -144,8 +151,15 @@ public class AdminApiController {
 	    List<Booking> bookings = db.getBookings();
 	    db.close();
 
-	    logger.info("Found " + bookings.size() + " bookings");
-	    return new Gson().toJson(bookings);
+	    if (bookings != null) {
+		res.status(200);
+		logger.info("Found " + bookings.size() + " bookings");
+		return new Gson().toJson(bookings);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting bookings"));
+	    }
+
 	});
 
 	// returns a list of bookings for the given user
@@ -277,6 +291,10 @@ public class AdminApiController {
 	    Database db = new Database();
 	    String cid = db.getCid(email);
 	    db.close();
+	    if (cid == null) {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting CID"));
+	    }
 
 	    logger.info("Found Client ID: " + cid);
 	    return new Gson().toJson(new ClientIdResponse(cid));

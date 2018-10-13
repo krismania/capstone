@@ -9,6 +9,7 @@ import static spark.Spark.put;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +25,7 @@ import controllers.Request.EditVehicleRequest;
 import controllers.Request.UserRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
+import controllers.Response.BookedVehiclesResponse;
 import controllers.Response.ClientIdResponse;
 import controllers.Response.ErrorResponse;
 import controllers.Response.RouteResponse;
@@ -130,6 +132,13 @@ public class AdminApiController {
 
 	    Database db = new Database();
 	    List<Vehicle> vehicles = db.getVehicles();
+	    List<BookedVehiclesResponse> vehiclesResponse = new ArrayList<BookedVehiclesResponse>();
+
+	    for (Vehicle vehicle : vehicles) {
+		vehiclesResponse.add(new BookedVehiclesResponse(vehicle,
+			db.isCarBooked(LocalDateTime.now(), vehicle.getRegistration())));
+	    }
+
 	    db.close();
 
 	    if (vehicles != null) {

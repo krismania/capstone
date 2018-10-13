@@ -147,7 +147,7 @@ function displayVehicles(vehicles) {
 	}
 	// display new markers
 	for (var i = 0; i < vehicles.length; i++) {
-		vehicles[i].marker = createVehicleMarker(vehicles[i], map);
+		vehicles[i].marker = createVehicleMarker(vehicles[i], map, vehicles[i].booked);
 	};
 	mapVehicles = vehicles;
 }

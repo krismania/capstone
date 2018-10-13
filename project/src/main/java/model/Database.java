@@ -875,44 +875,46 @@ public class Database implements Closeable {
 
     public Booking getBookingNow(String clientId) {
 	try {
-   String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.paid, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.base, costs.rate "
-		+ "FROM bookings as bk left join vehicles as vh on bk.registration = vh.registration , costs "
-		+ "WHERE customer_id like ? and date_add(`timestamp`, interval `duration` minute) > now() AND costs.type = vh.type limit 1;";
+	    String query = "SELECT bk.id, bk.timestamp, bk.customer_id, bk.duration, bk.paid, vh.registration, vh.make, vh.model, vh.year, vh.colour, vh.status, vh.type, costs.base, costs.rate "
+		    + "FROM bookings as bk left join vehicles as vh on bk.registration = vh.registration , costs "
+		    + "WHERE customer_id like ? and date_add(`timestamp`, interval `duration` minute) > now() AND costs.type = vh.type limit 1;";
 
 	    PreparedStatement ps = this.conn.prepareStatement(query);
 
 	    ps.setString(1, clientId);
 
 	    ResultSet rs = ps.executeQuery();
-
-	if (rs.next()) {
-	    int id = rs.getInt("id");
-	    LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
-	    String customer_id = rs.getString("customer_id");
-	    // COST CALCULATION
-	    int duration = rs.getInt("duration");
-	    // booking hasnt ended just use the base
-	    int base = rs.getInt("base");
-	    boolean paid = rs.getInt("paid") == 1;
-	    String registration = rs.getString("registration");
-	    String make = rs.getString("make");
-	    String model = rs.getString("model");
-	    int year = rs.getInt("year");
-	    String colour = rs.getString("colour");
-	    Position car_curr_pos = getVehiclePosition(registration);
-	    int status = rs.getInt("status");
-	    String type = rs.getString("type");
-	    Position start = getVehiclePositionByTime(registration, timestamp);
+	    if (rs.next()) {
+		int id = rs.getInt("id");
+		LocalDateTime timestamp = rs.getTimestamp("timestamp").toLocalDateTime();
+		String customer_id = rs.getString("customer_id");
+		// COST CALCULATION
+		int duration = rs.getInt("duration");
+		// booking hasnt ended just use the base
+		int base = rs.getInt("base");
+		boolean paid = rs.getInt("paid") == 1;
+		String registration = rs.getString("registration");
+		String make = rs.getString("make");
+		String model = rs.getString("model");
+		int year = rs.getInt("year");
+		String colour = rs.getString("colour");
+		Position car_curr_pos = getVehiclePosition(registration);
+		int status = rs.getInt("status");
+		String type = rs.getString("type");
+		Position start = getVehiclePositionByTime(registration, timestamp);
 
 		ps.close();
 		rs.close();
 
-	    Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
-	    return new Booking(id, timestamp, vehicle, customer_id, duration, start, base, paid);
-	} else {
+		Vehicle vehicle = new Vehicle(registration, make, model, year, colour, car_curr_pos, status, type);
+		return new Booking(id, timestamp, vehicle, customer_id, duration, start, base, paid);
+	    } else {
+		return null;
+	    }
+	} catch (SQLException e) {
+	    logger.error(e.getMessage());
 	    return null;
 	}
-	return null;
     }
 
     public int checkVehicleStatus(String reg) throws SQLException {

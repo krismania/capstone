@@ -1,3 +1,4 @@
+import static spark.Spark.before;
 import static spark.Spark.path;
 import static spark.Spark.redirect;
 
@@ -62,6 +63,11 @@ public class Main implements SparkApplication {
 
 	// use static folder in resources for static content
 	Spark.staticFiles.location("static");
+
+	// log requests
+	before("/*", (req, res) -> {
+	    logger.info("[" + req.ip() + "] " + req.requestMethod() + " " + req.uri());
+	});
 
 	// create routes
 	new UiController(mapsApiKey, googleClientId, paypalSandboxKey, paypalProductionKey);

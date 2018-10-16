@@ -1,6 +1,5 @@
 package controllers;
 
-import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.put;
@@ -30,9 +29,6 @@ public class ApiController {
     public ApiController() {
 
 	final Logger logger = LoggerFactory.getLogger(ApiController.class);
-
-	// log every API request
-	before("/*", (req, res) -> logger.info("Client API Request: " + req.uri()));
 
 	// returns a list of available vehicles
 	get("/vehicles", (req, res) -> {

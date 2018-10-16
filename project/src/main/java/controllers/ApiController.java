@@ -195,7 +195,7 @@ public class ApiController {
 	// end the booking.
 	get("/bookings/end", (req, res) -> {
 	    res.type("application/json");
-	    Booking br;
+	    Booking br = null;
 
 	    String clientId = req.session().attribute("clientId");
 	    logger.info("Ending current booking of: " + clientId);
@@ -206,8 +206,9 @@ public class ApiController {
 		return new Gson().toJson(new ErrorResponse("Please log in"));
 	    }
 
-	    Database db = new Database();
-	    br = db.endBooking(clientId);
+	    try (Database db = new Database()) {
+		br = db.endBooking(clientId);
+	    }
 
 	    if (br != null) {
 		res.type("application/json");

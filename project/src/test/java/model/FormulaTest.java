@@ -8,15 +8,13 @@ import util.Util;
 
 public class FormulaTest {
 
-    private Util util;
-
     @Test
     void testZeroDist() {
 	Position sPos = new Position(1, 1);
 	Position ePos = new Position(1, 1);
 	double expected = 0;
 
-	double result = this.util.distance(sPos.getLat(), sPos.getLng(), ePos.getLat(), ePos.getLng());
+	double result = Util.distance(sPos.getLat(), sPos.getLng(), ePos.getLat(), ePos.getLng());
 	assertEquals(expected, result);
     }
 
@@ -26,7 +24,7 @@ public class FormulaTest {
 	Position ePos = new Position(1211, 1211);
 	double expected = 0;
 
-	double result = this.util.distance(sPos.getLat(), sPos.getLng(), ePos.getLat(), ePos.getLng());
+	double result = Util.distance(sPos.getLat(), sPos.getLng(), ePos.getLat(), ePos.getLng());
 	assertEquals(expected, result);
     }
 
@@ -37,7 +35,7 @@ public class FormulaTest {
 	    Position ePos = new Position(1, 100);
 	    double expected = 0;
 
-	    double result = this.util.distance(sPos.getLat(), sPos.getLng(), ePos.getLat(), ePos.getLng());
+	    double result = Util.distance(sPos.getLat(), sPos.getLng(), ePos.getLat(), ePos.getLng());
 	    assertEquals(expected, result);
 	} catch (AssertionError e) {
 	    System.out.println("Test 2: " + e.getMessage());
@@ -51,7 +49,7 @@ public class FormulaTest {
 	Position ePos = new Position(1, 100);
 	double expected = 11005;
 
-	double result = this.util.distance(sPos.getLat(), sPos.getLng(), ePos.getLat(), ePos.getLng());
+	double result = Util.distance(sPos.getLat(), sPos.getLng(), ePos.getLat(), ePos.getLng());
 
 	int resultInt = (int) result;
 	assertEquals(expected, resultInt);

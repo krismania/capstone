@@ -1014,8 +1014,6 @@ public class Database implements Closeable {
     public Booking endBooking(String clientId) {
 	try {
 	    Booking currentBooking = getBookingNow(clientId);
-	    boolean accept = false;
-
 	    if (currentBooking != null) {
 		// calculate the number of minutes between the current time & the booking start
 		LocalDateTime start = currentBooking.getTimestamp();

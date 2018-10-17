@@ -1307,13 +1307,14 @@ public class Database implements Closeable {
 
     public void editToPaid(String clientID) throws SQLException {
 
-	String query2 = "SELECT * FROM bookings";
+	String query2 = "SELECT * FROM bookings WHERE customer_id = ?";
 	PreparedStatement ps2 = this.conn.prepareStatement(query2);
+	ps2.setString(1, clientID);
 	ResultSet rs = ps2.executeQuery();
 	int largest = 0;
 	int paid = 1;
 	while (rs.next()) {
-	    largest++;
+	    largest = rs.getInt("id");
 	}
 	rs.close();
 

@@ -337,6 +337,7 @@ function endBooking(booking) {
 				paypalPrompt(booking);
 				removeCurrentBooking();
 				rebu.getVehicles(displayVehicles);
+				
 			} else {
 				window.location.reload();
 			}
@@ -415,9 +416,24 @@ function paypalPrompt(booking) {
 	    },
 	    onAuthorize: function(data, actions) {
 	        return actions.payment.execute().then(function() {
+	        	var headers = new Headers();
+	        	headers.append("Content-Type", "application/json");
+	        	var request = new Request('/api/bookings/pay');
+	        	
+	        	fetch(request)
+				.then(res => {
+					if (res.status == 200) {
+						return callback(true);
+					}
+					else {
+						return callback(false);
+					}
+				});
+	        	
 		    	sidepane.clear();
 		    	sidepane.appendHeader("PAYMENT");
 		    	sidepane.append(view.paymentConfirmation(true));
+		    	
 	        });
 	    },
 	    onError: function(err) {

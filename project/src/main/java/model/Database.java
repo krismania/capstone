@@ -50,7 +50,7 @@ public class Database implements Closeable {
 			+ "&socketFactory=com.google.cloud.sql.mysql.SocketFactory" + "&user=" + username + "&password="
 			+ password;
 
-		logger.info("Connecting to production database");
+		logger.debug("Connecting to production database");
 		this.conn = DriverManager.getConnection(url);
 	    } else {
 		// this fixes an issue with AppEngine Dev Server hot reloads
@@ -60,7 +60,7 @@ public class Database implements Closeable {
 		String password = Config.get("localSqlPassword");
 		String url = "jdbc:mysql://localhost:3306/" + database + "?useSSL=false"
 			+ "&serverTimezone=Australia/Melbourne";
-		logger.info("Connecting to development database: " + url);
+		logger.debug("Connecting to development database: " + url);
 		this.conn = DriverManager.getConnection(url, username, password);
 	    }
 
@@ -79,7 +79,7 @@ public class Database implements Closeable {
      * @throws SQLException
      */
     private void initDatabase() throws SQLException {
-	logger.info("Initializing the database");
+	logger.debug("Initializing the database");
 
 	// set tz on production db
 	if (SystemProperty.environment.value() == SystemProperty.Environment.Value.Production) {
@@ -124,9 +124,9 @@ public class Database implements Closeable {
 	try (Statement timeStmt = this.conn.createStatement()) {
 	    ResultSet rs = timeStmt.executeQuery("select now()");
 	    if (rs.next()) {
-		logger.warn("SQL Server time: " + rs.getString(1));
+		logger.debug("SQL Server time: " + rs.getString(1));
 	    } else {
-		logger.warn("SQL Server time is unknown");
+		logger.debug("SQL Server time is unknown");
 	    }
 	}
     }
@@ -139,7 +139,7 @@ public class Database implements Closeable {
     @Override
     public void close() {
 	try {
-	    logger.info("Closing the database");
+	    logger.debug("Closing the database");
 	    this.conn.close();
 	} catch (SQLException e) {
 	    logger.error("Failed to close DB");
@@ -320,7 +320,7 @@ public class Database implements Closeable {
 	    ps.setString(1, booking.getVehicle().getRegistration());
 	    ps.setTimestamp(2, Timestamp.valueOf(booking.getTimestamp()));
 
-	    logger.info("Executing query " + ps.toString());
+	    logger.debug("Executing query " + ps.toString());
 
 	    ResultSet rs = ps.executeQuery();
 	    while (rs.next()) {
@@ -391,7 +391,7 @@ public class Database implements Closeable {
      * @throws SQLException
      */
     public List<Booking> getBookings() {
-	logger.info("Get Booking");
+	logger.info("Get Bookings");
 	List<Booking> bookings = new ArrayList<Booking>();
 
 	try {
@@ -529,7 +529,7 @@ public class Database implements Closeable {
     }
 
     public boolean isCarBooked(LocalDateTime currtime, String registration) {
-	logger.debug("Checking if vehicle:" + registration + " is double booked.");
+	logger.debug("Checking if vehicle " + registration + " is double booked.");
 	try {
 	    // Gets the latest timestamp of a car booking.
 	    String query = "SELECT timestamp,duration FROM bookings WHERE registration = ? ORDER BY id DESC LIMIT 1";
@@ -564,7 +564,7 @@ public class Database implements Closeable {
     // after
     // more testing..
     public boolean isUserDoubleBooked(LocalDateTime currtime, String customerId) {
-	logger.info("Checking if user:" + customerId + "double booked.");
+	logger.debug("Checking if user " + customerId + " is double booked.");
 	try {
 	    // Gets the latest timestamp of a car booking.
 	    String query = "SELECT timestamp,duration FROM bookings WHERE customer_id = ? "
@@ -581,7 +581,7 @@ public class Database implements Closeable {
 		LocalDateTime endtime = bookingTime.plusMinutes(rs.getInt(2));
 
 		if (currtime.isBefore(endtime) || currtime.isEqual(endtime)) {
-		    logger.info("Error " + customerId + " Double Booked.");
+		    logger.info("Error: " + customerId + " Double Booked.");
 		    rs.close();
 		    ps.close();
 		    return true; // It is double booked.
@@ -683,8 +683,8 @@ public class Database implements Closeable {
 
     // Uses the ID of the booking to edit the booking.
     public Boolean editBooking(int id, LocalDateTime timestamp, String registration, String customerId, int duration) {
+	logger.info("Editing  Booking id: " + id);
 
-	logger.info("Editing  Booking id:" + id);
 	try {
 	    if (bookingExists(id)) {
 		if (checkReg(registration)) {
@@ -719,7 +719,7 @@ public class Database implements Closeable {
     // Checks if booking exists.
     public Boolean bookingExists(int id) {
 
-	logger.info("Checking if ID exists");
+	logger.debug("Checking if ID exists");
 	try {
 	    // Gets the latest timestamp of a car booking.
 	    String query = "SELECT * FROM bookings where id=?";
@@ -732,12 +732,12 @@ public class Database implements Closeable {
 	    if (rs.next()) {
 		rs.close();
 		ps.close();
-		logger.info("Booking ID exists");
+		logger.debug("Booking ID exists");
 		return true; // This ID exists
 	    }
 	    rs.close();
 	    ps.close();
-	    logger.info("Booking ID does not exists");
+	    logger.debug("Booking ID does not exists");
 
 	    return false; // Does not exist.
 	} catch (SQLException e) {
@@ -750,7 +750,7 @@ public class Database implements Closeable {
     // Checks whether vehicles exist.
     public Boolean checkReg(String reg) {
 
-	logger.info("Checking if Vehicle exists");
+	logger.debug("Checking if Vehicle exists");
 	try {
 	    // Gets the latest timestamp of a car booking.
 	    String query = "SELECT * FROM vehicles where registration=?";
@@ -763,12 +763,12 @@ public class Database implements Closeable {
 	    if (rs.next()) {
 		rs.close();
 		ps.close();
-		logger.info("Vehicle exists");
+		logger.debug("Vehicle exists");
 		return true; // This ID exists
 	    }
 	    rs.close();
 	    ps.close();
-	    logger.info("Vehicle does not exists");
+	    logger.debug("Vehicle does not exists");
 
 	    return false; // Does not exist.
 	} catch (SQLException e) {
@@ -946,7 +946,7 @@ public class Database implements Closeable {
      * @return {@code true} if the user is an administrator
      */
     public boolean isAdmin(String clientId) {
-	logger.info("Checking if user " + clientId + " is an admin");
+	logger.debug("Checking if user " + clientId + " is an admin");
 	String query = "select 1 from `admins` where `admin_id` = ?";
 	try (PreparedStatement ps = this.conn.prepareStatement(query)) {
 	    ps.setString(1, clientId);
@@ -975,10 +975,10 @@ public class Database implements Closeable {
 		pStmnt.executeUpdate();
 		pStmnt.close();
 
-		logger.info("Adding to users database email: " + email);
+		logger.info("Added to users database email: " + email);
 		return true;
 	    } else {
-		logger.info("Users table already has email: " + email);
+		logger.debug("Users table already has email: " + email);
 		return true;
 	    }
 	} catch (SQLException e) {
@@ -1000,8 +1000,8 @@ public class Database implements Closeable {
 		cid = rs.getString("cid");
 		System.out.println(cid);
 		logger.info("Client ID of user: " + cid);
-
 	    }
+
 	    stmt.close();
 	    rs.close();
 	    return cid;
@@ -1014,8 +1014,6 @@ public class Database implements Closeable {
     public Booking endBooking(String clientId) {
 	try {
 	    Booking currentBooking = getBookingNow(clientId);
-	    boolean accept = false;
-
 	    if (currentBooking != null) {
 		// calculate the number of minutes between the current time &
 		// the booking start
@@ -1046,7 +1044,7 @@ public class Database implements Closeable {
 		    ps.setString(1, clientId);
 
 		    ResultSet rs = ps.executeQuery();
-		    logger.info("bug");
+
 		    if (rs.next()) {
 
 			int bookingId = rs.getInt("id");
@@ -1104,7 +1102,7 @@ public class Database implements Closeable {
     // CHECKS WHETHER CURRENT BOOKING HAS ENDED TRUE IF HAS , FALSE OTHERWISE
     public Boolean hasBookingEnded(int id, LocalDateTime currtime) {
 
-	logger.info("Check if booking has ended. ");
+	logger.info("Check if booking " + id + " has ended");
 	try {
 
 	    String query = "SELECT timestamp, duration FROM bookings WHERE id = ?";
@@ -1121,7 +1119,7 @@ public class Database implements Closeable {
 		LocalDateTime endTime = startTime.plusMinutes(duration);
 
 		if (currtime.isAfter(startTime) && currtime.isBefore(endTime)) {
-		    logger.info(" Booking is still in session. " + duration);
+		    logger.info("Booking is still in session. Duration: " + duration);
 		    rs.close();
 		    ps.close();
 		    return false; // Booking has not ended.
@@ -1134,15 +1132,14 @@ public class Database implements Closeable {
 	    e.printStackTrace();
 	    return true; // errorz
 	}
-	logger.info(" Booking Timestamp error occured. "); // the timestamps are
-							   // incorrect.
+	logger.info("Booking Timestamp error occured"); // the timestamps are
+							// incorrect.
 	return true; // Booking ended.
-
     }
 
     // Uses the ID of the booking to edit the booking.
     public Boolean extendBooking(String clientId, int extraDuration) {
-	logger.info("Extending Booking of: " + clientId);
+	logger.info("Extending current booking of: " + clientId);
 	try {
 	    Booking currentBooking = getBookingNow(clientId);
 	    if (currentBooking != null) {
@@ -1166,7 +1163,7 @@ public class Database implements Closeable {
     }
 
     public Boolean editVehicle(String registration, String make, String model, int year, String colour, int status) {
-	logger.info("Editing  Vehicle with Rego:" + registration);
+	logger.info("Editing vehicle with rego: " + registration);
 	try {
 	    if (checkReg(registration)) {
 		String query = "UPDATE vehicles set make = ?, model = ?, year = ?, colour = ?, status = ? "
@@ -1207,13 +1204,9 @@ public class Database implements Closeable {
 	}
 
 	double overtime = (double) duration / 30;
-	double totalprice = base + rate * Math.ceil(overtime); // always rounds
-							       // up, so we
-							       // charge an
-							       // extra 30min if
-							       // overtime 30
-							       // min intervals.
-	logger.info("Costs : " + totalprice);
+	// always roundsup, so we charge an extra 30min if overtime 30min intervals.
+	double totalprice = base + rate * Math.ceil(overtime);
+	logger.debug("Cost : " + totalprice);
 
 	return totalprice;
 

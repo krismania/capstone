@@ -1,6 +1,5 @@
 package controllers;
 
-import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -29,9 +28,6 @@ public class ApiController {
     public ApiController() {
 
 	final Logger logger = LoggerFactory.getLogger(ApiController.class);
-
-	// log every API request
-	before("/*", (req, res) -> logger.info("Client API Request: " + req.uri()));
 
 	// returns a list of available vehicles
 	get("/vehicles", (req, res) -> {
@@ -198,7 +194,7 @@ public class ApiController {
 	// end the booking.
 	get("/bookings/end", (req, res) -> {
 	    res.type("application/json");
-	    Booking br;
+	    Booking br = null;
 
 	    String clientId = req.session().attribute("clientId");
 	    logger.info("Ending current booking of: " + clientId);
@@ -209,8 +205,9 @@ public class ApiController {
 		return new Gson().toJson(new ErrorResponse("Please log in"));
 	    }
 
-	    Database db = new Database();
-	    br = db.endBooking(clientId);
+	    try (Database db = new Database()) {
+		br = db.endBooking(clientId);
+	    }
 
 	    if (br != null) {
 		res.type("application/json");

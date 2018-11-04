@@ -1017,7 +1017,8 @@ public class Database implements Closeable {
 	    boolean accept = false;
 
 	    if (currentBooking != null) {
-		// calculate the number of minutes between the current time & the booking start
+		// calculate the number of minutes between the current time &
+		// the booking start
 		LocalDateTime start = currentBooking.getTimestamp();
 		LocalDateTime current = Util.getCurrentTime();
 		int newDuration = (int) Math.ceil(Duration.between(start, current).toMinutes());
@@ -1304,17 +1305,26 @@ public class Database implements Closeable {
 	return false;
     }
 
-    public void editToPaid(String reg, String clientID) throws SQLException {
+    public void editToPaid(String clientID) throws SQLException {
 
+	String query2 = "SELECT * FROM bookings WHERE customer_id = ?";
+	PreparedStatement ps2 = this.conn.prepareStatement(query2);
+	ps2.setString(1, clientID);
+	ResultSet rs = ps2.executeQuery();
+	int largest = 0;
 	int paid = 1;
-	String query = "UPDATE bookings set paid = ? " + "WHERE registration = ? AND customer_id = ?";
+	while (rs.next()) {
+	    largest = rs.getInt("id");
+	}
+	rs.close();
+
+	String query = "UPDATE bookings set paid = ? " + "WHERE id = ?";
 
 	PreparedStatement ps = this.conn.prepareStatement(query);
 
 	ps.setInt(1, paid);
-	ps.setString(2, reg);
-	ps.setString(3, clientID);
+	ps.setInt(2, largest);
 
-	ps.executeQuery();
+	ps.executeUpdate();
     }
 }

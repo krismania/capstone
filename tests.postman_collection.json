@@ -1,0 +1,1108 @@
+{
+	"info": {
+		"_postman_id": "554f9373-8700-4204-b120-009cc9cd00af",
+		"name": "tests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "http://localhost:8080/api/vehicles/nearby",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5651fe9c-a954-4c4e-a611-7a924e6a3109",
+						"exec": [
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Body contains car: MAGPIES\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"MAGPIES\");",
+							"});",
+							"",
+							"pm.test(\"Body contains car: MERZ\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"MERZ\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"lat\": -37.807819,\n    \"lng\": 144.960025\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/vehicles/nearby",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"vehicles",
+						"nearby"
+					]
+				},
+				"description": "asdasdasdasd"
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d9860dd8-a0dd-4112-88ec-6eaf78a97e77",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"id\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6IjgyODlkNTQyODBiNzY3MTJkZTQxY2QyZWY5NTk3MmIxMjNiZTlhYzAiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhY2NvdW50cy5nb29nbGUuY29tIiwiYXpwIjoiNzg4MzA5Njc0ODYzLWdsMTcyaXF2OXN2NDVuZTMya2hjdmlyM2RndG1nb2JtLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwiYXVkIjoiNzg4MzA5Njc0ODYzLWdsMTcyaXF2OXN2NDVuZTMya2hjdmlyM2RndG1nb2JtLmFwcHMuZ29vZ2xldXNlcmNvbnRlbnQuY29tIiwic3ViIjoiMTAxMDMyOTE0NzExODc1OTE1MzM5IiwiaGQiOiJzdHVkZW50LnJtaXQuZWR1LmF1IiwiZW1haWwiOiJzMzU0MDYyMEBzdHVkZW50LnJtaXQuZWR1LmF1IiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJTNFoySjJzaHlDTm9scy1HOEJlSnZBIiwibmFtZSI6IkFhcm9uIFRyYW4iLCJwaWN0dXJlIjoiaHR0cHM6Ly9saDYuZ29vZ2xldXNlcmNvbnRlbnQuY29tLy1LMlFsWFplWk1rdy9BQUFBQUFBQUFBSS9BQUFBQUFBQUFBQS9BQnRObGJBcXpXQy0zLXgyV2JKOUltRVdiVEQyYm9qbWRBL3M5Ni1jL3Bob3RvLmpwZyIsImdpdmVuX25hbWUiOiJBYXJvbiIsImZhbWlseV9uYW1lIjoiVHJhbiIsImxvY2FsZSI6ImVuLUdCIiwiaWF0IjoxNTQxMjI3NzEwLCJleHAiOjE1NDEyMzEzMTAsImp0aSI6ImExYTJiMTM1NzYxZTVmODVlMTU4MTFjOWEwZDk3N2M1ZTIyNjllZDIifQ.JqEPuu7DoENNbcsjjLcgoAoK-TO6CsIbFDDt2uEiTQ6Y5Lp8O_0B_yxicFcMQ5h2UG224-Cqb3WmpuJ47U8nDdwK0h5rFrRnYSRgGWrZKj3xuRS-e5YRleM-H52hbwoY2JSgBCKw0UBRjQCKmtQdtbC3zulQIYCmmLv8m_Tc1GAMgtwQmVfcHaADPfzYGWdZY73nzatuFFQHOan69b1z1WfwaNHVToQjBGEFNroHBQxNBxJOTL-Jy6FNCJT6lu4JO9NCyoRBLeQpg_JSvqDxk_cTRhitT33ruItVMhEPZRqmFUH4XaCqrweBW93VANKpBsffpF9TLYO3P6RN8EgNBQ\"\n}\n"
+				},
+				"url": {
+					"raw": "http://localhost:8080/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/bookings",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "0b7eedd4-b36e-4cdb-975a-cffa7b0918d6",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains car: JTD955\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"JTD955\");",
+							"});",
+							"",
+							"pm.test(\"Body contains timestamp\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"timestamp\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"cost\");",
+							"});",
+							"",
+							"pm.test(\"Body contains customer id: 101032914711875915339\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"101032914711875915339\");",
+							"});",
+							"",
+							"pm.test(\"Body contains duration\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"duration\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/api/bookings",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"bookings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/logout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "e21e5e38-f87e-44ef-a4d1-4184b03b16d3",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/logout",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"logout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/bookings",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "5dff3759-e1e1-4806-a86f-3a3c3bad3bb0",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains car: MAGPIES\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"MAGPIES\");",
+							"});",
+							"",
+							"pm.test(\"Body contains timestamp\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"timestamp\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"cost\");",
+							"});",
+							"",
+							"pm.test(\"Body contains customer id: 101032914711875915339\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"101032914711875915339\");",
+							"});",
+							"",
+							"pm.test(\"Body contains duration\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"duration\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Nothing returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.false;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"timestamp\": \"2018-09-05 10:10:00\",\n    \"registration\": \"MAGPIES\",\n    \"duration\": 120,\n    \"startLocation\": {\n        \"lat\": 111,\n        \"lng\": 222\n    },\n    \"endLocation\": {\n        \"lat\": 3333,\n        \"lng\": 4444\n    }\n}\n"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/bookings",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"bookings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/bookings/now",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ae83595c-d1e6-49f6-893a-f719ebf8044c",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains timestamp\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"timestamp\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"cost\");",
+							"});",
+							"",
+							"pm.test(\"Body contains duration\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"duration\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/api/bookings/now",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"bookings",
+						"now"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{address}}/api/bookings/extend",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "d4a23030-39b6-45d4-b99f-b3f4a3301f7f",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"extraDuration\": 30\n}\n"
+				},
+				"url": {
+					"raw": "{{address}}/api/bookings/extend",
+					"host": [
+						"{{address}}"
+					],
+					"path": [
+						"api",
+						"bookings",
+						"extend"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/api/bookings/end",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "77f0e2c2-425a-43f9-90ad-665d4fcba246",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains timestamp\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"timestamp\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"cost\");",
+							"});",
+							"",
+							"pm.test(\"Body contains duration\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"duration\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"extraDuration\": 30\n}\n"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/bookings/end",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"bookings",
+						"end"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/vehicles/all",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "16f5f75c-3541-4d5a-9e73-28313167a862",
+						"exec": [
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Body contains car: MAGPIES\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"MAGPIES\");",
+							"});",
+							"",
+							"pm.test(\"Body contains car: MERZ\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"MERZ\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/vehicles/all",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"vehicles",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/vehicles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "ccfad895-092b-4c8c-b8c0-23411337d0ac",
+						"exec": [
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Body contains car: SF0007\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"SF0007\");",
+							"});",
+							"",
+							"pm.test(\"Body contains model: Ferrari\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"Ferrari\");",
+							"});",
+							"",
+							"pm.test(\"Body contains colour: Rosso Corsa\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"Rosso Corsa\");",
+							"});",
+							"",
+							"pm.test(\"Body contains type: tier 1\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"tier 1\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"registration\": \"SF0007\",\n\t\"make\": \"Ferrari\",\n\t\"model\": \"SF71H\",\n\t\"year\": 2018,\n\t\"colour\": \"Rosso Corsa\",\n\t\"position\": {\n\t\t\"lat\": -37.81368,\n\t\t\"lng\": 144.97285\n\t},\n\t\"status\": \"active\",\n\t\"type\": \"tier 1\"\n}\n"
+				},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/vehicles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"vehicles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/vehicles",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "aee7f34f-2241-4b5c-b648-c6ba6bd31dbc",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"registration\": \"SF0007\",\n\t\"make\": \"Ferrari\",\n\t\"model\": \"SF71H\",\n\t\"year\": 2018,\n\t\"colour\": \"Rosso Corsa\",\n\t\"status\": \"active\"\n}\n"
+				},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/vehicles",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"vehicles"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/bookings/all",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "01fd0dc5-5ad9-4f69-b7a1-b2995a687981",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains timestamp\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"timestamp\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"cost\");",
+							"});",
+							"",
+							"pm.test(\"Body contains duration\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"duration\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/bookings/all",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"bookings",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/bookings/112606983151403770748",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "1294a2bd-a7e5-4da8-90c5-126070039b6f",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains customer id: 112606983151403770748\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"112606983151403770748\");",
+							"});",
+							"",
+							"pm.test(\"Body contains car: YODUDE\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"YODUDE\");",
+							"});",
+							"",
+							"pm.test(\"Body contains car: ABC123\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"ABC123\");",
+							"});",
+							"",
+							"",
+							"pm.test(\"Body contains timestamp\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"timestamp\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"cost\");",
+							"});",
+							"",
+							"pm.test(\"Body contains duration\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"duration\");",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 100ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(100);",
+							"});",
+							"",
+							"pm.test(\"Response does not return an error\", function () { ",
+							"    pm.response.to.not.be.error; ",
+							"    pm.response.to.have.jsonBody(\"\"); ",
+							"    pm.response.to.not.have.jsonBody(\"error\"); ",
+							"});",
+							"",
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/bookings/112606983151403770748",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"bookings",
+						"112606983151403770748"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/bookings/4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2db4cd2f-65c0-434b-ab22-c90accd1c17a",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\t\"timestamp\": \"2018-09-24 14:30:00\",\r\n\t\"registration\": \"ABC123\",\r\n\t\"customerId\": \"112606983151403770748\",\r\n\t\"duration\": 700\r\n}\r\n"
+				},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/bookings/4",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"bookings",
+						"4"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/bookings/15",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2710a301-e0f2-48d0-9a8d-21e5c56f712b",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/bookings/15",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"bookings",
+						"15"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/bookings/:bookingId/route",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2d19e546-f8a0-47ff-838b-92aae5e2b9ac",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains latitude\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"lat\");",
+							"});",
+							"",
+							"pm.test(\"Body contains longitude\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"lng\");",
+							"});",
+							"",
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/bookings/:bookingId/route",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"bookings",
+						":bookingId",
+						"route"
+					],
+					"variable": [
+						{
+							"key": "bookingId",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "bccf82a5-901b-4932-80c8-1279af18fafe",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains customer id: 101032914711875915339\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"101032914711875915339\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"email\": \"s3540620@student.rmit.edu.au\"\n}\n"
+				},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/user",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"user"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/rates",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "f1676603-e02a-46b1-a598-b2c625a81761",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Body contains tier: tier 1\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"tier 1\");",
+							"});",
+							"",
+							"pm.test(\"Body contains tier: tier 2\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"tier 2\");",
+							"});",
+							"",
+							"pm.test(\"Body contains tier: tier 3\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"tier 3\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost: 10\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"10\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost: 20\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"20\");",
+							"});",
+							"",
+							"pm.test(\"Body contains cost: 30\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"30\");",
+							"});",
+							"",
+							"pm.test(\"Array returned\", function() {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData instanceof Array).to.be.true;",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/rates",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"rates"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "http://localhost:8080/admin/api/rates",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "3bebee61-caec-4a07-9967-7a7537bd2721",
+						"exec": [
+							"pm.test(\"Status returned 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Tier 1\": 3.5,\n    \"Tier 2\": 2.8,\n    \"Tier 3\": 1.2\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/admin/api/rates",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"admin",
+						"api",
+						"rates"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

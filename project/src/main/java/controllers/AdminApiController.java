@@ -1,9 +1,7 @@
 package controllers;
 
-import static spark.Spark.before;
 import static spark.Spark.delete;
 import static spark.Spark.get;
-import static spark.Spark.halt;
 import static spark.Spark.path;
 import static spark.Spark.post;
 import static spark.Spark.put;
@@ -11,6 +9,7 @@ import static spark.Spark.put;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +25,7 @@ import controllers.Request.EditVehicleRequest;
 import controllers.Request.UserRequest;
 import controllers.Request.VehicleRequest;
 import controllers.Request.VehicleStatusRequest;
+import controllers.Response.BookedVehiclesResponse;
 import controllers.Response.ClientIdResponse;
 import controllers.Response.ErrorResponse;
 import controllers.Response.RouteResponse;
@@ -43,21 +43,6 @@ public class AdminApiController {
     public AdminApiController() {
 
 	final Logger logger = LoggerFactory.getLogger(AdminApiController.class);
-
-	// authenticate admin users
-	before("/*", (req, res) -> {
-	    logger.info("Admin API Request: " + req.uri());
-	    if (req.session(false) == null) {
-		logger.info("User is not logged in");
-		halt(401);
-	    }
-	    boolean isAdmin = req.session().attribute("isAdmin");
-	    if (!isAdmin) {
-		logger.info("User is NOT an administrator");
-		halt(403);
-	    }
-	    logger.info("User is an administrator");
-	});
 
 	// create a new vehicle
 	post("/vehicles", (req, res) -> {
@@ -147,10 +132,24 @@ public class AdminApiController {
 
 	    Database db = new Database();
 	    List<Vehicle> vehicles = db.getVehicles();
+	    List<BookedVehiclesResponse> vehiclesResponse = new ArrayList<BookedVehiclesResponse>();
+
+	    for (Vehicle vehicle : vehicles) {
+		vehiclesResponse.add(new BookedVehiclesResponse(vehicle,
+			db.isCarBooked(LocalDateTime.now(), vehicle.getRegistration())));
+	    }
+
 	    db.close();
 
-	    logger.info("Found " + vehicles.size() + " vehicles");
-	    return new Gson().toJson(vehicles);
+	    if (vehicles != null) {
+		res.status(200);
+		logger.info("Found " + vehicles.size() + " vehicles");
+		return new Gson().toJson(vehicles);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting vehicles"));
+	    }
+
 	});
 
 	// returns a list of all bookings
@@ -161,8 +160,15 @@ public class AdminApiController {
 	    List<Booking> bookings = db.getBookings();
 	    db.close();
 
-	    logger.info("Found " + bookings.size() + " bookings");
-	    return new Gson().toJson(bookings);
+	    if (bookings != null) {
+		res.status(200);
+		logger.info("Found " + bookings.size() + " bookings");
+		return new Gson().toJson(bookings);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting bookings"));
+	    }
+
 	});
 
 	// returns a list of bookings for the given user
@@ -294,6 +300,10 @@ public class AdminApiController {
 	    Database db = new Database();
 	    String cid = db.getCid(email);
 	    db.close();
+	    if (cid == null) {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting CID"));
+	    }
 
 	    logger.info("Found Client ID: " + cid);
 	    return new Gson().toJson(new ClientIdResponse(cid));
@@ -311,12 +321,8 @@ public class AdminApiController {
 	    });
 
 	    post("", (req, res) -> {
-		/* @formatter:off */
-		// ref: https://stackoverflow.com/a/15943171/2393133
-		Type type = new TypeToken<Map<String, Double>>(){}.getType();
-		Map<String, Double> rates = new Gson().fromJson(req.body(), type);
-		/* @formatter:on */
 		try (Database db = new Database()) {
+		    Map<String, Double> rates = jsonToMap(req.body());
 		    if (db.setRates(rates)) {
 			return "";
 		    } else {
@@ -327,7 +333,37 @@ public class AdminApiController {
 		}
 	    });
 
+	    get("/base", (req, res) -> {
+		try (Database db = new Database()) {
+		    Map<String, Double> basePrices = db.getBasePrices();
+		    res.type("application/json");
+		    return new Gson().toJson(basePrices);
+		}
+	    });
+
+	    post("/base", (req, res) -> {
+		try (Database db = new Database()) {
+		    Map<String, Double> basePrices = jsonToMap(req.body());
+		    if (db.setBasePrices(basePrices)) {
+			return "";
+		    } else {
+			res.status(400);
+			res.type("application/json");
+			return new Gson().toJson(new ErrorResponse("Couldn't set base prices"));
+		    }
+		}
+	    });
+
 	});
+    }
+
+    private Map<String, Double> jsonToMap(String json) {
+	// ref: https://stackoverflow.com/a/15943171/2393133
+	/* @formatter:off */
+	Type type = new TypeToken<Map<String, Double>>(){}.getType();
+	Map<String, Double> map = new Gson().fromJson(json, type);
+	/* @formatter:on */
+	return map;
     }
 
 }

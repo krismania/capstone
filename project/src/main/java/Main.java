@@ -1,3 +1,4 @@
+import static spark.Spark.before;
 import static spark.Spark.path;
 import static spark.Spark.redirect;
 
@@ -54,17 +55,25 @@ public class Main implements SparkApplication {
 	    logger.error("No Google Client ID. Check your config.");
 	    System.exit(1);
 	}
+	// get paypal keys
+	String paypalSandboxKey = Config.get("paypalSandbox");
+	String paypalProductionKey = Config.get("paypalProduction");
 
 	/* == ROUTES == */
 
 	// use static folder in resources for static content
 	Spark.staticFiles.location("static");
 
+	// log requests
+	before("/*", (req, res) -> {
+	    logger.info("[" + req.ip() + "] " + req.requestMethod() + " " + req.uri());
+	});
+
 	// create routes
-	new UiController(mapsApiKey, googleClientId);
+	new UiController(mapsApiKey, googleClientId, paypalSandboxKey, paypalProductionKey);
 	path("/api", () -> new ApiController());
 	path("/admin", () -> {
-	    new AdminUiController(mapsApiKey, googleClientId);
+	    new AdminUiController(mapsApiKey, googleClientId, paypalSandboxKey, paypalProductionKey);
 	    path("/api", () -> new AdminApiController());
 	});
 	// fix for /admin 404

@@ -2,7 +2,7 @@ document.addEventListener("login", function() {
 	//get current booking
 	rebu.getCurrentBooking(function(booking) {
 		var currentDiv = document.getElementById("cur-booking");
-		currentDiv.appendChild(view.currentBooking(booking, findBookedVehicle, extendBooking, endBooking));
+		currentDiv.appendChild(view.currentBooking(booking, findBookedVehicle, extendBooking, endBooking, onBookingExpire));
 	});
 	// get past bookings
 	var user = googleUser.getBasicProfile().getEmail()

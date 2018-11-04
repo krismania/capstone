@@ -20,17 +20,17 @@ var geoMarker = null;
 var googleUser = null;
 
 function onLogin(user) {
-	console.log("Google Client Token");
-	console.log(user.getAuthResponse().id_token);
 	// post the client ID to the server
 	var headers = new Headers();
+	var body = JSON.stringify({
+		id: user.getAuthResponse().id_token
+	});
+	console.log(body);
 	headers.append("Content-Type", "application/json");
 	var request = new Request("/login", {
 		method: 'post',
 		headers: headers,
-		body: JSON.stringify({
-			id: user.getAuthResponse().id_token
-		})
+		body: body
 	});
 	fetch(request)
 	.then(res => {
@@ -147,7 +147,7 @@ function displayVehicles(vehicles) {
 	}
 	// display new markers
 	for (var i = 0; i < vehicles.length; i++) {
-		vehicles[i].marker = createVehicleMarker(vehicles[i], map);
+		vehicles[i].marker = createVehicleMarker(vehicles[i], map, vehicles[i].booked);
 	};
 	mapVehicles = vehicles;
 }
@@ -334,8 +334,10 @@ function endBooking(booking) {
 	rebu.endCurrentBooking(function(success) {
 		if (success) {
 			if (map != null) {
+				paypalPrompt(booking);
 				removeCurrentBooking();
 				rebu.getVehicles(displayVehicles);
+				
 			} else {
 				window.location.reload();
 			}
@@ -353,7 +355,7 @@ function displayCurrentBooking() {
 		bookedVehicle.marker = createVehicleMarker(bookedVehicle, map, true);
 		
 		// display the card
-		var currentBookingCard = view.currentBookingCard(booking, findBookedVehicle, extendBooking, endBooking);
+		var currentBookingCard = view.currentBookingCard(booking, findBookedVehicle, extendBooking, endBooking, onBookingExpire);
 			
 		// fancy transition
 		currentBookingCard.className = "transition-start";
@@ -380,6 +382,72 @@ function removeCurrentBooking() {
 			document.body.removeChild(currentBookingCard);
 		}, 200);
 	}
+}
+
+// prompt the user with the sidepane to pay via paypal
+function paypalPrompt(booking) {
+	sidepane.clear();
+	sidepane.appendHeader("PAYMENT");
+	sidepane.append(view.payment(booking));
+	// render paypal button
+	paypal.Button.render({
+	    env: 'sandbox', // sandbox | production
+	    style: {
+	        label: 'pay',
+	        tagline: false,
+	        size:  'medium',    // small | medium | large | responsive
+	        shape: 'rect',     // pill | rect
+	        color: 'blue'      // gold | blue | silver | black
+	    },
+	    client: {
+	        sandbox: document.head.querySelector("[name~=paypal-sandbox-key][content]").content,
+	        production: document.head.querySelector("[name~=paypal-production-key][content]").content
+	    },
+	    payment: function(data, actions) {
+	        return actions.payment.create({
+	            payment: {
+	                transactions: [
+	                    {
+	                        amount: { total: '0.01', currency: 'AUD' }
+	                    }
+	                ]
+	            }
+	        });
+	    },
+	    onAuthorize: function(data, actions) {
+	        return actions.payment.execute().then(function() {
+	        	var headers = new Headers();
+	        	headers.append("Content-Type", "application/json");
+	        	var request = new Request('/api/bookings/pay');
+	        	
+	        	fetch(request)
+				.then(res => {
+					if (res.status == 200) {
+						return callback(true);
+					}
+					else {
+						return callback(false);
+					}
+				});
+	        	
+		    	sidepane.clear();
+		    	sidepane.appendHeader("PAYMENT");
+		    	sidepane.append(view.paymentConfirmation(true));
+		    	
+	        });
+	    },
+	    onError: function(err) {
+	    	sidepane.clear();
+	    	sidepane.appendHeader("PAYMENT");
+	    	sidepane.append(view.paymentConfirmation(false));
+	    }
+	}, '#paypal-button-container');
+	sidepane.open();
+}
+
+ function onBookingExpire() {
+	// refresh the page
+	window.location.reload();
 }
 
 // initialize sidepane

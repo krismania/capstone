@@ -25,12 +25,14 @@ import util.Util;
 
 public class UiController {
 
-    public UiController(String mapsApiKey, String googleClientId) {
+    public UiController(String mapsApiKey, String googleClientId, String paypalSandboxKey, String paypalProductionKey) {
 
 	// create model with API keys
 	Map<String, Object> model = new HashMap<>();
 	model.put("mapsApiKey", mapsApiKey);
 	model.put("googleClientId", googleClientId);
+	model.put("paypalSandbox", paypalSandboxKey);
+	model.put("paypalProduction", paypalProductionKey);
 
 	final Logger logger = LoggerFactory.getLogger(UiController.class);
 
@@ -73,6 +75,10 @@ public class UiController {
 			logger.info("Invalid ID token.");
 		    }
 		}
+	    } else {
+		// session is already set, return OK
+		res.status(200);
+		return "";
 	    }
 	    // if anything failed, send 400
 	    res.status(400);

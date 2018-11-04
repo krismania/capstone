@@ -1,19 +1,31 @@
-# Google API keys (development)
+#########################
+##  LOCAL DEVELOPMENT  ##
+#########################
+
+# These settings are used when testing locally
+
 localGoogleClientId = [DEVELOPMENT OAUTH KEY]
 localMapsApiKey = [DEVELOPMENT MAPS API KEY]
 
-# Google API keys (deployment)
+localSqlDatabase = [LOCAL SQL DATABASE NAME]
+localSqlUsername = [LOCAL SQL USER]
+localSqlPassword = [LOCAL SQL PASSWORD]
+
+paypalSandbox = [SANDBOX PAYPAL KEY]
+
+
+#########################
+##  REMOTE DEPLOYMENT  ##
+#########################
+
+# Only fill these config options in if you will be deploying to App Engine
+
 remoteGoogleClientId = [DEPLOYMENT OAUTH KEY]
 remoteMapsApiKey = [DEPLOYMENT MAPS API KEY]
 
-# Database information for deployed webserver
-# Ignore these if you will only be testing locally
 cloudSqlInstance = [INSTANCE CONNECTION NAME]
 cloudSqlDatabase = [CLOUD SQL DATABASE NAME]
 cloudSqlUsername = [CLOUD SQL USER]
 cloudSqlPassword = [CLOUD SQL PASSWORD]
 
-# Local database information
-localSqlDatabase = [LOCAL SQL DATABASE NAME]
-localSqlUsername = [LOCAL SQL USER]
-localSqlPassword = [LOCAL SQL PASSWORD]
+paypalProduction = [PRODUCTION PAYPAL KEY]

@@ -1,6 +1,5 @@
 package controllers;
 
-import static spark.Spark.before;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
@@ -30,9 +29,6 @@ public class ApiController {
 
 	final Logger logger = LoggerFactory.getLogger(ApiController.class);
 
-	// log every API request
-	before("/*", (req, res) -> logger.info("Client API Request: " + req.uri()));
-
 	// returns a list of available vehicles
 	get("/vehicles", (req, res) -> {
 	    res.type("application/json");
@@ -41,8 +37,14 @@ public class ApiController {
 	    List<Vehicle> vehicles = db.getAvailableVehicles();
 	    db.close();
 
-	    logger.info("Found " + vehicles.size() + " vehicles");
-	    return new Gson().toJson(vehicles);
+	    if (vehicles != null) {
+		res.status(200);
+		logger.info("Found " + vehicles.size() + " vehicles");
+		return new Gson().toJson(vehicles);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting vehicles"));
+	    }
 	});
 
 	// returns a list of nearby vehicles, giving their distance to the client
@@ -64,8 +66,14 @@ public class ApiController {
 	    List<NearbyVehicle> nearby = db.getNearbyVehicles(pos);
 	    db.close();
 
-	    logger.info("Found " + nearby.size() + " nearby vehicles");
-	    return new Gson().toJson(nearby);
+	    if (nearby != null) {
+		res.status(200);
+		logger.info("Found " + nearby.size() + " nearby vehicles");
+		return new Gson().toJson(nearby);
+	    } else {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting nerby vehicles"));
+	    }
 	});
 
 	// create a booking
@@ -141,6 +149,11 @@ public class ApiController {
 	    List<Booking> bookings = db.getBookingsOfUser(clientId);
 	    db.close();
 
+	    if (bookings == null) {
+		res.status(400);
+		return new Gson().toJson(new ErrorResponse("Error getting bookings of the user"));
+	    }
+
 	    logger.info("Found " + bookings.size() + " bookings of user " + clientId);
 
 	    if (bookings.size() > 0) {
@@ -181,7 +194,7 @@ public class ApiController {
 	// end the booking.
 	get("/bookings/end", (req, res) -> {
 	    res.type("application/json");
-	    Booking br;
+	    Booking br = null;
 
 	    String clientId = req.session().attribute("clientId");
 	    logger.info("Ending current booking of: " + clientId);
@@ -192,8 +205,9 @@ public class ApiController {
 		return new Gson().toJson(new ErrorResponse("Please log in"));
 	    }
 
-	    Database db = new Database();
-	    br = db.endBooking(clientId);
+	    try (Database db = new Database()) {
+		br = db.endBooking(clientId);
+	    }
 
 	    if (br != null) {
 		res.type("application/json");
@@ -242,6 +256,20 @@ public class ApiController {
 		return new Gson().toJson(new ErrorResponse("Bad Request"));
 	    }
 
+	});
+
+	get("/bookings/pay", (req, res) -> {
+	    res.type("application/json");
+
+	    String clientId = req.session().attribute("clientId");
+
+	    Database db = new Database();
+
+	    db.editToPaid(clientId);
+
+	    db.close();
+	    res.status(200);
+	    return "";
 	});
 
     }
